@@ -8,6 +8,7 @@ export async function GET() {
 
   const urls = [
     `  <url>\n    <loc>${SITE}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>1.0</priority>\n  </url>`,
+    `  <url>\n    <loc>${SITE}/articles/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.9</priority>\n  </url>`,
     ...articles.map((a: any) => {
       const loc = `${SITE}/${a.slug}/`;
       const alt = a.altSlug ? `${SITE}/${a.altSlug}/` : loc;

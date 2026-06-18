@@ -56,8 +56,22 @@ const STEPS = {
 };
 
 const TOPICS = {
-  en: ["What to wear to a summer wedding", "First date outfit ideas", "Job interview looks that land", "Winter travel, packed light", "Beach party, done right", "Smart casual, decoded"],
-  ar: ["ماذا تلبس في حفل زفاف صيفي", "أفكار ملابس أول موعد", "إطلالات مقابلات العمل", "سفر الشتاء بحقيبة خفيفة", "حفلة الشاطئ بإتقان", "الكاجوال الأنيق ببساطة"],
+  en: [
+    { label: "What to wear to a summer wedding", href: "/summer-wedding-guest-outfit-for-men/" },
+    { label: "First date outfit ideas", href: "/summer-first-date-outfit-for-men/" },
+    { label: "Job interview looks that land", href: "/summer-job-interview-outfit-for-men/" },
+    { label: "Winter travel, packed light", href: "/winter-travel-day-outfit-for-men/" },
+    { label: "Beach party, done right", href: "/summer-beach-party-outfit-for-men/" },
+    { label: "Smart casual, decoded", href: "/wedding-guest-outfit-men-smart-casual/" },
+  ],
+  ar: [
+    { label: "ماذا تلبس في حفل زفاف صيفي", href: "/mlabs-hfl-zfaf-syfy-llrjal/" },
+    { label: "أفكار ملابس أول موعد", href: "/mlabs-awl-mwad-syfy-llrjal/" },
+    { label: "إطلالات مقابلات العمل", href: "/mlabs-mqabla-aml-syfy-llrjal/" },
+    { label: "سفر الشتاء بحقيبة خفيفة", href: "/mlabs-ywm-sfr-shtwy-llrjal/" },
+    { label: "حفلة الشاطئ بإتقان", href: "/mlabs-hfla-shate-syfy-llrjal/" },
+    { label: "الكاجوال الأنيق ببساطة", href: "/mlabs-hfl-zfaf-llrjal-kajwal-anyq/" },
+  ],
 };
 
 export default function AskoutfitHome() {
@@ -124,9 +138,12 @@ export default function AskoutfitHome() {
       <nav className="ao-nav">
         <div className="ao-nav-inner">
           <span className="ao-logo">Askoutfit</span>
-          <button className="ao-lang-btn" onClick={() => { const n = ar ? "en" : "ar"; setLang(n); track("lang_toggle", { to: n }); }}>
-            <Globe size={13} /> {ar ? "English" : "العربية"}
-          </button>
+          <div className="ao-nav-right">
+            <a href="/articles/" className="ao-nav-link">{ar ? "المقالات" : "Articles"}</a>
+            <button className="ao-lang-btn" onClick={() => { const n = ar ? "en" : "ar"; setLang(n); track("lang_toggle", { to: n }); }}>
+              <Globe size={13} /> {ar ? "English" : "العربية"}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -230,8 +247,8 @@ export default function AskoutfitHome() {
           <div className="ao-topics-head"><Zap size={18} /> <h2 className="ao-h2 ao-h2-inline">{ar ? "وجهات شائعة" : "Popular looks"}</h2></div>
           <div className="ao-topics">
             {TOPICS[lang].map((topic) => (
-              <a key={topic} href="#" className="ao-topic" onClick={() => track("topic_click", { topic, lang })}>
-                <span>{topic}</span>
+              <a key={topic.href} href={topic.href} className="ao-topic" onClick={() => track("topic_click", { topic: topic.label, lang })}>
+                <span>{topic.label}</span>
                 <ArrowRight size={15} className={ar ? "ao-flip" : ""} />
               </a>
             ))}
@@ -267,6 +284,9 @@ const CSS = `
 .ao-nav{position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(58,48,38,.6);
   background:rgba(26,20,16,.85);backdrop-filter:blur(12px);}
 .ao-nav-inner{max-width:64rem;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;}
+.ao-nav-right{display:flex;align-items:center;gap:16px;}
+.ao-nav-link{font-size:14px;color:var(--muted);text-decoration:none;}
+.ao-nav-link:hover{color:var(--ink);}
 .ao-logo{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;}
 .ao-ar .ao-logo{font-family:'Tajawal',sans-serif;}
 .ao-lang-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:none;
