@@ -6,34 +6,17 @@ import {
 
 // ============================================================
 // Askoutfit — Home Page (hero = the tool itself)
-// Editorial / stylist lookbook direction. The tool is the hero.
-// Self-contained React component. GA4 events wired throughout.
+// Styling is PLAIN CSS (scoped <style> below) — no Tailwind dependency,
+// so it renders identically on any environment.
 // ============================================================
 
-// ============================================================
-// API ENDPOINT
-// ------------------------------------------------------------
-// Local dev: calls Anthropic directly (fine for testing).
-// Production: set this to your Cloudflare Worker URL so your API
-// key stays hidden server-side. Replace the production URL below.
-// ============================================================
 const API_ENDPOINT =
   typeof window !== "undefined" && window.location.hostname === "localhost"
     ? "https://api.anthropic.com/v1/messages"
     : "https://askoutfit-proxy.YOUR-SUBDOMAIN.workers.dev"; // <-- ضع رابط الـ Worker بعد نشره
 
-
-// ------------------------------------------------------------
-// Stage 1 (NOW): Amazon search links carrying your associate tag.
-//   - Works immediately, no API approval needed.
-//   - Just replace YOUR_TAG below with your real Associates tag.
-// Stage 2 (after 10 qualifying sales / 30 days): switch to Amazon
-//   Creators API (replaced PA-API 5.0 on May 15, 2026; OAuth2) to
-//   show real product images + prices. Only this function changes.
-// Note: UAE (AE) is in Amazon's EU region — register accordingly.
-// ============================================================
-const AMAZON_ASSOC_TAG = "YOUR_TAG-20"; // <-- ضع تاج الأفلييت الحقيقي من Amazon Associates
-const AMAZON_DOMAIN = "www.amazon.com";  // عالمي: amazon.com هو الأوسع شحناً دولياً
+const AMAZON_ASSOC_TAG = "askoutfit-20"; // تاج الأفلييت
+const AMAZON_DOMAIN = "www.amazon.com";  // عالمي
 function buildAffiliateLink(searchTerm) {
   return `https://${AMAZON_DOMAIN}/s?k=${encodeURIComponent(searchTerm)}&tag=${AMAZON_ASSOC_TAG}`;
 }
@@ -55,18 +38,8 @@ const SLOT_META = {
 };
 
 const EXAMPLES = {
-  en: [
-    "Summer outdoor wedding, men",
-    "First date dinner, smart casual",
-    "Winter job interview, women",
-    "Beach party, relaxed",
-  ],
-  ar: [
-    "حفل زفاف صيفي خارجي، رجال",
-    "أول موعد عشاء، كاجوال أنيق",
-    "مقابلة عمل شتوية، نساء",
-    "حفلة شاطئ، مريح",
-  ],
+  en: ["Summer outdoor wedding, men", "First date dinner, smart casual", "Winter job interview, women", "Beach party, relaxed"],
+  ar: ["حفل زفاف صيفي خارجي، رجال", "أول موعد عشاء، كاجوال أنيق", "مقابلة عمل شتوية، نساء", "حفلة شاطئ، مريح"],
 };
 
 const STEPS = {
@@ -82,29 +55,14 @@ const STEPS = {
   ],
 };
 
-// Curated internal-link topics (feed SEO; these map to your blog landing pages)
 const TOPICS = {
-  en: [
-    "What to wear to a summer wedding",
-    "First date outfit ideas",
-    "Job interview looks that land",
-    "Winter travel, packed light",
-    "Beach party, done right",
-    "Smart casual, decoded",
-  ],
-  ar: [
-    "ماذا تلبس في حفل زفاف صيفي",
-    "أفكار ملابس أول موعد",
-    "إطلالات مقابلات العمل",
-    "سفر الشتاء بحقيبة خفيفة",
-    "حفلة الشاطئ بإتقان",
-    "الكاجوال الأنيق ببساطة",
-  ],
+  en: ["What to wear to a summer wedding", "First date outfit ideas", "Job interview looks that land", "Winter travel, packed light", "Beach party, done right", "Smart casual, decoded"],
+  ar: ["ماذا تلبس في حفل زفاف صيفي", "أفكار ملابس أول موعد", "إطلالات مقابلات العمل", "سفر الشتاء بحقيبة خفيفة", "حفلة الشاطئ بإتقان", "الكاجوال الأنيق ببساطة"],
 };
 
 export default function AskoutfitHome() {
   const [lang, setLang] = useState("en");
-  const [gender, setGender] = useState(""); // "", "men", "women"
+  const [gender, setGender] = useState("");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -124,9 +82,7 @@ export default function AskoutfitHome() {
     setResult(null);
     track("outfit_request", { query: text, lang: arabic ? "ar" : "en", gender: gender || "unspecified" });
 
-    const genderLine = gender
-      ? `The outfit is for ${gender}. `
-      : "";
+    const genderLine = gender ? `The outfit is for ${gender}. ` : "";
     const system =
       "You are a professional fashion stylist. Given a situation, return ONE complete, tasteful outfit. " +
       genderLine +
@@ -134,27 +90,16 @@ export default function AskoutfitHome() {
       'Schema: {"intro": string, "items": [{"slot": one of [top,bottom,outerwear,shoes,accessory], "name": string, "search": string, "why": string}], "note": string}. ' +
       "The 'search' is a concrete shoppable English phrase (e.g. 'navy linen blazer men slim fit'). " +
       "Include 3-5 items covering at least top, bottom/dress, and shoes. " +
-      (arabic
-        ? "Write intro, name, why, note in Arabic. Keep 'search' in ENGLISH."
-        : "Write everything in English.");
+      (arabic ? "Write intro, name, why, note in Arabic. Keep 'search' in ENGLISH." : "Write everything in English.");
 
     try {
       const response = await fetch(API_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          system,
-          messages: [{ role: "user", content: text }],
-        }),
+        body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1000, system, messages: [{ role: "user", content: text }] }),
       });
       const data = await response.json();
-      const raw = (data.content || [])
-        .map((b) => (b.type === "text" ? b.text : ""))
-        .join("")
-        .replace(/```json|```/g, "")
-        .trim();
+      const raw = (data.content || []).map((b) => (b.type === "text" ? b.text : "")).join("").replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(raw);
       setResult(parsed);
       track("outfit_generated", { lang: arabic ? "ar" : "en", items: parsed.items?.length || 0, gender: gender || "unspecified" });
@@ -172,277 +117,249 @@ export default function AskoutfitHome() {
   }
 
   return (
-    <div
-      dir={dir}
-      style={{ fontFamily: ar ? "'Tajawal', sans-serif" : "'Inter', system-ui, sans-serif" }}
-      className="min-h-screen w-full bg-[#1a1410] text-[#f3ece2]"
-    >
-      {/* ===== Top bar ===== */}
-      <nav className="sticky top-0 z-20 border-b border-[#3a3026]/60 bg-[#1a1410]/85 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-3.5">
-          <span
-            style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-            className="text-xl font-semibold tracking-tight"
-          >
-            Askoutfit
-          </span>
-          <button
-            onClick={() => {
-              const next = ar ? "en" : "ar";
-              setLang(next);
-              track("lang_toggle", { to: next });
-            }}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#3a3026] px-3 py-1.5 text-xs text-[#b9ad9b] transition hover:border-[#caa46a]/50 hover:text-[#f3ece2]"
-          >
-            <Globe size={13} />
-            {ar ? "English" : "العربية"}
+    <div dir={dir} className={`ao-root ${ar ? "ao-ar" : ""}`}>
+      <style>{CSS}</style>
+
+      {/* Top bar */}
+      <nav className="ao-nav">
+        <div className="ao-nav-inner">
+          <span className="ao-logo">Askoutfit</span>
+          <button className="ao-lang-btn" onClick={() => { const n = ar ? "en" : "ar"; setLang(n); track("lang_toggle", { to: n }); }}>
+            <Globe size={13} /> {ar ? "English" : "العربية"}
           </button>
         </div>
       </nav>
 
-      {/* ===== Hero = the tool ===== */}
-      <header className="relative overflow-hidden">
-        {/* ambient gradient glow */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-60"
-          style={{
-            background:
-              "radial-gradient(60% 80% at 50% 0%, rgba(202,164,106,0.18), transparent 70%)",
-          }}
-        />
-        <div className="relative mx-auto max-w-3xl px-5 pt-14 pb-8 text-center sm:pt-20">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#caa46a]/30 bg-[#caa46a]/10 px-3 py-1 text-xs tracking-wide text-[#caa46a]">
-            <Sparkles size={13} />
-            {ar ? "مُنسّق أزياء بالذكاء الاصطناعي" : "Your AI stylist"}
-          </div>
-          <h1
-            style={{ fontFamily: ar ? "'Tajawal', sans-serif" : "'Playfair Display', Georgia, serif" }}
-            className="text-[2.6rem] font-semibold leading-[1.08] sm:text-6xl"
-          >
-            {ar ? "ماذا ألبس اليوم؟" : "What should I wear?"}
-          </h1>
-          <p className="mx-auto mt-4 max-w-lg text-base text-[#b9ad9b] sm:text-lg">
-            {ar
-              ? "صِف المناسبة بجملة، واحصل على تنسيق كامل قابل للشراء في ثوانٍ."
-              : "Describe the occasion in a sentence. Get a complete, shoppable outfit in seconds."}
-          </p>
+      {/* Hero */}
+      <header className="ao-hero">
+        <div className="ao-hero-glow" aria-hidden />
+        <div className="ao-hero-head">
+          <div className="ao-badge"><Sparkles size={13} /> {ar ? "مُنسّق أزياء بالذكاء الاصطناعي" : "Your AI stylist"}</div>
+          <h1 className="ao-h1">{ar ? "ماذا ألبس اليوم؟" : "What should I wear?"}</h1>
+          <p className="ao-sub">{ar ? "صِف المناسبة بجملة، واحصل على تنسيق كامل قابل للشراء في ثوانٍ." : "Describe the occasion in a sentence. Get a complete, shoppable outfit in seconds."}</p>
         </div>
 
         {/* Tool card */}
-        <div ref={toolRef} className="relative mx-auto max-w-2xl px-5 pb-16 scroll-mt-24">
-          <div className="rounded-2xl border border-[#3a3026] bg-[#221b14] p-4 shadow-2xl">
-            {/* Gender selector */}
-            <div className="mb-3 flex items-center gap-2">
-              <span className="text-xs text-[#6b6052]">{ar ? "التنسيق لـ:" : "Styling for:"}</span>
-              {[
-                { key: "women", en: "Women", ar: "نساء" },
-                { key: "men", en: "Men", ar: "رجال" },
-              ].map((g) => (
-                <button
-                  key={g.key}
-                  onClick={() => {
-                    const next = gender === g.key ? "" : g.key;
-                    setGender(next);
-                    track("gender_select", { gender: next || "unspecified" });
-                  }}
-                  aria-pressed={gender === g.key}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition ${
-                    gender === g.key
-                      ? "bg-[#caa46a] text-[#1a1410]"
-                      : "border border-[#3a3026] text-[#b9ad9b] hover:border-[#caa46a]/50 hover:text-[#f3ece2]"
-                  }`}
-                >
+        <div ref={toolRef} className="ao-tool-wrap">
+          <div className="ao-card">
+            <div className="ao-gender">
+              <span className="ao-gender-label">{ar ? "التنسيق لـ:" : "Styling for:"}</span>
+              {[{ key: "women", en: "Women", ar: "نساء" }, { key: "men", en: "Men", ar: "رجال" }].map((g) => (
+                <button key={g.key} aria-pressed={gender === g.key}
+                  className={`ao-gender-btn ${gender === g.key ? "is-active" : ""}`}
+                  onClick={() => { const n = gender === g.key ? "" : g.key; setGender(n); track("gender_select", { gender: n || "unspecified" }); }}>
                   {ar ? g.ar : g.en}
                 </button>
               ))}
             </div>
-            <textarea
-              ref={inputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) generate();
-              }}
-              rows={3}
-              placeholder={ar ? "مثال: حفل زفاف صيفي خارجي، رجال..." : "e.g. Summer outdoor wedding, men..."}
-              className="w-full resize-none bg-transparent text-base text-[#f3ece2] placeholder-[#6b6052] outline-none"
-            />
-            <div className="mt-3 flex items-center justify-between gap-3">
-              <span className="text-xs text-[#6b6052]">
-                {ar ? "بالعربية أو الإنجليزية" : "English or Arabic"}
-              </span>
-              <button
-                onClick={() => generate()}
-                disabled={loading || !query.trim()}
-                className="inline-flex items-center gap-2 rounded-xl bg-[#caa46a] px-5 py-2.5 text-sm font-medium text-[#1a1410] transition hover:bg-[#d8b67e] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <ArrowRight size={16} className={ar ? "rotate-180" : ""} />}
+            <textarea ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) generate(); }}
+              rows={3} className="ao-textarea"
+              placeholder={ar ? "مثال: حفل زفاف صيفي خارجي، رجال..." : "e.g. Summer outdoor wedding, men..."} />
+            <div className="ao-card-foot">
+              <span className="ao-hint">{ar ? "بالعربية أو الإنجليزية" : "English or Arabic"}</span>
+              <button className="ao-cta-btn" onClick={() => generate()} disabled={loading || !query.trim()}>
+                {loading ? <Loader2 size={16} className="ao-spin" /> : <ArrowRight size={16} className={ar ? "ao-flip" : ""} />}
                 {ar ? "أنشئ التنسيق" : "Style me"}
               </button>
             </div>
           </div>
 
-          {/* Examples */}
           {!result && !loading && (
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <div className="ao-examples">
               {EXAMPLES[lang].map((ex) => (
-                <button
-                  key={ex}
-                  onClick={() => { setQuery(ex); generate(ex); }}
-                  className="rounded-full border border-[#3a3026] px-3 py-1.5 text-xs text-[#b9ad9b] transition hover:border-[#caa46a]/50 hover:text-[#f3ece2]"
-                >
-                  {ex}
-                </button>
+                <button key={ex} className="ao-chip" onClick={() => { setQuery(ex); generate(ex); }}>{ex}</button>
               ))}
             </div>
           )}
 
-          {error && (
-            <div className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-              {error}
-            </div>
-          )}
+          {error && <div className="ao-error">{error}</div>}
 
-          {loading && (
-            <div className="mt-6 space-y-3">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="h-[68px] animate-pulse rounded-xl border border-[#3a3026] bg-[#221b14]" />
-              ))}
-            </div>
-          )}
+          {loading && <div className="ao-skeletons">{[0, 1, 2].map((i) => <div key={i} className="ao-skeleton" />)}</div>}
 
-          {/* Result */}
           {result && !loading && (
-            <div className="mt-6">
-              {result.intro && <p className="mb-4 text-center text-lg">{result.intro}</p>}
-              <div className="space-y-3">
+            <div className="ao-result">
+              {result.intro && <p className="ao-result-intro">{result.intro}</p>}
+              <div className="ao-items">
                 {result.items?.map((item, i) => {
                   const meta = SLOT_META[item.slot] || SLOT_META.accessory;
                   const Icon = meta.Icon;
                   return (
-                    <a
-                      key={i}
-                      href={buildAffiliateLink(item.search)}
-                      target="_blank"
-                      rel="noopener nofollow sponsored"
-                      onClick={() => track("affiliate_click", { item: item.search, slot: item.slot, lang })}
-                      className="group flex items-center gap-4 rounded-xl border border-[#3a3026] bg-[#221b14] p-4 transition hover:border-[#caa46a]/50 hover:bg-[#271f17]"
-                    >
-                      <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-[#caa46a]/12 text-[#caa46a]">
-                        <Icon size={20} />
+                    <a key={i} href={buildAffiliateLink(item.search)} target="_blank" rel="noopener nofollow sponsored"
+                      className="ao-item" onClick={() => track("affiliate_click", { item: item.search, slot: item.slot, lang })}>
+                      <div className="ao-item-icon"><Icon size={20} /></div>
+                      <div className="ao-item-body">
+                        <span className="ao-item-slot">{meta[lang]}</span>
+                        <p className="ao-item-name">{item.name}</p>
+                        {item.why && <p className="ao-item-why">{item.why}</p>}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <span className="text-[10px] uppercase tracking-wider text-[#6b6052]">
-                          {meta[lang]}
-                        </span>
-                        <p className="truncate font-medium">{item.name}</p>
-                        {item.why && <p className="truncate text-xs text-[#b9ad9b]">{item.why}</p>}
-                      </div>
-                      <ArrowRight size={16} className={`flex-shrink-0 text-[#6b6052] transition group-hover:text-[#caa46a] ${ar ? "rotate-180" : ""}`} />
+                      <ArrowRight size={16} className={`ao-item-arrow ${ar ? "ao-flip" : ""}`} />
                     </a>
                   );
                 })}
               </div>
-              {result.note && (
-                <p className="mt-4 rounded-xl border border-[#3a3026] bg-[#221b14]/50 px-4 py-3 text-sm text-[#b9ad9b]">
-                  💡 {result.note}
-                </p>
-              )}
-              <button
-                onClick={() => { setResult(null); setQuery(""); inputRef.current?.focus(); }}
-                className="mx-auto mt-5 flex items-center gap-2 text-sm text-[#caa46a] hover:underline"
-              >
-                <RefreshCw size={14} />
-                {ar ? "جرّب تنسيقاً آخر" : "Try another outfit"}
+              {result.note && <p className="ao-note">💡 {result.note}</p>}
+              <button className="ao-again" onClick={() => { setResult(null); setQuery(""); inputRef.current?.focus(); }}>
+                <RefreshCw size={14} /> {ar ? "جرّب تنسيقاً آخر" : "Try another outfit"}
               </button>
-              <p className="mt-5 text-center text-[10px] text-[#6b6052]">
-                {ar
-                  ? "قد نربح عمولة على عمليات الشراء عبر الروابط، دون أي تكلفة إضافية عليك."
-                  : "We may earn a commission on purchases through links, at no extra cost to you."}
-              </p>
+              <p className="ao-disclaimer">{ar ? "قد نربح عمولة على عمليات الشراء عبر الروابط، دون أي تكلفة إضافية عليك." : "We may earn a commission on purchases through links, at no extra cost to you."}</p>
             </div>
           )}
         </div>
       </header>
 
-      {/* ===== How it works ===== */}
-      <section className="border-t border-[#3a3026]/60 bg-[#1d1610]">
-        <div className="mx-auto max-w-5xl px-5 py-16">
-          <h2
-            style={{ fontFamily: ar ? "'Tajawal', sans-serif" : "'Playfair Display', serif" }}
-            className="text-center text-2xl font-semibold sm:text-3xl"
-          >
-            {ar ? "ثلاث خطوات، إطلالة كاملة" : "Three steps, one complete look"}
-          </h2>
-          <div className="mt-10 grid gap-5 sm:grid-cols-3">
+      {/* How it works */}
+      <section className="ao-section ao-section-alt">
+        <div className="ao-wrap">
+          <h2 className="ao-h2">{ar ? "ثلاث خطوات، إطلالة كاملة" : "Three steps, one complete look"}</h2>
+          <div className="ao-steps">
             {STEPS[lang].map((s, i) => (
-              <div key={i} className="rounded-2xl border border-[#3a3026] bg-[#221b14] p-6">
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-[#caa46a]/12 text-[#caa46a]">
-                  <s.Icon size={20} />
-                </div>
-                <h3 className="text-lg font-semibold">{s.t}</h3>
-                <p className="mt-2 text-sm text-[#b9ad9b]">{s.d}</p>
+              <div key={i} className="ao-step">
+                <div className="ao-step-icon"><s.Icon size={20} /></div>
+                <h3 className="ao-step-title">{s.t}</h3>
+                <p className="ao-step-desc">{s.d}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ===== Popular topics (internal links -> blog landing pages) ===== */}
-      <section className="border-t border-[#3a3026]/60">
-        <div className="mx-auto max-w-5xl px-5 py-16">
-          <div className="mb-8 flex items-center gap-2">
-            <Zap size={18} className="text-[#caa46a]" />
-            <h2
-              style={{ fontFamily: ar ? "'Tajawal', sans-serif" : "'Playfair Display', serif" }}
-              className="text-2xl font-semibold sm:text-3xl"
-            >
-              {ar ? "وجهات شائعة" : "Popular looks"}
-            </h2>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Popular topics */}
+      <section className="ao-section">
+        <div className="ao-wrap">
+          <div className="ao-topics-head"><Zap size={18} /> <h2 className="ao-h2 ao-h2-inline">{ar ? "وجهات شائعة" : "Popular looks"}</h2></div>
+          <div className="ao-topics">
             {TOPICS[lang].map((topic) => (
-              <a
-                key={topic}
-                href="#"
-                onClick={() => track("topic_click", { topic, lang })}
-                className="group flex items-center justify-between rounded-xl border border-[#3a3026] bg-[#221b14] px-5 py-4 transition hover:border-[#caa46a]/50 hover:bg-[#271f17]"
-              >
-                <span className="text-sm font-medium">{topic}</span>
-                <ArrowRight size={15} className={`text-[#6b6052] transition group-hover:text-[#caa46a] ${ar ? "rotate-180" : ""}`} />
+              <a key={topic} href="#" className="ao-topic" onClick={() => track("topic_click", { topic, lang })}>
+                <span>{topic}</span>
+                <ArrowRight size={15} className={ar ? "ao-flip" : ""} />
               </a>
             ))}
           </div>
-          <div className="mt-10 text-center">
-            <button
-              onClick={scrollToTool}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#caa46a] px-6 py-3 text-sm font-medium text-[#1a1410] transition hover:bg-[#d8b67e]"
-            >
-              <Sparkles size={16} />
-              {ar ? "أنشئ إطلالتك الآن" : "Style your look now"}
+          <div className="ao-topics-cta">
+            <button className="ao-cta-btn ao-cta-lg" onClick={scrollToTool}>
+              <Sparkles size={16} /> {ar ? "أنشئ إطلالتك الآن" : "Style your look now"}
             </button>
           </div>
         </div>
       </section>
 
-      {/* ===== Footer ===== */}
-      <footer className="border-t border-[#3a3026]/60 bg-[#1d1610]">
-        <div className="mx-auto max-w-5xl px-5 py-10 text-center text-xs text-[#6b6052]">
-          <p
-            style={{ fontFamily: "'Playfair Display', serif" }}
-            className="mb-3 text-base text-[#b9ad9b]"
-          >
-            Askoutfit
-          </p>
-          <p>
-            {ar
-              ? "قد نربح عمولة على عمليات الشراء عبر الروابط. © "
-              : "We may earn a commission on purchases through links. © "}
-            {new Date().getFullYear()}
-          </p>
-        </div>
+      <footer className="ao-footer">
+        <p className="ao-footer-logo">Askoutfit</p>
+        <p>{ar ? "قد نربح عمولة على عمليات الشراء عبر الروابط. © " : "We may earn a commission on purchases through links. © "}{new Date().getFullYear()}</p>
       </footer>
     </div>
   );
 }
+
+const CSS = `
+.ao-root{--bg:#1a1410;--surface:#221b14;--line:#3a3026;--ink:#f3ece2;--muted:#b9ad9b;--faint:#6b6052;--gold:#caa46a;
+  background:var(--bg);color:var(--ink);min-height:100vh;width:100%;
+  font-family:'Inter',system-ui,sans-serif;line-height:1.7;-webkit-font-smoothing:antialiased;}
+.ao-ar{font-family:'Tajawal','Inter',sans-serif;}
+.ao-root *{box-sizing:border-box;}
+.ao-spin{animation:ao-rot 1s linear infinite;}
+@keyframes ao-rot{to{transform:rotate(360deg);}}
+.ao-flip{transform:scaleX(-1);}
+.ao-root a{color:var(--gold);text-decoration:none;}
+.ao-root :focus-visible{outline:2px solid var(--gold);outline-offset:3px;}
+
+.ao-nav{position:sticky;top:0;z-index:20;border-bottom:1px solid rgba(58,48,38,.6);
+  background:rgba(26,20,16,.85);backdrop-filter:blur(12px);}
+.ao-nav-inner{max-width:64rem;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;}
+.ao-logo{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;}
+.ao-ar .ao-logo{font-family:'Tajawal',sans-serif;}
+.ao-lang-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:none;
+  color:var(--muted);font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;transition:.2s;font-family:inherit;}
+.ao-lang-btn:hover{border-color:rgba(202,164,106,.5);color:var(--ink);}
+
+.ao-hero{position:relative;overflow:hidden;}
+.ao-hero-glow{position:absolute;inset-inline:0;top:0;height:420px;opacity:.6;pointer-events:none;
+  background:radial-gradient(60% 80% at 50% 0%,rgba(202,164,106,.18),transparent 70%);}
+.ao-hero-head{position:relative;max-width:48rem;margin:0 auto;padding:56px 20px 32px;text-align:center;}
+.ao-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(202,164,106,.3);
+  background:rgba(202,164,106,.1);color:var(--gold);font-size:12px;padding:4px 12px;border-radius:999px;margin-bottom:16px;}
+.ao-h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(2.4rem,6vw,3.6rem);font-weight:600;line-height:1.08;margin:0;}
+.ao-ar .ao-h1{font-family:'Tajawal',sans-serif;font-weight:700;}
+.ao-sub{max-width:32rem;margin:16px auto 0;font-size:clamp(15px,2vw,18px);color:var(--muted);}
+
+.ao-tool-wrap{position:relative;max-width:42rem;margin:0 auto;padding:0 20px 64px;scroll-margin-top:96px;}
+.ao-card{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:16px;box-shadow:0 20px 40px rgba(0,0,0,.3);}
+.ao-gender{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.ao-gender-label{font-size:12px;color:var(--faint);}
+.ao-gender-btn{border:1px solid var(--line);background:none;color:var(--muted);font-size:12px;font-weight:500;
+  padding:4px 12px;border-radius:999px;cursor:pointer;transition:.2s;font-family:inherit;}
+.ao-gender-btn:hover{border-color:rgba(202,164,106,.5);color:var(--ink);}
+.ao-gender-btn.is-active{background:var(--gold);color:var(--bg);border-color:var(--gold);}
+.ao-textarea{width:100%;resize:none;background:none;border:none;color:var(--ink);font-size:16px;font-family:inherit;outline:none;line-height:1.6;}
+.ao-textarea::placeholder{color:var(--faint);}
+.ao-card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;}
+.ao-hint{font-size:12px;color:var(--faint);}
+.ao-cta-btn{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--bg);
+  font-size:14px;font-weight:500;padding:10px 20px;border-radius:12px;border:none;cursor:pointer;transition:.2s;font-family:inherit;}
+.ao-cta-btn:hover:not(:disabled){background:#d8b67e;}
+.ao-cta-btn:disabled{opacity:.4;cursor:not-allowed;}
+.ao-cta-lg{padding:12px 24px;}
+
+.ao-examples{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px;}
+.ao-chip{border:1px solid var(--line);background:none;color:var(--muted);font-size:12px;
+  padding:6px 12px;border-radius:999px;cursor:pointer;transition:.2s;font-family:inherit;}
+.ao-chip:hover{border-color:rgba(202,164,106,.5);color:var(--ink);}
+
+.ao-error{margin-top:20px;border:1px solid rgba(239,68,68,.3);background:rgba(239,68,68,.1);
+  color:#fca5a5;font-size:14px;padding:12px 16px;border-radius:12px;}
+.ao-skeletons{margin-top:24px;display:flex;flex-direction:column;gap:12px;}
+.ao-skeleton{height:68px;border:1px solid var(--line);background:var(--surface);border-radius:12px;animation:ao-pulse 1.5s ease-in-out infinite;}
+@keyframes ao-pulse{50%{opacity:.5;}}
+
+.ao-result{margin-top:24px;}
+.ao-result-intro{text-align:center;font-size:18px;margin-bottom:16px;}
+.ao-items{display:flex;flex-direction:column;gap:12px;}
+.ao-item{display:flex;align-items:center;gap:16px;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:16px;transition:.2s;}
+.ao-item:hover{border-color:rgba(202,164,106,.5);background:#271f17;}
+.ao-item-icon{flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  border-radius:10px;background:rgba(202,164,106,.12);color:var(--gold);}
+.ao-item-body{min-width:0;flex:1;}
+.ao-item-slot{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);}
+.ao-item-name{font-weight:500;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ao-item-why{font-size:12px;color:var(--muted);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ao-item-arrow{flex-shrink:0;color:var(--faint);}
+.ao-item:hover .ao-item-arrow{color:var(--gold);}
+.ao-note{margin-top:16px;border:1px solid var(--line);background:rgba(34,27,20,.5);
+  padding:12px 16px;border-radius:12px;font-size:14px;color:var(--muted);}
+.ao-again{display:flex;align-items:center;gap:8px;margin:20px auto 0;background:none;border:none;
+  color:var(--gold);font-size:14px;cursor:pointer;font-family:inherit;}
+.ao-again:hover{text-decoration:underline;}
+.ao-disclaimer{margin-top:20px;text-align:center;font-size:10px;color:var(--faint);}
+
+.ao-section{border-top:1px solid rgba(58,48,38,.6);}
+.ao-section-alt{background:#1d1610;}
+.ao-wrap{max-width:64rem;margin:0 auto;padding:64px 20px;}
+.ao-h2{font-family:'Playfair Display',serif;font-size:clamp(22px,3.5vw,30px);font-weight:600;text-align:center;margin:0;}
+.ao-ar .ao-h2{font-family:'Tajawal',sans-serif;font-weight:700;}
+.ao-h2-inline{text-align:start;}
+.ao-steps{display:grid;gap:20px;margin-top:40px;grid-template-columns:1fr;}
+@media(min-width:640px){.ao-steps{grid-template-columns:repeat(3,1fr);}}
+.ao-step{border:1px solid var(--line);background:var(--surface);border-radius:16px;padding:24px;}
+.ao-step-icon{width:44px;height:44px;display:flex;align-items:center;justify-content:center;
+  border-radius:12px;background:rgba(202,164,106,.12);color:var(--gold);margin-bottom:16px;}
+.ao-step-title{font-size:18px;font-weight:600;margin:0;}
+.ao-step-desc{font-size:14px;color:var(--muted);margin:8px 0 0;}
+
+.ao-topics-head{display:flex;align-items:center;gap:8px;margin-bottom:32px;color:var(--gold);}
+.ao-topics{display:grid;gap:12px;grid-template-columns:1fr;}
+@media(min-width:640px){.ao-topics{grid-template-columns:repeat(2,1fr);}}
+@media(min-width:1024px){.ao-topics{grid-template-columns:repeat(3,1fr);}}
+.ao-topic{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);
+  background:var(--surface);padding:16px 20px;border-radius:12px;transition:.2s;font-size:14px;font-weight:500;color:var(--ink);}
+.ao-topic:hover{border-color:rgba(202,164,106,.5);background:#271f17;}
+.ao-topic svg{color:var(--faint);transition:.2s;flex-shrink:0;}
+.ao-topic:hover svg{color:var(--gold);}
+.ao-topics-cta{text-align:center;margin-top:40px;}
+
+.ao-footer{border-top:1px solid rgba(58,48,38,.6);background:#1d1610;text-align:center;padding:40px 20px;font-size:12px;color:var(--faint);}
+.ao-footer-logo{font-family:'Playfair Display',serif;font-size:16px;color:var(--muted);margin:0 0 12px;}
+
+@media(prefers-reduced-motion:reduce){.ao-root *{transition:none!important;animation:none!important;}}
+`;

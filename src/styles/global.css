@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+/* Tailwind v4 dropped some legacy max-width scale names used in the
+   components. Re-declare the ones we rely on so centering (mx-auto) works. */
+.max-w-lg { max-width: 32rem; }
+.max-w-2xl { max-width: 42rem; }
+.max-w-3xl { max-width: 48rem; }
+.max-w-5xl { max-width: 64rem; }
