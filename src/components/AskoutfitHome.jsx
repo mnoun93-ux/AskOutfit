@@ -13,7 +13,7 @@ import {
 const API_ENDPOINT =
   typeof window !== "undefined" && window.location.hostname === "localhost"
     ? "https://api.anthropic.com/v1/messages"
-    : "https://askoutfit-proxy.YOUR-SUBDOMAIN.workers.dev"; // <-- ضع رابط الـ Worker بعد نشره
+    : "https://askoutfit-proxy.askoutfit.workers.dev";
 
 const AMAZON_ASSOC_TAG = "askoutfit-20"; // تاج الأفلييت
 const AMAZON_DOMAIN = "www.amazon.com";  // عالمي
