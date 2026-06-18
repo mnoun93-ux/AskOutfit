@@ -1,0 +1,90 @@
+---
+import Base from "../layouts/Base.astro";
+const SITE = "https://askoutfit.com";
+const updated = "June 2026";
+---
+<Base title="Privacy Policy" description="How Askoutfit collects, uses, and protects your data, including analytics, affiliate links, and the AI styling tool." lang="en" dir="ltr" canonical={`${SITE}/privacy/`} altLang="ar" altUrl={`${SITE}/privacy-ar/`}>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="/" class="site-logo">Askoutfit</a>
+      <nav class="site-nav">
+        <a href="/articles/" class="site-nav-link">Articles</a>
+        <a href="/privacy-ar/" class="site-lang">العربية</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: {updated}</p>
+
+    <p>Askoutfit ("we", "us", "our") operates the website askoutfit.com. This policy explains what information we collect, how we use it, and the choices you have. By using the site, you agree to the practices described here.</p>
+
+    <h2>Who we are</h2>
+    <p>Askoutfit is an AI-powered outfit recommendation service and style guide, operated by AIOM Automation Solutions. You can reach us through <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">our contact page</a>.</p>
+
+    <h2>Information we collect</h2>
+    <p>We aim to collect as little personal data as possible. The information involved falls into a few categories:</p>
+    <p><strong>Information you provide:</strong> When you use our AI styling tool, you type a description of an occasion or outfit need. This text is sent to our processing service to generate a recommendation. We do not require you to create an account, and we do not ask for your name, email, or contact details to use the tool.</p>
+    <p><strong>Information collected automatically:</strong> Like most websites, we automatically receive standard technical data such as your browser type, device, approximate region, pages viewed, and how you arrived at the site. This is collected through analytics cookies and similar technologies.</p>
+
+    <h2>How we use information</h2>
+    <p>We use the information we collect to operate and improve the site, generate outfit recommendations through the AI tool, understand which content is useful to visitors, and maintain the security and performance of the service. We do not sell your personal information.</p>
+
+    <h2>The AI styling tool</h2>
+    <p>When you submit a request to the styling tool, your text is transmitted securely to a third-party AI provider that generates the recommendation, and to a proxy service we operate to protect our credentials. We do not use your submissions to build a personal profile of you, and we do not attach your identity to them.</p>
+
+    <h2>Analytics</h2>
+    <p>We use Google Analytics to understand how visitors use the site in aggregate. Google may set cookies and process data according to its own policies. This helps us see which guides are popular and where to improve. You can opt out of Google Analytics using Google's browser add-on or by declining analytics cookies where that option is offered.</p>
+
+    <h2>Affiliate links</h2>
+    <p>Askoutfit participates in the Amazon Associates Program and may participate in other affiliate programs. This means that when the AI tool or an article links to a product, and you click through and make a purchase, we may earn a commission at no additional cost to you. These links may carry a tag that lets the retailer attribute the visit to us. We only recommend items the tool or our editorial process considers relevant; affiliate participation does not change the price you pay.</p>
+
+    <h2>Cookies</h2>
+    <p>Cookies are small files stored on your device. We use them mainly for analytics and basic site functionality. You can control or delete cookies through your browser settings. Disabling some cookies may affect how parts of the site work.</p>
+
+    <h2>Third-party services</h2>
+    <p>We rely on a small number of trusted providers to run the site, including hosting and content delivery, analytics, an AI processing provider, and affiliate networks. Each processes data under its own privacy terms. When you click an affiliate link and leave our site, the destination retailer's privacy policy applies.</p>
+
+    <h2>Data retention</h2>
+    <p>We keep automatically collected analytics data only as long as needed to understand site performance and trends. Text submitted to the styling tool is processed to return a result and is not stored by us as part of a personal record.</p>
+
+    <h2>Your rights</h2>
+    <p>Depending on where you live, you may have rights to access, correct, or delete personal data we hold about you, or to object to certain processing. Because we collect very little identifiable information, in most cases we will not hold data that identifies you personally. To make a request, contact us through the link below.</p>
+
+    <h2>Children</h2>
+    <p>The site is intended for adults and is not directed at children under 13. We do not knowingly collect personal information from children.</p>
+
+    <h2>Changes to this policy</h2>
+    <p>We may update this policy from time to time. When we do, we will revise the "last updated" date at the top of this page. Significant changes will be reflected here.</p>
+
+    <h2>Contact</h2>
+    <p>For any questions about this policy or your data, contact us at <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">aiom.ai/contact</a>.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p class="site-footer-logo">Askoutfit</p>
+    <p>A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+  </footer>
+</Base>
+
+<style>
+  .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.6); background: rgba(26,20,16,.85); backdrop-filter: blur(12px); }
+  .site-header-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+  .site-logo { font-family: "Playfair Display", Georgia, serif; font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
+  .site-nav { display: flex; align-items: center; gap: 16px; }
+  .site-nav-link { font-size: 14px; color: var(--muted); text-decoration: none; }
+  .site-nav-link:hover { color: var(--ink); }
+  .site-lang { border: 1px solid var(--line); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 999px; text-decoration: none; }
+  .site-lang:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(30px, 5vw, 42px); margin: 0 0 6px; }
+  .updated { color: var(--faint); font-size: 13px; margin: 0 0 28px; }
+  h2 { font-family: "Playfair Display", serif; font-size: 22px; margin: 34px 0 10px; color: var(--gold); }
+  p { color: var(--muted); margin: 12px 0; line-height: 1.75; }
+  p strong { color: var(--ink); }
+  a { color: var(--gold); }
+  .site-footer { border-top: 1px solid rgba(58,48,38,.6); background: #1d1610; text-align: center; padding: 40px 20px; font-size: 12px; color: var(--faint); }
+  .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 8px; }
+  .site-footer a { color: var(--gold); font-weight: 500; }
+</style>

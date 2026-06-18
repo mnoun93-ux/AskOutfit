@@ -19,6 +19,16 @@ export async function GET() {
     `    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/articles/"/>\n` +
     `    <lastmod>${today}</lastmod>\n    <priority>0.9</priority>\n  </url>`,
 
+    `  <url>\n    <loc>${SITE}/privacy/</loc>\n` +
+    `    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/privacy/"/>\n` +
+    `    <xhtml:link rel="alternate" hreflang="ar" href="${SITE}/privacy-ar/"/>\n` +
+    `    <lastmod>${today}</lastmod>\n    <priority>0.3</priority>\n  </url>`,
+
+    `  <url>\n    <loc>${SITE}/privacy-ar/</loc>\n` +
+    `    <xhtml:link rel="alternate" hreflang="ar" href="${SITE}/privacy-ar/"/>\n` +
+    `    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/privacy/"/>\n` +
+    `    <lastmod>${today}</lastmod>\n    <priority>0.3</priority>\n  </url>`,
+
     ...articles.map((a: any) => {
       const loc = `${SITE}/${a.slug}/`;
       const alt = a.altSlug ? `${SITE}/${a.altSlug}/` : loc;

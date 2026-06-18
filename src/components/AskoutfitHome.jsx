@@ -276,6 +276,9 @@ export default function AskoutfitHome() {
           {ar ? "أحد مشاريع " : "A project by "}
           <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a>
         </p>
+        <p className="ao-footer-links">
+          <a href={ar ? "/privacy-ar/" : "/privacy/"}>{ar ? "سياسة الخصوصية" : "Privacy Policy"}</a>
+        </p>
       </footer>
     </div>
   );
@@ -302,6 +305,9 @@ const CSS = `
 .ao-footer-aiom{margin-top:8px;font-size:12px;color:var(--faint);}
 .ao-footer-aiom a{color:var(--gold);font-weight:500;}
 .ao-footer-aiom a:hover{text-decoration:underline;}
+.ao-footer-links{margin-top:6px;font-size:12px;}
+.ao-footer-links a{color:var(--faint);}
+.ao-footer-links a:hover{color:var(--muted);}
 .ao-logo{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;text-decoration:none;}
 .ao-ar .ao-logo{font-family:'Tajawal',sans-serif;}
 .ao-lang-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:none;
