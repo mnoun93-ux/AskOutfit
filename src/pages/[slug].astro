@@ -1,0 +1,189 @@
+---
+import Base from "../layouts/Base.astro";
+
+// Reads every article JSON at build time -> one static page per article.
+const modules = import.meta.glob("../content/articles/*.json", { eager: true });
+const articles = Object.values(modules).map((m: any) => m.default ?? m);
+
+export function getStaticPaths() {
+  const mods = import.meta.glob("../content/articles/*.json", { eager: true });
+  return Object.values(mods).map((m: any) => {
+    const a = m.default ?? m;
+    return { params: { slug: a.slug }, props: { article: a } };
+  });
+}
+
+const { article } = Astro.props as any;
+const a = article;
+const SITE = "https://askoutfit.com";
+const canonical = `${SITE}/${a.slug}/`;
+const altUrl = a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
+
+const faqHtml = (a.faq || [])
+  .map(
+    (f: any) =>
+      `<details><summary>${f.q}</summary><p>${f.a}</p></details>`
+  )
+  .join("\n");
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: a.title,
+  description: a.metaDesc,
+  image: `${SITE}/og-default.jpg`,
+  datePublished: a.datePublished,
+  dateModified: a.datePublished,
+  inLanguage: a.lang,
+  author: { "@type": "Organization", name: "Askoutfit" },
+  publisher: {
+    "@type": "Organization",
+    name: "Askoutfit",
+    logo: { "@type": "ImageObject", url: `${SITE}/logo.png` },
+  },
+  mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
+    { "@type": "ListItem", position: 2, name: a.h1, item: canonical },
+  ],
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: (a.faq || []).map((f: any) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
+const isAr = a.lang === "ar";
+const faqHeading = isAr ? "أسئلة شائعة" : "Frequently asked questions";
+const altLabel = a.altLang === "ar" ? "العربية" : "English";
+---
+
+<Base
+  title={a.title}
+  description={a.metaDesc}
+  lang={a.lang}
+  dir={a.dir}
+  canonical={canonical}
+  altLang={a.altLang}
+  altUrl={altUrl}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+    {a.faq?.length > 0 && (
+      <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+    )}
+  </Fragment>
+
+  <main class="wrap">
+    <nav class="crumb" aria-label="breadcrumb">
+      <a href="/">Askoutfit</a> &rsaquo; <span>{a.h1}</span>
+    </nav>
+
+    <article class="article">
+      <h1>{a.h1}</h1>
+      <div class="lead" set:html={a.introHtml} />
+
+      <div class="tool-cta">
+        <h3>{a.ctaTitle}</h3>
+        <p>{a.ctaSub}</p>
+        <a class="btn" href={`/?ref=${a.slug}`} data-cta="top" data-slug={a.slug}>{a.ctaBtn}</a>
+      </div>
+
+      <div class="body" set:html={a.bodyHtml} />
+
+      <div class="tool-cta">
+        <h3>{a.ctaTitle}</h3>
+        <p>{a.ctaSub}</p>
+        <a class="btn" href={`/?ref=${a.slug}`} data-cta="bottom" data-slug={a.slug}>{a.ctaBtn}</a>
+      </div>
+
+      <section class="faq">
+        <h2>{faqHeading}</h2>
+        <div set:html={faqHtml} />
+      </section>
+    </article>
+
+    <footer>
+      <p>&copy; {new Date().getFullYear()} Askoutfit.
+        {isAr ? " قد نربح عمولة على عمليات الشراء عبر الروابط." : " We may earn a commission on purchases through links."}
+      </p>
+      <p><a href={altUrl}>{altLabel}</a></p>
+    </footer>
+  </main>
+
+  {/* CTA click tracking -> GA4 */}
+  <script is:inline>
+    document.querySelectorAll("[data-cta]").forEach((el) => {
+      el.addEventListener("click", () => {
+        if (typeof gtag === "function") {
+          gtag("event", "cta_click", {
+            location: el.getAttribute("data-cta"),
+            slug: el.getAttribute("data-slug"),
+          });
+        }
+      });
+    });
+  </script>
+</Base>
+
+<style>
+  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
+  .crumb { font-size: 13px; color: var(--faint); margin-bottom: 28px; }
+  .crumb a { text-decoration: none; }
+  h1 {
+    font-family: "Playfair Display", Georgia, serif; font-weight: 600;
+    font-size: clamp(28px, 5vw, 42px); line-height: 1.2; margin-bottom: 18px;
+  }
+  html[dir="rtl"] h1 { font-family: "Tajawal", sans-serif; font-weight: 700; }
+  .lead :global(p) { font-size: 18px; color: var(--muted); margin-bottom: 8px; }
+  .body :global(h2) {
+    font-family: "Playfair Display", Georgia, serif; font-weight: 600;
+    font-size: clamp(22px, 3.5vw, 28px); margin: 38px 0 14px;
+  }
+  html[dir="rtl"] .body :global(h2) { font-family: "Tajawal", sans-serif; font-weight: 700; }
+  .body :global(p) { margin: 14px 0; }
+  .body :global(ul), .body :global(ol) { margin: 14px 0; padding-inline-start: 22px; }
+  .body :global(li) { margin: 8px 0; }
+  .tool-cta {
+    margin: 40px 0; padding: 28px; border-radius: 18px;
+    border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 12%, var(--surface)), var(--surface));
+    text-align: center;
+  }
+  .tool-cta h3 {
+    font-family: "Playfair Display", serif; font-size: 22px; margin-bottom: 8px;
+  }
+  html[dir="rtl"] .tool-cta h3 { font-family: "Tajawal", sans-serif; font-weight: 700; }
+  .tool-cta p { color: var(--muted); margin: 0 0 16px; }
+  .btn {
+    display: inline-block; background: var(--gold); color: var(--bg);
+    font-weight: 600; text-decoration: none; padding: 13px 26px;
+    border-radius: 12px; transition: background 0.2s;
+  }
+  .btn:hover { background: #d8b67e; }
+  .faq { margin-top: 40px; }
+  .faq h2 {
+    font-family: "Playfair Display", serif; font-size: 24px; margin-bottom: 8px;
+  }
+  html[dir="rtl"] .faq h2 { font-family: "Tajawal", sans-serif; font-weight: 700; }
+  .faq :global(details) { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  .faq :global(summary) { cursor: pointer; font-weight: 600; list-style: none; }
+  .faq :global(summary)::-webkit-details-marker { display: none; }
+  .faq :global(details p) { color: var(--muted); margin-top: 10px; }
+  footer {
+    margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--faint); text-align: center;
+  }
+  footer a { color: var(--faint); }
+</style>

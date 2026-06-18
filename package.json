@@ -1,0 +1,20 @@
+{
+  "name": "askoutfit",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Askoutfit — AI stylist + programmatic SEO. Global, bilingual (EN/AR).",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "node scripts/generate-content.mjs && astro build",
+    "build:content": "node scripts/generate-content.mjs",
+    "build:keywords": "node scripts/build-keywords.mjs",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "@astrojs/react": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "lucide-react": "^0.383.0"
+  }
+}

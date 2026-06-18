@@ -1,0 +1,29 @@
+---
+import Base from "../layouts/Base.astro";
+import AskoutfitHome from "../components/AskoutfitHome.jsx";
+---
+
+<Base
+  title="What should I wear? — AI Stylist"
+  description="Describe any occasion and get a complete, shoppable outfit in seconds. Free AI stylist, in English and Arabic."
+>
+  {/* WebSite + Organization schema for the homepage */}
+  <Fragment slot="head">
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "Askoutfit",
+        url: "https://askoutfit.com/",
+        description:
+          "AI stylist that turns any occasion into a complete, shoppable outfit.",
+        inLanguage: ["en", "ar"],
+      })}
+    />
+  </Fragment>
+
+  {/* client:load -> the tool is interactive immediately on page load */}
+  <AskoutfitHome client:load />
+</Base>

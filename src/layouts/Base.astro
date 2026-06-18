@@ -1,0 +1,109 @@
+---
+// Base layout — holds GA4, fonts, and shared <head> SEO for ALL pages.
+// One place for the tracking code; every page inherits it.
+export interface Props {
+  title: string;
+  description?: string;
+  lang?: string;
+  dir?: "ltr" | "rtl";
+  canonical?: string;
+  ogImage?: string;
+  altLang?: string;
+  altUrl?: string;
+}
+const {
+  title,
+  description = "AI stylist: describe the occasion, get a complete shoppable outfit in seconds.",
+  lang = "en",
+  dir = "ltr",
+  canonical,
+  ogImage = "https://askoutfit.com/og-default.jpg",
+  altLang,
+  altUrl,
+} = Astro.props;
+
+const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang={lang} dir={dir}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | Askoutfit</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+
+    {/* hreflang — global bilingual pairing */}
+    <link rel="alternate" hreflang={lang} href={canonicalUrl} />
+    {altLang && altUrl && <link rel="alternate" hreflang={altLang} href={altUrl} />}
+    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+
+    {/* Open Graph / Twitter */}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:site_name" content="Askoutfit" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {/* Fonts */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&family=Tajawal:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    {/* Google tag (gtag.js) — fires on every page */}
+    <script
+      is:inline
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-FNPXSJF5RN"></script>
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() {
+        dataLayer.push(arguments);
+      }
+      gtag("js", new Date());
+      gtag("config", "G-FNPXSJF5RN");
+    </script>
+
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --bg: #1a1410;
+    --surface: #221b14;
+    --line: #3a3026;
+    --ink: #f3ece2;
+    --muted: #b9ad9b;
+    --faint: #6b6052;
+    --gold: #caa46a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Inter", system-ui, sans-serif;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+  html[dir="rtl"] body { font-family: "Tajawal", "Inter", sans-serif; }
+  a { color: var(--gold); }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
