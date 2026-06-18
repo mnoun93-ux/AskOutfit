@@ -145,9 +145,9 @@ export default function AskoutfitHome() {
       {/* Top bar */}
       <nav className="ao-nav">
         <div className="ao-nav-inner">
-          <span className="ao-logo">Askoutfit</span>
+          <a href="/" className="ao-logo">Askoutfit</a>
           <div className="ao-nav-right">
-            <a href="/articles/" className="ao-nav-link">{ar ? "المقالات" : "Articles"}</a>
+            <a href={ar ? "/articles-ar/" : "/articles/"} className="ao-nav-link">{ar ? "المقالات" : "Articles"}</a>
             <button className="ao-lang-btn" onClick={() => { const n = ar ? "en" : "ar"; setLang(n); track("lang_toggle", { to: n }); }}>
               <Globe size={13} /> {ar ? "English" : "العربية"}
             </button>
@@ -272,6 +272,10 @@ export default function AskoutfitHome() {
       <footer className="ao-footer">
         <p className="ao-footer-logo">Askoutfit</p>
         <p>{ar ? "قد نربح عمولة على عمليات الشراء عبر الروابط. © " : "We may earn a commission on purchases through links. © "}{new Date().getFullYear()}</p>
+        <p className="ao-footer-aiom">
+          {ar ? "أحد مشاريع " : "A project by "}
+          <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a>
+        </p>
       </footer>
     </div>
   );
@@ -295,7 +299,10 @@ const CSS = `
 .ao-nav-right{display:flex;align-items:center;gap:16px;}
 .ao-nav-link{font-size:14px;color:var(--muted);text-decoration:none;}
 .ao-nav-link:hover{color:var(--ink);}
-.ao-logo{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;}
+.ao-footer-aiom{margin-top:8px;font-size:12px;color:var(--faint);}
+.ao-footer-aiom a{color:var(--gold);font-weight:500;}
+.ao-footer-aiom a:hover{text-decoration:underline;}
+.ao-logo{font-family:'Playfair Display',Georgia,serif;font-size:20px;font-weight:600;letter-spacing:-.01em;text-decoration:none;}
 .ao-ar .ao-logo{font-family:'Tajawal',sans-serif;}
 .ao-lang-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:none;
   color:var(--muted);font-size:12px;padding:6px 12px;border-radius:999px;cursor:pointer;transition:.2s;font-family:inherit;}
@@ -343,15 +350,15 @@ const CSS = `
 .ao-result{margin-top:24px;}
 .ao-result-intro{text-align:center;font-size:18px;margin-bottom:16px;}
 .ao-items{display:flex;flex-direction:column;gap:12px;}
-.ao-item{display:flex;align-items:center;gap:16px;border:1px solid var(--line);background:var(--surface);
-  border-radius:12px;padding:16px;transition:.2s;}
+.ao-item{display:flex;align-items:flex-start;gap:16px;border:1px solid var(--line);background:var(--surface);
+  border-radius:12px;padding:18px;transition:.2s;text-decoration:none;}
 .ao-item:hover{border-color:rgba(202,164,106,.5);background:#271f17;}
 .ao-item-icon{flex-shrink:0;width:44px;height:44px;display:flex;align-items:center;justify-content:center;
   border-radius:10px;background:rgba(202,164,106,.12);color:var(--gold);}
 .ao-item-body{min-width:0;flex:1;}
 .ao-item-slot{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);}
-.ao-item-name{font-weight:500;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ao-item-why{font-size:12px;color:var(--muted);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ao-item-name{font-weight:600;margin:0;line-height:1.4;}
+.ao-item-why{font-size:13px;color:var(--muted);margin:4px 0 0;line-height:1.5;}
 .ao-item-arrow{flex-shrink:0;color:var(--faint);}
 .ao-item:hover .ao-item-arrow{color:var(--gold);}
 .ao-note{margin-top:16px;border:1px solid var(--line);background:rgba(34,27,20,.5);

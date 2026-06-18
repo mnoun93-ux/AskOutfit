@@ -120,6 +120,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
         {isAr ? " قد نربح عمولة على عمليات الشراء عبر الروابط." : " We may earn a commission on purchases through links."}
       </p>
       <p><a href={isAr ? "/articles-ar/" : "/articles/"}>{articlesLabel}</a> &middot; <a href={`/${a.altSlug || ""}/`}>{altLabel}</a></p>
+      <p class="aiom">{isAr ? "أحد مشاريع " : "A project by "}<a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
     </footer>
   </main>
 
@@ -180,4 +181,6 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
   .related-arrow { color: var(--gold); flex-shrink: 0; }
   footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 12px; color: var(--faint); text-align: center; }
   footer a { color: var(--faint); }
+  footer .aiom { margin-top: 8px; }
+  footer .aiom a { color: var(--gold); font-weight: 500; }
 </style>

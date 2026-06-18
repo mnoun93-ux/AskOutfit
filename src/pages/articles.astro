@@ -3,22 +3,25 @@ import Base from "../layouts/Base.astro";
 
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const all = Object.values(modules).map((m: any) => m.default ?? m);
-const enArticles = all.filter((a: any) => a.lang === "en").sort((x: any, y: any) => x.h1.localeCompare(y.h1));
-const arArticles = all.filter((a: any) => a.lang === "ar").sort((x: any, y: any) => x.h1.localeCompare(y.h1));
+const articles = all.filter((a: any) => a.lang === "en").sort((x: any, y: any) => x.h1.localeCompare(y.h1));
 const SITE = "https://askoutfit.com";
 ---
 
 <Base
   title="All Outfit Guides — Articles"
-  description="Browse every Askoutfit style guide. Outfit ideas for weddings, interviews, dates, parties and more — in English and Arabic."
+  description="Browse every Askoutfit style guide. Outfit ideas for weddings, interviews, dates, parties and more."
   canonical={`${SITE}/articles/`}
+  altLang="ar"
+  altUrl={`${SITE}/articles-ar/`}
+  altLang="ar"
+  altUrl={`${SITE}/articles-ar/`}
 >
   <header class="site-header">
     <div class="site-header-inner">
       <a href="/" class="site-logo">Askoutfit</a>
       <nav class="site-nav">
-        <a href="/articles/" class="site-nav-link is-active">Articles</a>
-        <a href="/" class="site-lang">Home</a>
+        <a href="/" class="site-nav-link">Home</a>
+        <a href="/articles-ar/" class="site-lang">العربية</a>
       </nav>
     </div>
   </header>
@@ -27,50 +30,23 @@ const SITE = "https://askoutfit.com";
     <h1 class="page-title">All Outfit Guides</h1>
     <p class="page-sub">Every style guide we've written — pick an occasion and get dressed with confidence.</p>
 
-    <div class="lang-tabs">
-      <button class="lang-tab is-active" data-lang="en">English ({enArticles.length})</button>
-      <button class="lang-tab" data-lang="ar">العربية ({arArticles.length})</button>
+    <div class="art-grid">
+      {articles.map((a: any) => (
+        <a href={`/${a.slug}/`} class="art-card">
+          <span class="art-title">{a.h1}</span>
+          <span class="art-arrow">→</span>
+        </a>
+      ))}
     </div>
-
-    <section class="list-section" data-list="en">
-      <div class="art-grid">
-        {enArticles.map((a: any) => (
-          <a href={`/${a.slug}/`} class="art-card">
-            <span class="art-title">{a.h1}</span>
-            <span class="art-arrow">→</span>
-          </a>
-        ))}
-      </div>
-    </section>
-
-    <section class="list-section" data-list="ar" hidden dir="rtl">
-      <div class="art-grid">
-        {arArticles.map((a: any) => (
-          <a href={`/${a.slug}/`} class="art-card">
-            <span class="art-title">{a.h1}</span>
-            <span class="art-arrow">←</span>
-          </a>
-        ))}
-      </div>
-    </section>
   </main>
 
   <footer class="site-footer">
     <p class="site-footer-logo">Askoutfit</p>
     <p>We may earn a commission on purchases through links. © <span id="y"></span></p>
+    <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
   </footer>
 
-  <script is:inline>
-    document.getElementById("y").textContent = new Date().getFullYear();
-    const tabs = document.querySelectorAll(".lang-tab");
-    const lists = document.querySelectorAll("[data-list]");
-    tabs.forEach((t) => t.addEventListener("click", () => {
-      const lang = t.getAttribute("data-lang");
-      tabs.forEach((x) => x.classList.toggle("is-active", x === t));
-      lists.forEach((l) => { l.hidden = l.getAttribute("data-list") !== lang; });
-      if (typeof gtag === "function") gtag("event", "articles_filter", { lang });
-    }));
-  </script>
+  <script is:inline>document.getElementById("y").textContent = new Date().getFullYear();</script>
 </Base>
 
 <style>
@@ -79,25 +55,23 @@ const SITE = "https://askoutfit.com";
   .site-logo { font-family: "Playfair Display", Georgia, serif; font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
   .site-nav { display: flex; align-items: center; gap: 16px; }
   .site-nav-link { font-size: 14px; color: var(--muted); text-decoration: none; }
-  .site-nav-link.is-active { color: var(--gold); }
+  .site-nav-link:hover { color: var(--ink); }
   .site-lang { border: 1px solid var(--line); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 999px; text-decoration: none; }
   .site-lang:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
 
   .wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
-  .page-title { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(30px, 5vw, 44px); margin: 0; }
-  .page-sub { color: var(--muted); font-size: 17px; margin: 12px 0 0; }
-  .lang-tabs { display: flex; gap: 8px; margin: 28px 0; }
-  .lang-tab { border: 1px solid var(--line); background: none; color: var(--muted); font-size: 14px; font-weight: 500; padding: 8px 18px; border-radius: 999px; cursor: pointer; font-family: inherit; transition: .2s; }
-  .lang-tab:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
-  .lang-tab.is-active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
-  .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  .page-title { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(30px, 5vw, 44px); margin: 0; color: var(--ink); }
+  .page-sub { color: var(--muted); font-size: 17px; margin: 12px 0 32px; }
+  .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; margin-top: 28px; }
   @media (min-width: 640px) { .art-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 1024px) { .art-grid { grid-template-columns: repeat(3, 1fr); } }
-  .art-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 12px; text-decoration: none; color: var(--ink); transition: .2s; }
+  .art-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 12px; text-decoration: none; transition: .2s; }
   .art-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
-  .art-title { font-size: 14px; font-weight: 500; line-height: 1.4; }
+  .art-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--gold); }
+  .art-card:hover .art-title { color: #d8b67e; }
   .art-arrow { color: var(--gold); flex-shrink: 0; }
-  [dir="rtl"] .art-title { font-family: "Tajawal", sans-serif; }
   .site-footer { border-top: 1px solid rgba(58,48,38,.6); background: #1d1610; text-align: center; padding: 40px 20px; font-size: 12px; color: var(--faint); }
   .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
+  .aiom { margin-top: 8px; }
+  .aiom a { color: var(--gold); font-weight: 500; }
 </style>
