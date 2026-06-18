@@ -86,6 +86,14 @@ export default function AskoutfitHome() {
   const ar = lang === "ar";
   const dir = ar ? "rtl" : "ltr";
 
+  // إذا قدم الزائر من مقالة عربية (?lang=ar)، فعّل العربية تلقائياً
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search);
+      if (p.get("lang") === "ar") setLang("ar");
+    }
+  }, []);
+
   async function generate(q) {
     const text = (q ?? query).trim();
     if (!text) return;

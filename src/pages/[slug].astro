@@ -66,7 +66,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
     <div class="site-header-inner">
       <a href="/" class="site-logo">Askoutfit</a>
       <nav class="site-nav">
-        <a href="/articles/" class="site-nav-link">{articlesLabel}</a>
+        <a href={isAr ? "/articles-ar/" : "/articles/"} class="site-nav-link">{articlesLabel}</a>
         <a href={`/${a.altSlug || ""}/`} class="site-lang">{altLabel}</a>
       </nav>
     </div>
@@ -74,7 +74,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
 
   <main class="wrap">
     <nav class="crumb" aria-label="breadcrumb">
-      <a href="/">Askoutfit</a> &rsaquo; <a href="/articles/">{isAr ? "المقالات" : "Articles"}</a> &rsaquo; <span>{a.h1}</span>
+      <a href="/">Askoutfit</a> &rsaquo; <a href={isAr ? "/articles-ar/" : "/articles/"}>{isAr ? "المقالات" : "Articles"}</a> &rsaquo; <span>{a.h1}</span>
     </nav>
 
     <article class="article">
@@ -84,7 +84,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
       <div class="tool-cta">
         <h3>{a.ctaTitle}</h3>
         <p>{a.ctaSub}</p>
-        <a class="btn" href={`/?ref=${a.slug}`} data-cta="top" data-slug={a.slug}>{a.ctaBtn}</a>
+        <a class="btn" href={isAr ? `/?lang=ar&ref=${a.slug}` : `/?ref=${a.slug}`} data-cta="top" data-slug={a.slug}>{a.ctaBtn}</a>
       </div>
 
       <div class="body" set:html={a.bodyHtml} />
@@ -92,7 +92,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
       <div class="tool-cta">
         <h3>{a.ctaTitle}</h3>
         <p>{a.ctaSub}</p>
-        <a class="btn" href={`/?ref=${a.slug}`} data-cta="bottom" data-slug={a.slug}>{a.ctaBtn}</a>
+        <a class="btn" href={isAr ? `/?lang=ar&ref=${a.slug}` : `/?ref=${a.slug}`} data-cta="bottom" data-slug={a.slug}>{a.ctaBtn}</a>
       </div>
 
       <section class="faq">
@@ -119,7 +119,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
       <p>&copy; {new Date().getFullYear()} Askoutfit.
         {isAr ? " قد نربح عمولة على عمليات الشراء عبر الروابط." : " We may earn a commission on purchases through links."}
       </p>
-      <p><a href="/articles/">{articlesLabel}</a> &middot; <a href={`/${a.altSlug || ""}/`}>{altLabel}</a></p>
+      <p><a href={isAr ? "/articles-ar/" : "/articles/"}>{articlesLabel}</a> &middot; <a href={`/${a.altSlug || ""}/`}>{altLabel}</a></p>
     </footer>
   </main>
 

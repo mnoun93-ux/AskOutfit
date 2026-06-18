@@ -1,0 +1,61 @@
+---
+import Base from "../layouts/Base.astro";
+const modules = import.meta.glob("../content/articles/*.json", { eager: true });
+const all = Object.values(modules).map((m: any) => m.default ?? m);
+const arArticles = all.filter((a: any) => a.lang === "ar").sort((x: any, y: any) => x.h1.localeCompare(y.h1));
+const SITE = "https://askoutfit.com";
+---
+<Base title="كل أدلة الأزياء — المقالات" description="تصفّح كل أدلة Askoutfit للأزياء: أفكار للأفراح والمقابلات والمواعيد والحفلات وأكثر — بالعربية والإنجليزية." lang="ar" dir="rtl" canonical={`${SITE}/articles-ar/`} altLang="en" altUrl={`${SITE}/articles/`}>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="/" class="site-logo">Askoutfit</a>
+      <nav class="site-nav">
+        <a href="/articles-ar/" class="site-nav-link is-active">المقالات</a>
+        <a href="/" class="site-nav-link">الرئيسية</a>
+        <a href="/articles/" class="site-lang">English</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1 class="page-title">كل أدلة الأزياء</h1>
+    <p class="page-sub">كل دليل أزياء كتبناه — اختر مناسبتك والبس بثقة.</p>
+    <div class="art-grid">
+      {arArticles.map((a: any) => (
+        <a href={`/${a.slug}/`} class="art-card">
+          <span class="art-title">{a.h1}</span>
+          <span class="art-arrow">←</span>
+        </a>
+      ))}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p class="site-footer-logo">Askoutfit</p>
+    <p>قد نربح عمولة على عمليات الشراء عبر الروابط. © <span id="y"></span></p>
+  </footer>
+  <script is:inline>document.getElementById("y").textContent = new Date().getFullYear();</script>
+</Base>
+
+<style>
+  .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.6); background: rgba(26,20,16,.85); backdrop-filter: blur(12px); }
+  .site-header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+  .site-logo { font-family: "Tajawal", "Playfair Display", serif; font-size: 20px; font-weight: 700; text-decoration: none; color: var(--ink); }
+  .site-nav { display: flex; align-items: center; gap: 16px; }
+  .site-nav-link { font-size: 14px; color: var(--muted); text-decoration: none; font-family: "Tajawal", sans-serif; }
+  .site-nav-link.is-active { color: var(--gold); }
+  .site-lang { border: 1px solid var(--line); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 999px; text-decoration: none; }
+  .site-lang:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
+  .page-title { font-family: "Tajawal", sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 44px); margin: 0; }
+  .page-sub { color: var(--muted); font-size: 17px; margin: 12px 0 0; font-family: "Tajawal", sans-serif; }
+  .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; margin-top: 28px; }
+  @media (min-width: 640px) { .art-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .art-grid { grid-template-columns: repeat(3, 1fr); } }
+  .art-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 12px; text-decoration: none; color: var(--ink); transition: .2s; }
+  .art-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
+  .art-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--gold); font-family: "Tajawal", sans-serif; }
+  .art-arrow { color: var(--gold); flex-shrink: 0; }
+  .site-footer { border-top: 1px solid rgba(58,48,38,.6); background: #1d1610; text-align: center; padding: 40px 20px; font-size: 12px; color: var(--faint); font-family: "Tajawal", sans-serif; }
+  .site-footer-logo { font-family: "Tajawal", sans-serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
+</style>
