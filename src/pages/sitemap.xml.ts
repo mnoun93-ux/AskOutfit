@@ -1,5 +1,16 @@
-// Dynamic sitemap.xml with hreflang for every article + homepage.
+// Dynamic sitemap.xml with hreflang for every article + homepage + category hubs.
 const SITE = "https://askoutfit.com";
+
+const CATEGORY_SLUGS = [
+  "wedding-guest-outfits",
+  "brunch-outfits",
+  "beach-party-outfits",
+  "first-date-outfits",
+  "office-outfits",
+  "job-interview-outfits",
+  "graduation-outfits",
+  "concert-outfits",
+];
 
 export async function GET() {
   const modules = import.meta.glob("../content/articles/*.json", { eager: true });
@@ -18,6 +29,11 @@ export async function GET() {
     `    <xhtml:link rel="alternate" hreflang="ar" href="${SITE}/articles-ar/"/>\n` +
     `    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/articles/"/>\n` +
     `    <lastmod>${today}</lastmod>\n    <priority>0.9</priority>\n  </url>`,
+
+    // Category hub pages
+    ...CATEGORY_SLUGS.map(s =>
+      `  <url>\n    <loc>${SITE}/${s}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.85</priority>\n  </url>`
+    ),
 
     `  <url>\n    <loc>${SITE}/privacy/</loc>\n` +
     `    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/privacy/"/>\n` +
