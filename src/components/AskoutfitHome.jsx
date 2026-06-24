@@ -55,6 +55,17 @@ const STEPS = {
   ],
 };
 
+const HUBS = [
+  { slug: "wedding-guest-outfits",  en: "Wedding Guest", ar: "أزياء الأفراح",   emoji: "💍" },
+  { slug: "first-date-outfits",     en: "First Date",    ar: "أول موعد",         emoji: "✨" },
+  { slug: "brunch-outfits",         en: "Brunch",        ar: "البرانش",          emoji: "☕" },
+  { slug: "beach-party-outfits",    en: "Beach Party",   ar: "حفلة الشاطئ",     emoji: "🏖" },
+  { slug: "office-outfits",         en: "Office",        ar: "المكتب",           emoji: "💼" },
+  { slug: "job-interview-outfits",  en: "Job Interview", ar: "مقابلة العمل",    emoji: "🎯" },
+  { slug: "graduation-outfits",     en: "Graduation",    ar: "التخرج",           emoji: "🎓" },
+  { slug: "concert-outfits",        en: "Concert",       ar: "الحفلات",          emoji: "🎵" },
+];
+
 const TOPICS = {
   en: [
     { label: "What to wear to a summer wedding", href: "/summer-wedding-guest-outfit-for-men/" },
@@ -162,6 +173,7 @@ export default function AskoutfitHome() {
           <div className="ao-badge"><Sparkles size={13} /> {ar ? "مُنسّق أزياء بالذكاء الاصطناعي" : "Your AI stylist"}</div>
           <h1 className="ao-h1">{ar ? "ماذا ألبس اليوم؟" : "What should I wear?"}</h1>
           <p className="ao-sub">{ar ? "صِف المناسبة بجملة، واحصل على تنسيق كامل قابل للشراء في ثوانٍ." : "Describe the occasion in a sentence. Get a complete, shoppable outfit in seconds."}</p>
+          <p className="ao-trust">{ar ? "٢٧٠+ دليل أزياء مكتوب · مجاني تماماً" : "270+ outfit guides written · completely free"}</p>
         </div>
 
         {/* Tool card */}
@@ -265,6 +277,29 @@ export default function AskoutfitHome() {
             <button className="ao-cta-btn ao-cta-lg" onClick={scrollToTool}>
               <Sparkles size={16} /> {ar ? "أنشئ إطلالتك الآن" : "Style your look now"}
             </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Browse by Occasion — links to category hubs */}
+      <section className="ao-section ao-section-alt">
+        <div className="ao-wrap">
+          <h2 className="ao-h2">{ar ? "تصفح حسب المناسبة" : "Browse by Occasion"}</h2>
+          <p className="ao-section-sub">{ar ? "أدلة متخصصة مكتوبة لكل مناسبة." : "Curated style guides for every event."}</p>
+          <div className="ao-hubs">
+            {HUBS.map(h => (
+              <a key={h.slug} href={`/${h.slug}/`} className="ao-hub-card"
+                 onClick={() => track("hub_click", { hub: h.slug, lang })}>
+                <span className="ao-hub-emoji">{h.emoji}</span>
+                <span className="ao-hub-label">{ar ? h.ar : h.en}</span>
+                <ArrowRight size={14} className={ar ? "ao-flip" : ""} />
+              </a>
+            ))}
+          </div>
+          <div className="ao-topics-cta">
+            <a href={ar ? "/articles-ar/" : "/articles/"} className="ao-all-link">
+              {ar ? "كل الأدلة ←" : "See all guides →"}
+            </a>
           </div>
         </div>
       </section>
@@ -398,6 +433,16 @@ const CSS = `
 .ao-topic svg{color:var(--faint);transition:.2s;flex-shrink:0;}
 .ao-topic:hover svg{color:var(--gold);}
 .ao-topics-cta{text-align:center;margin-top:40px;}
+.ao-trust{font-size:13px;color:var(--faint);margin-top:8px;letter-spacing:.01em;}
+.ao-section-sub{color:var(--muted);font-size:16px;margin-top:6px;margin-bottom:0;}
+.ao-hubs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:20px;}
+.ao-hub-card{display:flex;align-items:center;gap:10px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-decoration:none;color:var(--ink);transition:.2s;}
+.ao-hub-card:hover{border-color:color-mix(in srgb,var(--gold) 50%,transparent);background:#271f17;}
+.ao-hub-emoji{font-size:20px;flex-shrink:0;}
+.ao-hub-label{flex:1;font-size:14px;font-weight:500;color:var(--gold);}
+.ao-hub-card:hover .ao-hub-label{color:#d8b67e;}
+.ao-all-link{display:inline-block;color:var(--gold);font-size:14px;font-weight:500;text-decoration:none;}
+.ao-all-link:hover{text-decoration:underline;}
 
 .ao-footer{border-top:1px solid rgba(58,48,38,.6);background:#1d1610;text-align:center;padding:40px 20px;font-size:12px;color:var(--faint);}
 .ao-footer-logo{font-family:'Playfair Display',serif;font-size:16px;color:var(--muted);margin:0 0 12px;}

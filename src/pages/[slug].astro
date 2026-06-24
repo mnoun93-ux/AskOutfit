@@ -82,30 +82,88 @@ const shopItems: string[] = !isAr && occasion && (gender === "men" || gender ===
 // ── Per-article OG image ────────────────────────────────────────────────────
 const ogImage = `${SITE}/og/${a.slug}.svg`;
 
+// ── Category Hub — link from article back to its hub page ──────────────────
+const HUB_MAP: Record<string, string> = {
+  "wedding-guest":    "wedding-guest-outfits",
+  "beach-party":      "beach-party-outfits",
+  "brunch":           "brunch-outfits",
+  "birthday-party":   "birthday-party-outfits",
+  "business-meeting": "business-meeting-outfits",
+  "casual-outing":    "casual-outing-outfits",
+  "concert":          "concert-outfits",
+  "dinner-party":     "dinner-party-outfits",
+  "eid-celebration":  "eid-celebration-outfits",
+  "engagement-party": "engagement-party-outfits",
+  "first-date":       "first-date-outfits",
+  "graduation":       "graduation-outfits",
+  "job-interview":    "job-interview-outfits",
+  "office":           "office-outfits",
+  "travel-day":       "travel-day-outfits",
+};
+
+const HUB_LABEL: Record<string, string> = {
+  "wedding-guest":    "Wedding Guest Outfits",
+  "beach-party":      "Beach Party Outfits",
+  "brunch":           "Brunch Outfits",
+  "birthday-party":   "Birthday Party Outfits",
+  "business-meeting": "Business Meeting Outfits",
+  "casual-outing":    "Casual Outing Outfits",
+  "concert":          "Concert Outfits",
+  "dinner-party":     "Dinner Party Outfits",
+  "eid-celebration":  "Eid Celebration Outfits",
+  "engagement-party": "Engagement Party Outfits",
+  "first-date":       "First Date Outfits",
+  "graduation":       "Graduation Outfits",
+  "job-interview":    "Job Interview Outfits",
+  "office":           "Office Outfits",
+  "travel-day":       "Travel Day Outfits",
+};
+
+const hubSlug  = !isAr ? (HUB_MAP[occasion]  ?? "") : "";
+const hubLabel = !isAr ? (HUB_LABEL[occasion] ?? "") : "";
+
 const faqHtml = (a.faq || [])
   .map((f: any) => `<details><summary>${f.q}</summary><p>${f.a}</p></details>`)
   .join("\n");
 
 const articleSchema = {
   "@context": "https://schema.org", "@type": "Article",
-  headline: a.title, description: a.metaDesc, image: `${SITE}/og-default.jpg`,
+  headline: a.title, description: a.metaDesc, image: ogImage,
   datePublished: a.datePublished, dateModified: a.datePublished, inLanguage: a.lang,
   author: { "@type": "Organization", name: "Askoutfit" },
   publisher: { "@type": "Organization", name: "Askoutfit", logo: { "@type": "ImageObject", url: `${SITE}/logo.png` } },
   mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
 };
+
+// Breadcrumb includes hub page if one exists for this article's occasion
+const breadcrumbItems: any[] = [
+  { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
+  { "@type": "ListItem", position: 2, name: isAr ? "المقالات" : "Articles", item: isAr ? `${SITE}/articles-ar/` : `${SITE}/articles/` },
+];
+if (!isAr && hubSlug) {
+  breadcrumbItems.push({ "@type": "ListItem", position: 3, name: hubLabel, item: `${SITE}/${hubSlug}/` });
+}
+breadcrumbItems.push({ "@type": "ListItem", position: breadcrumbItems.length + 1, name: a.h1, item: canonical });
 const breadcrumbSchema = {
   "@context": "https://schema.org", "@type": "BreadcrumbList",
-  itemListElement: [
-    { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
-    { "@type": "ListItem", position: 2, name: isAr ? "المقالات" : "Articles", item: `${SITE}/articles/` },
-    { "@type": "ListItem", position: 3, name: a.h1, item: canonical },
-  ],
+  itemListElement: breadcrumbItems,
 };
 const faqSchema = {
   "@context": "https://schema.org", "@type": "FAQPage",
   mainEntity: (a.faq || []).map((f: any) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
 };
+
+// ItemList schema for Shop the Look — helps Google Shopping results
+const shopSchema = shopItems.length > 0 ? {
+  "@context": "https://schema.org", "@type": "ItemList",
+  name: `Shop the Look — ${a.h1}`,
+  itemListElement: shopItems.map((item: string, idx: number) => ({
+    "@type": "ListItem",
+    position: idx + 1,
+    url: amz(item),
+    name: item.replace(/\b\w/g, (c: string) => c.toUpperCase()),
+  })),
+} : null;
 
 const faqHeading = isAr ? "أسئلة شائعة" : "Frequently asked questions";
 const altLabel = a.altLang === "ar" ? "العربية" : "English";
@@ -119,6 +177,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
     <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
     {a.faq?.length > 0 && (<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />)}
+    {shopSchema && (<script type="application/ld+json" is:inline set:html={JSON.stringify(shopSchema)} />)}
   </Fragment>
 
   <!-- Unified header -->
@@ -134,7 +193,10 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
 
   <main class="wrap">
     <nav class="crumb" aria-label="breadcrumb">
-      <a href="/">Askoutfit</a> &rsaquo; <a href={isAr ? "/articles-ar/" : "/articles/"}>{isAr ? "المقالات" : "Articles"}</a> &rsaquo; <span>{a.h1}</span>
+      <a href="/">Askoutfit</a> &rsaquo;
+      <a href={isAr ? "/articles-ar/" : "/articles/"}>{isAr ? "المقالات" : "Articles"}</a>
+      {!isAr && hubSlug && (<> &rsaquo; <a href={`/${hubSlug}/`}>{hubLabel}</a></>)}
+      &rsaquo; <span>{a.h1}</span>
     </nav>
 
     <article class="article">
@@ -227,6 +289,14 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
             ))}
           </div>
         </section>
+      )}
+
+      {!isAr && hubSlug && (
+        <div class="hub-cta">
+          <a href={`/${hubSlug}/`} class="hub-cta-link">
+            Browse all {hubLabel} &rarr;
+          </a>
+        </div>
       )}
     </article>
 
@@ -347,6 +417,9 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
   .shop-icon { font-size: 18px; flex-shrink: 0; }
   .shop-label { font-size: 14px; font-weight: 500; flex: 1; }
   .shop-arrow { color: var(--gold); flex-shrink: 0; font-size: 14px; }
+  .hub-cta { margin-top: 32px; text-align: center; }
+  .hub-cta-link { display: inline-block; border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent); color: var(--gold); font-size: 14px; font-weight: 500; padding: 10px 22px; border-radius: 999px; text-decoration: none; transition: .2s; }
+  .hub-cta-link:hover { background: color-mix(in srgb, var(--gold) 10%, transparent); border-color: var(--gold); }
   footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 12px; color: var(--faint); text-align: center; }
   footer a { color: var(--faint); }
   footer .aiom { margin-top: 8px; }

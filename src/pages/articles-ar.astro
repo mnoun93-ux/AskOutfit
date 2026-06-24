@@ -1,16 +1,49 @@
 ---
 import Base from "../layouts/Base.astro";
+
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const all = Object.values(modules).map((m: any) => m.default ?? m);
-const arArticles = all.filter((a: any) => a.lang === "ar").sort((x: any, y: any) => x.h1.localeCompare(y.h1));
+const articles = all
+  .filter((a: any) => a.lang === "ar")
+  .map((a: any) => ({ slug: a.slug, h1: a.h1, title: a.title }));
+
 const SITE = "https://askoutfit.com";
+
+// Arabic occasion labels for tabs
+const OCCASION_LABELS: Record<string, string> = {
+  "wedding-guest":    "الأفراح",
+  "beach-party":      "الشاطئ",
+  "birthday-party":   "أعياد الميلاد",
+  "brunch":           "البرانش",
+  "business-meeting": "اجتماعات العمل",
+  "casual-outing":    "اليومي",
+  "concert":          "الحفلات",
+  "dinner-party":     "العشاء",
+  "eid-celebration":  "العيد",
+  "engagement-party": "الخطوبة",
+  "first-date":       "أول موعد",
+  "graduation":       "التخرج",
+  "job-interview":    "المقابلات",
+  "office":           "المكتب",
+  "travel-day":       "السفر",
+};
+
+const articlesJson = JSON.stringify(articles);
 ---
-<Base title="كل أدلة الأزياء — المقالات" description="تصفّح كل أدلة Askoutfit للأزياء: أفكار للأفراح والمقابلات والمواعيد والحفلات وأكثر — بالعربية والإنجليزية." lang="ar" dir="rtl" canonical={`${SITE}/articles-ar/`} altLang="en" altUrl={`${SITE}/articles/`}>
+
+<Base
+  title="كل أدلة الأزياء — المقالات"
+  description="تصفّح كل أدلة Askoutfit للأزياء: أفكار للأفراح والمقابلات والمواعيد والحفلات وأكثر."
+  lang="ar"
+  dir="rtl"
+  canonical={`${SITE}/articles-ar/`}
+  altLang="en"
+  altUrl={`${SITE}/articles/`}
+>
   <header class="site-header">
     <div class="site-header-inner">
       <a href="/" class="site-logo">Askoutfit</a>
       <nav class="site-nav">
-        <a href="/articles-ar/" class="site-nav-link is-active">المقالات</a>
         <a href="/" class="site-nav-link">الرئيسية</a>
         <a href="/articles/" class="site-lang">English</a>
       </nav>
@@ -19,15 +52,34 @@ const SITE = "https://askoutfit.com";
 
   <main class="wrap">
     <h1 class="page-title">كل أدلة الأزياء</h1>
-    <p class="page-sub">كل دليل أزياء كتبناه — اختر مناسبتك والبس بثقة.</p>
-    <div class="art-grid">
-      {arArticles.map((a: any) => (
-        <a href={`/${a.slug}/`} class="art-card">
-          <span class="art-title">{a.h1}</span>
-          <span class="art-arrow">←</span>
-        </a>
+    <p class="page-sub">اختر المناسبة — سنريك بالضبط ماذا ترتدي.</p>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <input id="search" type="search" placeholder="ابحث عن دليل…" autocomplete="off" />
+    </div>
+
+    <!-- Occasion tabs -->
+    <div class="tabs-wrap" role="tablist" aria-label="فلتر حسب المناسبة">
+      <button class="tab active" data-occ="" role="tab" aria-selected="true">الكل</button>
+      {Object.entries(OCCASION_LABELS).map(([key, label]) => (
+        <button class="tab" data-occ={key} role="tab" aria-selected="false">{label}</button>
       ))}
     </div>
+
+    <!-- Gender filter -->
+    <div class="gender-wrap">
+      <button class="pill active" data-gender="">الجميع</button>
+      <button class="pill" data-gender="men">رجال</button>
+      <button class="pill" data-gender="women">نساء</button>
+    </div>
+
+    <!-- Count -->
+    <p class="count-line"><span id="count">{articles.length}</span> دليل</p>
+
+    <!-- Grid -->
+    <div class="art-grid" id="grid"></div>
+    <p class="empty-msg" id="empty" style="display:none">لم يُعثر على أدلة لهذا الفلتر. <button class="reset-btn" id="reset">مسح الفلاتر</button></p>
   </main>
 
   <footer class="site-footer">
@@ -35,28 +87,150 @@ const SITE = "https://askoutfit.com";
     <p>قد نربح عمولة على عمليات الشراء عبر الروابط. © <span id="y"></span></p>
     <p class="aiom">أحد مشاريع <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
   </footer>
-  <script is:inline>document.getElementById("y").textContent = new Date().getFullYear();</script>
+
+  <script is:inline define:vars={{ articlesJson, OCCASION_LABELS }}>
+    document.getElementById("y").textContent = new Date().getFullYear();
+
+    const DATA = JSON.parse(articlesJson);
+    let activeOcc = "";
+    let activeGender = "";
+    let searchQ = "";
+
+    const OCCS = Object.keys(OCCASION_LABELS);
+    function occOf(slug)    { return OCCS.find(o => slug.includes(o)) || ""; }
+    function genderOf(slug) {
+      return slug.includes("-men") || slug.includes("for-men") ? "men"
+           : slug.includes("-women") || slug.includes("for-women") ? "women"
+           : "";
+    }
+
+    const grid  = document.getElementById("grid");
+    const empty = document.getElementById("empty");
+    const count = document.getElementById("count");
+
+    function render() {
+      const q = searchQ.trim().toLowerCase();
+      const filtered = DATA.filter(a => {
+        if (activeOcc && occOf(a.slug) !== activeOcc) return false;
+        if (activeGender && genderOf(a.slug) !== activeGender) return false;
+        if (q && !a.h1.toLowerCase().includes(q) && !a.slug.includes(q)) return false;
+        return true;
+      });
+
+      count.textContent = filtered.length;
+      grid.innerHTML = filtered.map(a =>
+        `<a href="/${a.slug}/" class="art-card">
+           <span class="art-arrow">←</span>
+           <span class="art-title">${a.h1}</span>
+         </a>`
+      ).join("");
+
+      empty.style.display = filtered.length === 0 ? "block" : "none";
+    }
+
+    render();
+
+    document.querySelectorAll(".tab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(b => { b.classList.remove("active"); b.setAttribute("aria-selected","false"); });
+        btn.classList.add("active");
+        btn.setAttribute("aria-selected","true");
+        activeOcc = btn.dataset.occ || "";
+        render();
+      });
+    });
+
+    document.querySelectorAll(".pill").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".pill").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeGender = btn.dataset.gender || "";
+        render();
+      });
+    });
+
+    let debounce;
+    document.getElementById("search").addEventListener("input", e => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => { searchQ = e.target.value; render(); }, 180);
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+      activeOcc = ""; activeGender = ""; searchQ = "";
+      document.getElementById("search").value = "";
+      document.querySelectorAll(".tab").forEach((b,i)  => { b.classList.toggle("active", i===0); b.setAttribute("aria-selected", i===0 ? "true":"false"); });
+      document.querySelectorAll(".pill").forEach((b,i) => b.classList.toggle("active", i===0));
+      render();
+    });
+  </script>
 </Base>
 
 <style>
+  /* ── header ─────────────────────────────────────────────────────────────── */
   .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.6); background: rgba(26,20,16,.85); backdrop-filter: blur(12px); }
   .site-header-inner { max-width: 960px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
-  .site-logo { font-family: "Tajawal", "Playfair Display", serif; font-size: 20px; font-weight: 700; text-decoration: none; color: var(--ink); }
+  .site-logo { font-family: "Tajawal", sans-serif; font-size: 20px; font-weight: 700; text-decoration: none; color: var(--ink); }
   .site-nav { display: flex; align-items: center; gap: 16px; }
   .site-nav-link { font-size: 14px; color: var(--muted); text-decoration: none; font-family: "Tajawal", sans-serif; }
-  .site-nav-link.is-active { color: var(--gold); }
+  .site-nav-link:hover { color: var(--ink); }
   .site-lang { border: 1px solid var(--line); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 999px; text-decoration: none; }
   .site-lang:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
-  .page-title { font-family: "Tajawal", sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 44px); margin: 0; }
-  .page-sub { color: var(--muted); font-size: 17px; margin: 12px 0 0; font-family: "Tajawal", sans-serif; }
-  .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; margin-top: 28px; }
-  @media (min-width: 640px) { .art-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ── layout ─────────────────────────────────────────────────────────────── */
+  .wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; font-family: "Tajawal", sans-serif; }
+  .page-title { font-family: "Tajawal", sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 44px); margin: 0; color: var(--ink); }
+  .page-sub { color: var(--muted); font-size: 17px; margin: 12px 0 28px; }
+
+  /* ── search ─────────────────────────────────────────────────────────────── */
+  .search-wrap { margin-bottom: 20px; }
+  #search {
+    width: 100%; max-width: 400px; direction: rtl;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    color: var(--ink); font-size: 15px; padding: 11px 16px; font-family: "Tajawal", sans-serif;
+    outline: none; transition: border-color .2s;
+  }
+  #search:focus { border-color: color-mix(in srgb, var(--gold) 60%, transparent); }
+  #search::placeholder { color: var(--faint); }
+
+  /* ── tabs ───────────────────────────────────────────────────────────────── */
+  .tabs-wrap { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; direction: rtl; }
+  .tab {
+    background: var(--surface); border: 1px solid var(--line); color: var(--muted);
+    font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 999px;
+    cursor: pointer; transition: .15s; white-space: nowrap; font-family: "Tajawal", sans-serif;
+  }
+  .tab:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
+  .tab.active { background: var(--gold); border-color: var(--gold); color: var(--bg); font-weight: 600; }
+
+  /* ── gender pills ───────────────────────────────────────────────────────── */
+  .gender-wrap { display: flex; gap: 8px; margin-bottom: 20px; direction: rtl; }
+  .pill {
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    font-size: 13px; padding: 5px 16px; border-radius: 999px;
+    cursor: pointer; transition: .15s; font-family: "Tajawal", sans-serif;
+  }
+  .pill:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
+  .pill.active { border-color: var(--gold); color: var(--gold); font-weight: 600; }
+
+  /* ── count ──────────────────────────────────────────────────────────────── */
+  .count-line { font-size: 13px; color: var(--faint); margin-bottom: 20px; direction: rtl; }
+
+  /* ── grid ───────────────────────────────────────────────────────────────── */
+  .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 640px)  { .art-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 1024px) { .art-grid { grid-template-columns: repeat(3, 1fr); } }
-  .art-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 12px; text-decoration: none; color: var(--ink); transition: .2s; }
+  .art-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 12px; text-decoration: none; transition: .2s; direction: rtl; }
   .art-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
   .art-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--gold); font-family: "Tajawal", sans-serif; }
+  .art-card:hover .art-title { color: #d8b67e; }
   .art-arrow { color: var(--gold); flex-shrink: 0; }
+
+  /* ── empty state ────────────────────────────────────────────────────────── */
+  .empty-msg { color: var(--muted); font-size: 15px; padding: 40px 0; text-align: center; font-family: "Tajawal", sans-serif; }
+  .reset-btn { background: none; border: 1px solid var(--line); color: var(--gold); font-size: 14px; padding: 6px 16px; border-radius: 8px; cursor: pointer; margin-right: 8px; font-family: "Tajawal", sans-serif; }
+  .reset-btn:hover { border-color: var(--gold); }
+
+  /* ── footer ─────────────────────────────────────────────────────────────── */
   .site-footer { border-top: 1px solid rgba(58,48,38,.6); background: #1d1610; text-align: center; padding: 40px 20px; font-size: 12px; color: var(--faint); font-family: "Tajawal", sans-serif; }
   .site-footer-logo { font-family: "Tajawal", sans-serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
   .aiom { margin-top: 8px; }
