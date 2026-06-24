@@ -17,10 +17,70 @@ const canonical = `${SITE}/${a.slug}/`;
 const altUrl = a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
 const isAr = a.lang === "ar";
 
-// Related articles: same language, different slug, take 3
+// ── Smart Related Articles ──────────────────────────────────────────────────
+// Extract semantic dimensions from a slug to score similarity between articles.
+const OCCASIONS = [
+  "wedding-guest","beach-party","birthday-party","brunch","business-meeting",
+  "casual-outing","concert","dinner-party","eid-celebration","engagement-party",
+  "first-date","graduation","job-interview","office","travel-day",
+];
+const SEASONS  = ["summer","winter","spring","autumn"];
+const STYLES   = ["smart-casual","formal","relaxed","elegant"];
+
+function getOccasion(slug: string) { return OCCASIONS.find(o => slug.includes(o)) ?? ""; }
+function getGender(slug: string)   { return slug.includes("-men") || slug.includes("for-men") ? "men" : slug.includes("-women") || slug.includes("for-women") ? "women" : ""; }
+function getSeason(slug: string)   { return SEASONS.find(s => slug.startsWith(s + "-")) ?? ""; }
+function getStyle(slug: string)    { return STYLES.find(s => slug.endsWith("-" + s) || slug.includes("-" + s + "-")) ?? ""; }
+
+function similarity(slugA: string, slugB: string): number {
+  let score = 0;
+  const [oA, oB] = [getOccasion(slugA), getOccasion(slugB)];
+  const [gA, gB] = [getGender(slugA),   getGender(slugB)];
+  const [sA, sB] = [getSeason(slugA),   getSeason(slugB)];
+  const [stA, stB] = [getStyle(slugA),  getStyle(slugB)];
+  if (oA && oA === oB)   score += 5; // same occasion — strongest signal
+  if (gA && gA === gB)   score += 3; // same gender
+  if (sA && sA === sB)   score += 1; // same season
+  if (stA && stA === stB) score += 1; // same style
+  return score;
+}
+
 const related = (all as any[])
-  .filter((x) => x.lang === a.lang && x.slug !== a.slug)
+  .filter((x: any) => x.lang === a.lang && x.slug !== a.slug)
+  .map((x: any) => ({ ...x, _score: similarity(a.slug, x.slug) }))
+  .sort((x: any, y: any) => y._score - x._score || x.slug.localeCompare(y.slug))
   .slice(0, 3);
+
+// ── Shop the Look — Amazon affiliate search links ───────────────────────────
+const AMAZON_TAG = "askoutfit-20";
+function amz(q: string) { return `https://www.amazon.com/s?k=${encodeURIComponent(q)}&tag=${AMAZON_TAG}`; }
+
+const SHOP_MAP: Record<string, { men: string[]; women: string[] }> = {
+  "wedding-guest":     { men: ["mens linen suit","mens dress shirt white","mens oxford shoes tan","mens pocket square"], women: ["women midi dress wedding guest","women heeled sandals wedding","women clutch bag evening","women fascinator hat"] },
+  "beach-party":       { men: ["mens linen shirt casual","mens chino shorts","mens espadrilles","mens sunglasses polarized"], women: ["women beach party dress","women strappy sandals","women sun hat wide brim","women raffia bag"] },
+  "brunch":            { men: ["mens smart casual chinos","mens polo shirt","mens white sneakers","mens lightweight blazer"], women: ["women wrap dress brunch","women block heel mules","women crossbody bag","women linen set"] },
+  "birthday-party":    { men: ["mens party outfit smart casual","mens chelsea boots","mens slim trousers","mens printed shirt"], women: ["women satin dress party","women strappy heels","women statement earrings","women mini clutch"] },
+  "business-meeting":  { men: ["mens suit business","mens dress shirt","mens tie silk","mens leather oxford shoes"], women: ["women blazer office","women tailored trousers","women silk blouse","women pointed toe pumps"] },
+  "casual-outing":     { men: ["mens jeans slim fit","mens casual shirt","mens white leather sneakers","mens casual jacket"], women: ["women straight jeans","women casual blouse","women white trainers","women tote bag canvas"] },
+  "concert":           { men: ["mens band tee","mens leather jacket","mens boots chelsea","mens dark jeans slim"], women: ["women concert outfit","women ankle boots","women oversized jacket","women crossbody bag leather"] },
+  "dinner-party":      { men: ["mens chinos tailored","mens blazer navy","mens loafers leather","mens dress shirt no tie"], women: ["women evening dress midi","women kitten heels","women evening bag","women blazer feminine"] },
+  "eid-celebration":   { men: ["mens thobe white","mens kandura","mens dress shoes formal","mens watch gold"], women: ["women abaya elegant","women jalabiya","women heels formal","women evening bag gold"] },
+  "engagement-party":  { men: ["mens blazer light","mens chinos smart","mens loafers","mens pocket square floral"], women: ["women floral dress engagement","women wedge heels","women hair clip floral","women mini bag"] },
+  "first-date":        { men: ["mens smart casual outfit","mens chinos navy","mens white shirt oxford","mens clean white sneakers"], women: ["women dress first date","women heeled boots","women small shoulder bag","women gold jewelry"] },
+  "graduation":        { men: ["mens graduation suit","mens dress shirt","mens graduation shoes","mens graduation tie"], women: ["women graduation dress midi","women graduation heels","women graduation bag","women floral dress ceremony"] },
+  "job-interview":     { men: ["mens interview suit navy","mens interview shirt white","mens leather shoes black","mens tie classic"], women: ["women interview blazer","women tailored dress","women court shoes","women structured handbag"] },
+  "office":            { men: ["mens office trousers","mens office shirt","mens oxford shoes","mens leather belt"], women: ["women office dress","women office blazer","women court shoes heel","women tote bag office"] },
+  "travel-day":        { men: ["mens travel outfit jogger","mens hoodie travel","mens trainers white","mens crossbody bag travel"], women: ["women travel outfit leggings","women oversized hoodie","women travel shoes","women travel backpack"] },
+};
+
+const occasion = getOccasion(a.slug);
+const gender   = getGender(a.slug);
+const shopItems: string[] = !isAr && occasion && (gender === "men" || gender === "women")
+  ? (SHOP_MAP[occasion]?.[gender] ?? [])
+  : [];
+
+// ── Per-article OG image ────────────────────────────────────────────────────
+const ogImage = `${SITE}/og/${a.slug}.svg`;
 
 const faqHtml = (a.faq || [])
   .map((f: any) => `<details><summary>${f.q}</summary><p>${f.a}</p></details>`)
@@ -54,7 +114,7 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
 ---
 
 <Base title={a.title} description={a.metaDesc} lang={a.lang} dir={a.dir}
-  canonical={canonical} altLang={a.altLang} altUrl={altUrl}>
+  canonical={canonical} altLang={a.altLang} altUrl={altUrl} ogImage={ogImage}>
   <Fragment slot="head">
     <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
     <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
@@ -88,6 +148,23 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
       </div>
 
       <div class="body" set:html={a.bodyHtml} />
+
+      {shopItems.length > 0 && (
+        <section class="shop-look">
+          <h2 class="shop-heading">Shop the Look</h2>
+          <p class="shop-sub">Tap any item to find it on Amazon — affiliate links help keep this site free.</p>
+          <div class="shop-grid">
+            {shopItems.map((item: string) => (
+              <a href={amz(item)} target="_blank" rel="noopener nofollow sponsored" class="shop-card"
+                 onclick={`if(typeof gtag==='function')gtag('event','shop_click',{item:'${item.replace(/'/g,"\\'")}',slug:'${a.slug}'})`}>
+                <span class="shop-icon">🛍</span>
+                <span class="shop-label">{item.replace(/\b\w/g, (c: string) => c.toUpperCase())}</span>
+                <span class="shop-arrow">→</span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div class="tool-cta">
         <h3>{a.ctaTitle}</h3>
@@ -179,6 +256,16 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
   .related-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
   .related-title { font-weight: 500; font-size: 15px; }
   .related-arrow { color: var(--gold); flex-shrink: 0; }
+  .shop-look { margin: 44px 0; }
+  .shop-heading { font-family: "Playfair Display", Georgia, serif; font-size: 24px; margin-bottom: 6px; color: var(--gold); }
+  html[dir="rtl"] .shop-heading { font-family: "Tajawal", sans-serif; font-weight: 700; }
+  .shop-sub { font-size: 13px; color: var(--faint); margin-bottom: 16px; }
+  .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .shop-card { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); text-decoration: none; color: var(--ink); transition: .2s; }
+  .shop-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
+  .shop-icon { font-size: 18px; flex-shrink: 0; }
+  .shop-label { font-size: 14px; font-weight: 500; flex: 1; }
+  .shop-arrow { color: var(--gold); flex-shrink: 0; font-size: 14px; }
   footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--line); font-size: 12px; color: var(--faint); text-align: center; }
   footer a { color: var(--faint); }
   footer .aiom { margin-top: 8px; }
