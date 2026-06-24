@@ -10,6 +10,13 @@ const CATEGORY_SLUGS = [
   "job-interview-outfits",
   "graduation-outfits",
   "concert-outfits",
+  "birthday-party-outfits",
+  "business-meeting-outfits",
+  "casual-outing-outfits",
+  "dinner-party-outfits",
+  "eid-celebration-outfits",
+  "engagement-party-outfits",
+  "travel-day-outfits",
 ];
 
 export async function GET() {

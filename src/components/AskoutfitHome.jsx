@@ -304,6 +304,31 @@ export default function AskoutfitHome() {
         </div>
       </section>
 
+      {/* Email Capture */}
+      <section className="ao-section">
+        <div className="ao-wrap">
+          <div className="ao-nl-box">
+            <p className="ao-nl-emoji">✉️</p>
+            <h2 className="ao-h2">{ar ? "احصل على أفكار أزياء أسبوعية" : "Get weekly outfit ideas"}</h2>
+            <p className="ao-nl-sub">{ar ? "إطلالات جديدة لكل مناسبة، مباشرة في بريدك. بدون إزعاج." : "Fresh looks for every occasion, straight to your inbox. No spam — unsubscribe anytime."}</p>
+            <form className="ao-nl-form" action="https://formsubmit.co/mn.oun93@gmail.com" method="POST">
+              <input type="hidden" name="_subject" value="New Askoutfit subscriber (homepage)" />
+              <input type="hidden" name="_captcha" value="false" />
+              <input type="hidden" name="_template" value="table" />
+              <input type="hidden" name="_next" value="https://www.askoutfit.com/?subscribed=1" />
+              <div className="ao-nl-row">
+                <input type="email" name="email" required
+                  className="ao-nl-email"
+                  placeholder={ar ? "بريدك الإلكتروني" : "your@email.com"} />
+                <button type="submit" className="ao-cta-btn">
+                  {ar ? "اشترك" : "Subscribe"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
       <footer className="ao-footer">
         <p className="ao-footer-logo">Askoutfit</p>
         <p>{ar ? "قد نربح عمولة على عمليات الشراء عبر الروابط. © " : "We may earn a commission on purchases through links. © "}{new Date().getFullYear()}</p>
@@ -443,6 +468,15 @@ const CSS = `
 .ao-hub-card:hover .ao-hub-label{color:#d8b67e;}
 .ao-all-link{display:inline-block;color:var(--gold);font-size:14px;font-weight:500;text-decoration:none;}
 .ao-all-link:hover{text-decoration:underline;}
+.ao-nl-box{border:1px solid color-mix(in srgb,var(--gold) 25%,transparent);border-radius:20px;padding:40px 32px;background:linear-gradient(135deg,color-mix(in srgb,var(--gold) 8%,var(--surface)),var(--surface));text-align:center;max-width:560px;margin:0 auto;}
+.ao-nl-emoji{font-size:32px;margin-bottom:12px;}
+.ao-nl-sub{color:var(--muted);font-size:16px;margin:8px 0 24px;}
+.ao-nl-form{margin:0;}
+.ao-nl-row{display:flex;gap:8px;max-width:440px;margin:0 auto;}
+.ao-nl-email{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-size:15px;padding:12px 16px;outline:none;transition:border-color .2s;}
+.ao-nl-email:focus{border-color:color-mix(in srgb,var(--gold) 60%,transparent);}
+.ao-nl-email::placeholder{color:var(--faint);}
+@media(max-width:480px){.ao-nl-row{flex-direction:column;}}
 
 .ao-footer{border-top:1px solid rgba(58,48,38,.6);background:#1d1610;text-align:center;padding:40px 20px;font-size:12px;color:var(--faint);}
 .ao-footer-logo{font-family:'Playfair Display',serif;font-size:16px;color:var(--muted);margin:0 0 12px;}

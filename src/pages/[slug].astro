@@ -4,54 +4,260 @@ import Base from "../layouts/Base.astro";
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const allArticles = Object.values(modules).map((m: any) => m.default ?? m);
 
+const SITE = "https://askoutfit.com";
+
+// ── Category Hub data ─────────────────────────────────────────────────────────
+// Defined at module scope so getStaticPaths() and per-page code can both use it.
+const CATEGORIES: Record<string, {
+  slug: string; occasion: string; h1: string; title: string;
+  metaDesc: string; intro: string; faq: { q: string; a: string }[];
+}> = {
+  "wedding-guest-outfits": {
+    slug: "wedding-guest-outfits", occasion: "wedding-guest",
+    h1: "Wedding Guest Outfits",
+    title: "Wedding Guest Outfits — Complete Style Guide",
+    metaDesc: "Find the perfect wedding guest outfit for any season, dress code, or venue. Complete guides for men and women — from black tie to beach weddings.",
+    intro: "Finding the perfect wedding guest outfit shouldn't be stressful. Whether you're attending a black-tie ballroom reception, a relaxed garden party, or a beach ceremony, we've built a complete guide for every combination of season, dress code, and gender. Browse by season or style below — or use our AI stylist to get a personalised recommendation in seconds.",
+    faq: [
+      { q: "What should I wear as a wedding guest?", a: "The right outfit depends on the dress code, venue, and season. For black-tie weddings, choose a floor-length gown or tuxedo. For smart-casual weddings, tailored trousers with a blazer or a midi dress works beautifully. Always avoid white or ivory." },
+      { q: "What colours should you avoid as a wedding guest?", a: "Avoid white, ivory, and cream — traditionally reserved for the bride. Very dark tones like all-black can also feel inappropriate at daytime or outdoor weddings. Opt for pastels, jewel tones, or warm neutrals." },
+      { q: "Can you wear a jumpsuit to a wedding as a guest?", a: "Yes — a tailored jumpsuit in a luxe fabric like satin, crepe, or lace is a modern, elegant choice for cocktail or semi-formal weddings." },
+    ],
+  },
+  "brunch-outfits": {
+    slug: "brunch-outfits", occasion: "brunch",
+    h1: "Brunch Outfits",
+    title: "Brunch Outfits — Smart Casual Style Guides for Men & Women",
+    metaDesc: "Discover the best brunch outfits for every season and style. Effortlessly chic looks for men and women — from relaxed weekend brunch to smart casual dining.",
+    intro: "Brunch is the perfect excuse to dress up without overthinking it. The ideal brunch outfit strikes a balance between relaxed and polished — think linen, soft tailoring, and comfortable footwear. Whether you're heading to a rooftop terrace, a neighbourhood café, or a hotel Sunday brunch, our guides cover every season and style.",
+    faq: [
+      { q: "What is the best outfit for brunch?", a: "For brunch, smart-casual is the sweet spot. For women, a wrap dress, a linen set, or tailored wide-leg trousers with a silk blouse work beautifully. For men, chinos, a well-fitted shirt, and clean loafers or white trainers are a reliable choice." },
+      { q: "Is there a dress code for brunch?", a: "Most brunches don't have a strict dress code — smart-casual is the safe standard. Avoid overly formal attire and overly casual looks like gym wear or flip-flops unless the venue specifically invites it." },
+    ],
+  },
+  "beach-party-outfits": {
+    slug: "beach-party-outfits", occasion: "beach-party",
+    h1: "Beach Party Outfits",
+    title: "Beach Party Outfits — Style Guides for Men & Women",
+    metaDesc: "Find the perfect beach party outfit for any vibe. Relaxed, smart-casual, and elegant looks for men and women — for every season.",
+    intro: "A beach party calls for outfits that look great, feel comfortable, and handle sand, sun, and sea breeze without missing a beat. Whether your beach event is a relaxed bonfire gathering or a more styled sunset cocktail party, the right outfit balances style with practicality.",
+    faq: [
+      { q: "What should I wear to a beach party?", a: "For a relaxed beach party, linen shirts, chino shorts, espadrilles, or breezy sundresses are ideal. For a smarter beach event, elevate with linen trousers, a structured blouse, or a maxi dress in a lightweight fabric." },
+      { q: "What shoes should you wear to a beach party?", a: "Espadrilles, flat sandals, or woven leather shoes work best on sand. Avoid heels unless the event is on a terrace or hard surface." },
+    ],
+  },
+  "first-date-outfits": {
+    slug: "first-date-outfits", occasion: "first-date",
+    h1: "First Date Outfit Ideas",
+    title: "First Date Outfit Ideas for Men & Women",
+    metaDesc: "Dress to impress on a first date. Smart-casual, formal, and relaxed outfit ideas for men and women — for every season and setting.",
+    intro: "Your first date outfit should feel like the best version of you — not a costume. The goal is to look intentional and put-together without appearing overdressed for the venue. These guides cover every scenario: a casual coffee, a dinner date, a rooftop bar, or an outdoor day trip.",
+    faq: [
+      { q: "What should I wear on a first date?", a: "Match the venue. For a casual café date, smart-casual wins — chinos and a clean shirt for men, a wrap dress or jeans with a nice top for women. For a dinner date, elevate with a blazer or a midi dress. Always dress slightly above the venue's baseline." },
+      { q: "Should you dress up for a first date?", a: "Yes — aim for slightly smarter than the venue requires. It signals effort and respect. But don't overcorrect: wearing a tuxedo to a pizza place is as awkward as wearing trainers to a fine-dining restaurant." },
+    ],
+  },
+  "office-outfits": {
+    slug: "office-outfits", occasion: "office",
+    h1: "Office Outfit Ideas",
+    title: "Office Outfit Ideas — Work Style Guides for Men & Women",
+    metaDesc: "Master your office wardrobe. Smart-casual, formal, and relaxed work outfit ideas for men and women — for every season.",
+    intro: "Your office outfit sets the tone before you speak a word. Whether your workplace is formal, smart-casual, or creative, the right work wardrobe combines professionalism with personal style. These guides cover seasonal updates and every dress code — so you'll always know what to wear.",
+    faq: [
+      { q: "What is appropriate office attire?", a: "Appropriate office attire depends on your industry and company culture. For corporate environments, tailored trousers, blazers, and dress shoes are standard. For creative or tech offices, smart-casual — clean jeans, a blazer, and leather trainers — is usually acceptable." },
+      { q: "How do I dress smartly for the office without spending a lot?", a: "Focus on fit and neutral colours. Well-fitted navy trousers, a white shirt, and leather shoes in a dark colour form a versatile base that works across most office environments. Quality over quantity." },
+    ],
+  },
+  "job-interview-outfits": {
+    slug: "job-interview-outfits", occasion: "job-interview",
+    h1: "Job Interview Outfit Ideas",
+    title: "Job Interview Outfit Ideas — What to Wear to an Interview",
+    metaDesc: "Dress to impress at your next job interview. Complete outfit guides for men and women covering every industry, season, and dress code.",
+    intro: "Your interview outfit makes an impression before you've said a word. The right look conveys competence, attention to detail, and cultural fit. These guides cover every scenario — from a corporate finance interview to a creative agency, in every season.",
+    faq: [
+      { q: "What should I wear to a job interview?", a: "Research the company culture first. For corporate roles, a well-fitted suit in navy or grey is the safest choice. For startups or creative roles, smart-casual — clean chinos, a blazer, leather trainers — is often more appropriate. When in doubt, dress one level above the company's standard." },
+      { q: "Should I wear a suit to every job interview?", a: "Not necessarily. A suit is appropriate for finance, law, or corporate roles. For tech, media, or creative industries, a blazer over smart trousers is often more fitting. Research the company's culture on LinkedIn or Glassdoor before deciding." },
+    ],
+  },
+  "graduation-outfits": {
+    slug: "graduation-outfits", occasion: "graduation",
+    h1: "Graduation Outfit Ideas",
+    title: "Graduation Outfit Ideas — What to Wear to Graduation",
+    metaDesc: "Look your best on graduation day. Complete outfit guides for graduates and guests — men and women, every season.",
+    intro: "Graduation day is one of the most photographed moments of your life. Your outfit should feel polished, celebrate the occasion, and stay comfortable through a long ceremony. Whether you're the graduate, a proud parent, or a guest, these guides have you covered.",
+    faq: [
+      { q: "What should I wear to my graduation?", a: "Under a graduation gown, you need a smart base layer — tailored trousers and a dress shirt for men, a midi dress or smart trousers and blouse for women. Choose shoes you can walk comfortably in. Avoid anything too casual." },
+      { q: "What should parents wear to a graduation ceremony?", a: "Smart-casual to semi-formal is ideal. For mothers, a midi dress or tailored trousers with a blouse works well. For fathers, chinos with a blazer and dress shoes strikes the right note. Avoid casual wear like jeans and trainers." },
+    ],
+  },
+  "concert-outfits": {
+    slug: "concert-outfits", occasion: "concert",
+    h1: "Concert Outfit Ideas",
+    title: "Concert Outfit Ideas — What to Wear to a Concert",
+    metaDesc: "Find the perfect concert outfit for any venue or artist. Style guides for men and women across every season and vibe.",
+    intro: "Concert outfits should make you feel like yourself — just turned up to 10. Whether you're at an intimate jazz venue, an outdoor festival, or an arena show, the right look balances self-expression with practicality: comfortable footwear, weather-ready layers, and pieces that move with you.",
+    faq: [
+      { q: "What should I wear to a concert?", a: "Match the artist's vibe and the venue. For outdoor festivals, layer up with a denim jacket and comfortable boots. For arena shows, anything goes — this is your moment to express yourself. For classical concerts, smart-casual or semi-formal is appropriate." },
+      { q: "What shoes should I wear to a concert?", a: "Comfort is key at concerts. You'll likely be standing for hours. Ankle boots, chunky trainers, or comfortable flat shoes work best. Save heels for seated venues." },
+    ],
+  },
+  "birthday-party-outfits": {
+    slug: "birthday-party-outfits", occasion: "birthday-party",
+    h1: "Birthday Party Outfit Ideas",
+    title: "Birthday Party Outfit Ideas — What to Wear to a Birthday",
+    metaDesc: "Dress to impress at any birthday party. Style guides for men and women — from casual backyard gatherings to upscale celebrations.",
+    intro: "Birthday parties come in every shape and size — from low-key backyard barbecues to upscale rooftop dinners. The right outfit depends on the venue, time of day, and how well you know the host. These guides break it down by season and style so you always show up looking the part.",
+    faq: [
+      { q: "What should I wear to a birthday party?", a: "For a casual birthday gathering, smart-casual works well — dark jeans, a nice top, and clean shoes. For an upscale birthday dinner or club night, elevate with a blazer, dress, or statement piece. When in doubt, dress one level above what you'd normally wear to the venue." },
+      { q: "Is there a dress code for birthday parties?", a: "Most birthday party invitations don't specify a dress code unless it's a formal event. Read the venue and time of day as your guide: house party = casual; restaurant dinner = smart-casual; rooftop or nightclub = dressed up." },
+    ],
+  },
+  "business-meeting-outfits": {
+    slug: "business-meeting-outfits", occasion: "business-meeting",
+    h1: "Business Meeting Outfit Ideas",
+    title: "Business Meeting Outfits — Professional Style Guides for Men & Women",
+    metaDesc: "Dress with authority at your next business meeting. Professional outfit guides for men and women — corporate, smart-casual, and creative industries.",
+    intro: "What you wear to a business meeting communicates your professionalism before you've said a word. The right business outfit varies by industry and meeting type — a board presentation calls for something different than a client lunch or a networking event. These guides cover every scenario across all seasons.",
+    faq: [
+      { q: "What should I wear to a business meeting?", a: "For formal business meetings, a well-fitted suit in navy, grey, or charcoal is the gold standard. For smart-casual business settings, tailored trousers, a quality shirt, and leather shoes convey professionalism. Always prioritise fit over labels." },
+      { q: "Can I wear smart-casual to a business meeting?", a: "In many industries, smart-casual is perfectly appropriate — especially for internal meetings, creative sectors, or tech companies. Well-fitted chinos, a blazer, and leather shoes or polished trainers read professional without being overly formal." },
+    ],
+  },
+  "casual-outing-outfits": {
+    slug: "casual-outing-outfits", occasion: "casual-outing",
+    h1: "Casual Outing Outfit Ideas",
+    title: "Casual Outing Outfit Ideas for Men & Women",
+    metaDesc: "Look great without overthinking it. Effortless casual outfit ideas for men and women — shopping trips, coffee dates, weekend errands, and more.",
+    intro: "Casual outings are where personal style shines most. Without a strict dress code, the best casual outfits feel effortless, comfortable, and genuinely you. Whether you're running errands, grabbing coffee with friends, or heading to a weekend market, these guides give you real options for every season.",
+    faq: [
+      { q: "What makes a good casual outfit?", a: "A good casual outfit looks intentional without feeling forced. Well-fitted basics — clean jeans or chinos, a quality tee or shirt, and understated trainers or loafers — form a reliable foundation. Add one interesting piece (a jacket, a bag, an accessory) to make it feel considered." },
+      { q: "How casual is too casual?", a: "Avoid anything with stains, tears (unless intentional and styled), visible logos on cheap tees, or mismatched sportswear. Casual means relaxed, not sloppy. Neat, well-fitted clothes in any style qualify as presentable casual." },
+    ],
+  },
+  "dinner-party-outfits": {
+    slug: "dinner-party-outfits", occasion: "dinner-party",
+    h1: "Dinner Party Outfit Ideas",
+    title: "Dinner Party Outfits — What to Wear to a Dinner Party",
+    metaDesc: "Dress perfectly for any dinner party. Smart, elegant, and semi-formal outfit guides for men and women — for every season and setting.",
+    intro: "Dinner parties are the sweet spot between formal and relaxed — which makes choosing the right outfit genuinely tricky. Too casual and you seem indifferent; too formal and you seem stiff. These guides hit the perfect note for every type of dinner party, from a seated home dinner to a private restaurant booking.",
+    faq: [
+      { q: "What is the ideal outfit for a dinner party?", a: "Smart-casual to semi-formal is the classic dinner party register. For women, a midi dress, tailored trousers with a silk blouse, or an elegant jumpsuit all work beautifully. For men, chinos or tailored trousers with a blazer and leather shoes is the reliable choice." },
+      { q: "Is a dinner party the same dress code as cocktail attire?", a: "Not always. Cocktail attire is more formal — typically a suit or cocktail dress. Dinner party dress code is usually smart-casual or semi-formal, unless the invitation specifies otherwise. Read the venue and host's style as your guide." },
+    ],
+  },
+  "eid-celebration-outfits": {
+    slug: "eid-celebration-outfits", occasion: "eid-celebration",
+    h1: "Eid Celebration Outfit Ideas",
+    title: "Eid Outfit Ideas — What to Wear for Eid al-Fitr & Eid al-Adha",
+    metaDesc: "Dress beautifully for Eid. Traditional and modern outfit guides for men and women — modest, elegant, and festive looks for every style.",
+    intro: "Eid is one of the most joyful and photographed occasions of the year. The right Eid outfit balances tradition, elegance, and personal style — whether you prefer a classic thobe or kandura, a modern abaya, or a fusion of cultural and contemporary fashion. These guides help you find a look that honours the occasion and feels authentically you.",
+    faq: [
+      { q: "What do people typically wear for Eid?", a: "For Eid prayer and celebrations, men traditionally wear a thobe, kandura, or a smart suit. Women often wear an elegant abaya, jalabiya, or a formal dress. Both traditional and modern modest fashion are widely celebrated — the key is looking polished and festive." },
+      { q: "Can I wear Western clothing for Eid?", a: "Absolutely. Many people choose smart Western attire for Eid — a sharp suit for men, or an elegant midi dress or formal trousers for women. The priority is looking polished and respectful of the occasion, regardless of cultural origin." },
+    ],
+  },
+  "engagement-party-outfits": {
+    slug: "engagement-party-outfits", occasion: "engagement-party",
+    h1: "Engagement Party Outfit Ideas",
+    title: "Engagement Party Outfits — What to Wear as a Guest",
+    metaDesc: "Celebrate in style. Outfit ideas for engagement party guests — men and women, every season, semi-formal to smart-casual.",
+    intro: "An engagement party calls for something between a wedding guest outfit and a smart dinner look — festive, polished, and celebratory without upstaging the couple. These guides walk you through the perfect engagement party guest outfits for every season and style preference.",
+    faq: [
+      { q: "What should a guest wear to an engagement party?", a: "Semi-formal to smart-casual is the standard for engagement parties. For women, a floral or pastel midi dress, a tailored jumpsuit, or elegant trousers with a blouse all work well. For men, chinos or tailored trousers with a blazer and loafers hits the right note." },
+      { q: "Can I wear black to an engagement party?", a: "Yes — a well-styled black outfit is entirely appropriate for an engagement party. Opt for elegant cuts, quality fabrics, and add interest through accessories or texture rather than avoiding the colour entirely." },
+    ],
+  },
+  "travel-day-outfits": {
+    slug: "travel-day-outfits", occasion: "travel-day",
+    h1: "Travel Day Outfit Ideas",
+    title: "Travel Day Outfits — What to Wear on a Travel Day",
+    metaDesc: "Look great and stay comfortable on any journey. Travel day outfit guides for men and women — flights, road trips, and long-distance trains.",
+    intro: "A good travel day outfit is a rare thing: it needs to be comfortable through hours of sitting, flexible enough for changing temperatures, polished enough for arriving at your destination, and practical for security lines and overhead bins. These guides nail that balance for every season and travel type.",
+    faq: [
+      { q: "What is the best outfit for a travel day?", a: "The best travel outfit balances comfort and presentability. For long flights, smart joggers or comfortable chinos, a breathable layer, and slip-on shoes streamline security. Avoid denim — it's uncomfortable on long journeys. A light jacket is essential for varying cabin temperatures." },
+      { q: "Should I dress nicely when travelling by plane?", a: "Looking presentable on a flight has real perks — better treatment from airline staff, higher chance of upgrades, and you'll feel more confident arriving at your destination. Smart-casual is the sweet spot: comfortable but not sloppy." },
+    ],
+  },
+};
+
+// ── getStaticPaths — articles + category hubs ────────────────────────────────
 export function getStaticPaths() {
   const mods = import.meta.glob("../content/articles/*.json", { eager: true });
   const all = Object.values(mods).map((m: any) => m.default ?? m);
-  return all.map((a: any) => ({ params: { slug: a.slug }, props: { article: a, all } }));
+
+  const articlePaths = all.map((a: any) => ({
+    params: { slug: a.slug },
+    props: { article: a, all, category: null },
+  }));
+
+  const categoryPaths = Object.values({
+    "wedding-guest-outfits":    "wedding-guest-outfits",
+    "brunch-outfits":           "brunch-outfits",
+    "beach-party-outfits":      "beach-party-outfits",
+    "first-date-outfits":       "first-date-outfits",
+    "office-outfits":           "office-outfits",
+    "job-interview-outfits":    "job-interview-outfits",
+    "graduation-outfits":       "graduation-outfits",
+    "concert-outfits":          "concert-outfits",
+    "birthday-party-outfits":   "birthday-party-outfits",
+    "business-meeting-outfits": "business-meeting-outfits",
+    "casual-outing-outfits":    "casual-outing-outfits",
+    "dinner-party-outfits":     "dinner-party-outfits",
+    "eid-celebration-outfits":  "eid-celebration-outfits",
+    "engagement-party-outfits": "engagement-party-outfits",
+    "travel-day-outfits":       "travel-day-outfits",
+  }).map((catSlug) => ({
+    params: { slug: catSlug as string },
+    props: { article: null, all, category: catSlug },
+  }));
+
+  return [...articlePaths, ...categoryPaths];
 }
 
-const { article, all } = Astro.props as any;
-const a = article;
-const SITE = "https://askoutfit.com";
-const canonical = `${SITE}/${a.slug}/`;
-const altUrl = a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
-const isAr = a.lang === "ar";
+// ── Per-page props ────────────────────────────────────────────────────────────
+const { article, all, category: catSlugProp } = Astro.props as any;
+const isHub = !!catSlugProp;
+const cat   = isHub ? CATEGORIES[catSlugProp as string] : null;
 
-// ── Smart Related Articles ──────────────────────────────────────────────────
-// Extract semantic dimensions from a slug to score similarity between articles.
+// ── Article-only logic ────────────────────────────────────────────────────────
+const a = article ?? {};
+
 const OCCASIONS = [
   "wedding-guest","beach-party","birthday-party","brunch","business-meeting",
   "casual-outing","concert","dinner-party","eid-celebration","engagement-party",
   "first-date","graduation","job-interview","office","travel-day",
 ];
-const SEASONS  = ["summer","winter","spring","autumn"];
-const STYLES   = ["smart-casual","formal","relaxed","elegant"];
+const SEASONS = ["summer","winter","spring","autumn"];
+const STYLES  = ["smart-casual","formal","relaxed","elegant"];
 
 function getOccasion(slug: string) { return OCCASIONS.find(o => slug.includes(o)) ?? ""; }
-function getGender(slug: string)   { return slug.includes("-men") || slug.includes("for-men") ? "men" : slug.includes("-women") || slug.includes("for-women") ? "women" : ""; }
-function getSeason(slug: string)   { return SEASONS.find(s => slug.startsWith(s + "-")) ?? ""; }
-function getStyle(slug: string)    { return STYLES.find(s => slug.endsWith("-" + s) || slug.includes("-" + s + "-")) ?? ""; }
+function getGender(slug: string) {
+  return slug.includes("-men") || slug.includes("for-men") ? "men"
+       : slug.includes("-women") || slug.includes("for-women") ? "women" : "";
+}
+function getSeason(slug: string) { return SEASONS.find(s => slug.startsWith(s + "-")) ?? ""; }
+function getStyle(slug: string)  { return STYLES.find(s => slug.endsWith("-" + s) || slug.includes("-" + s + "-")) ?? ""; }
 
 function similarity(slugA: string, slugB: string): number {
   let score = 0;
   const [oA, oB] = [getOccasion(slugA), getOccasion(slugB)];
   const [gA, gB] = [getGender(slugA),   getGender(slugB)];
   const [sA, sB] = [getSeason(slugA),   getSeason(slugB)];
-  const [stA, stB] = [getStyle(slugA),  getStyle(slugB)];
-  if (oA && oA === oB)   score += 5; // same occasion — strongest signal
-  if (gA && gA === gB)   score += 3; // same gender
-  if (sA && sA === sB)   score += 1; // same season
-  if (stA && stA === stB) score += 1; // same style
+  const [stA,stB]= [getStyle(slugA),    getStyle(slugB)];
+  if (oA && oA === oB)   score += 5;
+  if (gA && gA === gB)   score += 3;
+  if (sA && sA === sB)   score += 1;
+  if (stA && stA === stB) score += 1;
   return score;
 }
 
-const related = (all as any[])
+const related = isHub ? [] : (all as any[])
   .filter((x: any) => x.lang === a.lang && x.slug !== a.slug)
   .map((x: any) => ({ ...x, _score: similarity(a.slug, x.slug) }))
   .sort((x: any, y: any) => y._score - x._score || x.slug.localeCompare(y.slug))
   .slice(0, 3);
 
-// ── Shop the Look — Amazon affiliate search links ───────────────────────────
+// ── Shop the Look ─────────────────────────────────────────────────────────────
 const AMAZON_TAG = "askoutfit-20";
 function amz(q: string) { return `https://www.amazon.com/s?k=${encodeURIComponent(q)}&tag=${AMAZON_TAG}`; }
 
@@ -73,60 +279,51 @@ const SHOP_MAP: Record<string, { men: string[]; women: string[] }> = {
   "travel-day":        { men: ["mens travel outfit jogger","mens hoodie travel","mens trainers white","mens crossbody bag travel"], women: ["women travel outfit leggings","women oversized hoodie","women travel shoes","women travel backpack"] },
 };
 
-const occasion = getOccasion(a.slug);
-const gender   = getGender(a.slug);
-const shopItems: string[] = !isAr && occasion && (gender === "men" || gender === "women")
-  ? (SHOP_MAP[occasion]?.[gender] ?? [])
-  : [];
+const occasion  = isHub ? "" : getOccasion(a.slug);
+const gender    = isHub ? "" : getGender(a.slug);
+const shopItems: string[] = !isHub && occasion && (gender === "men" || gender === "women")
+  ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
 
-// ── Per-article OG image ────────────────────────────────────────────────────
-const ogImage = `${SITE}/og/${a.slug}.svg`;
+// ── Hub page article lists ────────────────────────────────────────────────────
+const hubFiltered   = isHub ? allArticles.filter((x: any) => x.lang === "en" && x.slug.includes(cat!.occasion)).sort((x: any, y: any) => x.h1.localeCompare(y.h1)) : [];
+const hubMen        = hubFiltered.filter((x: any) => x.slug.includes("-men") || x.slug.includes("for-men"));
+const hubWomen      = hubFiltered.filter((x: any) => x.slug.includes("-women") || x.slug.includes("for-women"));
+const hubOther      = hubFiltered.filter((x: any) => !hubMen.includes(x) && !hubWomen.includes(x));
 
-// ── Category Hub — link from article back to its hub page ──────────────────
+// ── Shared computed ────────────────────────────────────────────────────────────
+const canonical = `${SITE}/${isHub ? cat!.slug : a.slug}/`;
+const isAr      = !isHub && a.lang === "ar";
+const altUrl    = !isHub && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
+const ogImage   = isHub ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
+
+// ── Hub Map for article → hub linking ────────────────────────────────────────
 const HUB_MAP: Record<string, string> = {
-  "wedding-guest":    "wedding-guest-outfits",
-  "beach-party":      "beach-party-outfits",
-  "brunch":           "brunch-outfits",
-  "birthday-party":   "birthday-party-outfits",
-  "business-meeting": "business-meeting-outfits",
-  "casual-outing":    "casual-outing-outfits",
-  "concert":          "concert-outfits",
-  "dinner-party":     "dinner-party-outfits",
-  "eid-celebration":  "eid-celebration-outfits",
-  "engagement-party": "engagement-party-outfits",
-  "first-date":       "first-date-outfits",
-  "graduation":       "graduation-outfits",
-  "job-interview":    "job-interview-outfits",
-  "office":           "office-outfits",
-  "travel-day":       "travel-day-outfits",
+  "wedding-guest":"wedding-guest-outfits","beach-party":"beach-party-outfits",
+  "brunch":"brunch-outfits","birthday-party":"birthday-party-outfits",
+  "business-meeting":"business-meeting-outfits","casual-outing":"casual-outing-outfits",
+  "concert":"concert-outfits","dinner-party":"dinner-party-outfits",
+  "eid-celebration":"eid-celebration-outfits","engagement-party":"engagement-party-outfits",
+  "first-date":"first-date-outfits","graduation":"graduation-outfits",
+  "job-interview":"job-interview-outfits","office":"office-outfits","travel-day":"travel-day-outfits",
 };
-
 const HUB_LABEL: Record<string, string> = {
-  "wedding-guest":    "Wedding Guest Outfits",
-  "beach-party":      "Beach Party Outfits",
-  "brunch":           "Brunch Outfits",
-  "birthday-party":   "Birthday Party Outfits",
-  "business-meeting": "Business Meeting Outfits",
-  "casual-outing":    "Casual Outing Outfits",
-  "concert":          "Concert Outfits",
-  "dinner-party":     "Dinner Party Outfits",
-  "eid-celebration":  "Eid Celebration Outfits",
-  "engagement-party": "Engagement Party Outfits",
-  "first-date":       "First Date Outfits",
-  "graduation":       "Graduation Outfits",
-  "job-interview":    "Job Interview Outfits",
-  "office":           "Office Outfits",
-  "travel-day":       "Travel Day Outfits",
+  "wedding-guest":"Wedding Guest Outfits","beach-party":"Beach Party Outfits",
+  "brunch":"Brunch Outfits","birthday-party":"Birthday Party Outfits",
+  "business-meeting":"Business Meeting Outfits","casual-outing":"Casual Outing Outfits",
+  "concert":"Concert Outfits","dinner-party":"Dinner Party Outfits",
+  "eid-celebration":"Eid Celebration Outfits","engagement-party":"Engagement Party Outfits",
+  "first-date":"First Date Outfits","graduation":"Graduation Outfits",
+  "job-interview":"Job Interview Outfits","office":"Office Outfits","travel-day":"Travel Day Outfits",
 };
+const hubSlug  = !isHub && !isAr ? (HUB_MAP[occasion]  ?? "") : "";
+const hubLabel = !isHub && !isAr ? (HUB_LABEL[occasion] ?? "") : "";
 
-const hubSlug  = !isAr ? (HUB_MAP[occasion]  ?? "") : "";
-const hubLabel = !isAr ? (HUB_LABEL[occasion] ?? "") : "";
-
-const faqHtml = (a.faq || [])
+// ── Article schemas ───────────────────────────────────────────────────────────
+const faqHtml = isHub ? "" : (a.faq || [])
   .map((f: any) => `<details><summary>${f.q}</summary><p>${f.a}</p></details>`)
   .join("\n");
 
-const articleSchema = {
+const articleSchema = isHub ? null : {
   "@context": "https://schema.org", "@type": "Article",
   headline: a.title, description: a.metaDesc, image: ogImage,
   datePublished: a.datePublished, dateModified: a.datePublished, inLanguage: a.lang,
@@ -135,216 +332,306 @@ const articleSchema = {
   mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
 };
 
-// Breadcrumb includes hub page if one exists for this article's occasion
-const breadcrumbItems: any[] = [
-  { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
-  { "@type": "ListItem", position: 2, name: isAr ? "المقالات" : "Articles", item: isAr ? `${SITE}/articles-ar/` : `${SITE}/articles/` },
-];
-if (!isAr && hubSlug) {
-  breadcrumbItems.push({ "@type": "ListItem", position: 3, name: hubLabel, item: `${SITE}/${hubSlug}/` });
-}
-breadcrumbItems.push({ "@type": "ListItem", position: breadcrumbItems.length + 1, name: a.h1, item: canonical });
-const breadcrumbSchema = {
-  "@context": "https://schema.org", "@type": "BreadcrumbList",
-  itemListElement: breadcrumbItems,
-};
-const faqSchema = {
-  "@context": "https://schema.org", "@type": "FAQPage",
-  mainEntity: (a.faq || []).map((f: any) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
-};
+const breadcrumbItems: any[] = isHub
+  ? [
+      { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: cat!.h1, item: canonical },
+    ]
+  : (() => {
+      const items: any[] = [
+        { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
+        { "@type": "ListItem", position: 2, name: isAr ? "المقالات" : "Articles", item: isAr ? `${SITE}/articles-ar/` : `${SITE}/articles/` },
+      ];
+      if (!isAr && hubSlug) items.push({ "@type": "ListItem", position: 3, name: hubLabel, item: `${SITE}/${hubSlug}/` });
+      items.push({ "@type": "ListItem", position: items.length + 1, name: a.h1, item: canonical });
+      return items;
+    })();
 
-// ItemList schema for Shop the Look — helps Google Shopping results
+const breadcrumbSchema = { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: breadcrumbItems };
+
+const faqSchema = isHub
+  ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: cat!.faq.map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }
+  : (a.faq?.length > 0 ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: (a.faq || []).map((f: any) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) } : null);
+
 const shopSchema = shopItems.length > 0 ? {
   "@context": "https://schema.org", "@type": "ItemList",
   name: `Shop the Look — ${a.h1}`,
   itemListElement: shopItems.map((item: string, idx: number) => ({
-    "@type": "ListItem",
-    position: idx + 1,
-    url: amz(item),
+    "@type": "ListItem", position: idx + 1, url: amz(item),
     name: item.replace(/\b\w/g, (c: string) => c.toUpperCase()),
   })),
 } : null;
 
-const faqHeading = isAr ? "أسئلة شائعة" : "Frequently asked questions";
-const altLabel = a.altLang === "ar" ? "العربية" : "English";
+const faqHeading    = isAr ? "أسئلة شائعة" : "Frequently asked questions";
+const altLabel      = !isHub && a.altLang === "ar" ? "العربية" : "English";
 const articlesLabel = isAr ? "كل المقالات" : "All articles";
 const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
+
+const pageTitle = isHub ? cat!.title : a.title;
+const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
 ---
 
-<Base title={a.title} description={a.metaDesc} lang={a.lang} dir={a.dir}
-  canonical={canonical} altLang={a.altLang} altUrl={altUrl} ogImage={ogImage}>
+<Base title={pageTitle} description={pageDesc}
+  lang={isAr ? "ar" : "en"} dir={isAr ? "rtl" : "ltr"}
+  canonical={canonical}
+  altLang={!isHub ? a.altLang : undefined}
+  altUrl={!isHub ? altUrl : undefined}
+  ogImage={ogImage}>
   <Fragment slot="head">
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
+    {articleSchema && (<script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />)}
     <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
-    {a.faq?.length > 0 && (<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />)}
+    {faqSchema && (<script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />)}
     {shopSchema && (<script type="application/ld+json" is:inline set:html={JSON.stringify(shopSchema)} />)}
   </Fragment>
 
-  <!-- Unified header -->
-  <header class="site-header">
-    <div class="site-header-inner">
-      <a href="/" class="site-logo">Askoutfit</a>
-      <nav class="site-nav">
-        <a href={isAr ? "/articles-ar/" : "/articles/"} class="site-nav-link">{articlesLabel}</a>
-        <a href={`/${a.altSlug || ""}/`} class="site-lang">{altLabel}</a>
-      </nav>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <nav class="crumb" aria-label="breadcrumb">
-      <a href="/">Askoutfit</a> &rsaquo;
-      <a href={isAr ? "/articles-ar/" : "/articles/"}>{isAr ? "المقالات" : "Articles"}</a>
-      {!isAr && hubSlug && (<> &rsaquo; <a href={`/${hubSlug}/`}>{hubLabel}</a></>)}
-      &rsaquo; <span>{a.h1}</span>
-    </nav>
-
-    <article class="article">
-      <h1>{a.h1}</h1>
-      <div class="lead" set:html={a.introHtml} />
-
-      <div class="tool-cta">
-        <h3>{a.ctaTitle}</h3>
-        <p>{a.ctaSub}</p>
-        <a class="btn" href={isAr ? `/?lang=ar&ref=${a.slug}` : `/?ref=${a.slug}`} data-cta="top" data-slug={a.slug}>{a.ctaBtn}</a>
-      </div>
-
-      <div class="body" set:html={a.bodyHtml} />
-
-      {shopItems.length > 0 && (
-        <section class="shop-look">
-          <h2 class="shop-heading">Shop the Look</h2>
-          <p class="shop-sub">Tap any item to find it on Amazon — affiliate links help keep this site free.</p>
-          <div class="shop-grid">
-            {shopItems.map((item: string) => (
-              <a href={amz(item)} target="_blank" rel="noopener nofollow sponsored" class="shop-card"
-                 onclick={`if(typeof gtag==='function')gtag('event','shop_click',{item:'${item.replace(/'/g,"\\'")}',slug:'${a.slug}'})`}>
-                <span class="shop-icon">🛍</span>
-                <span class="shop-label">{item.replace(/\b\w/g, (c: string) => c.toUpperCase())}</span>
-                <span class="shop-arrow">→</span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <div class="tool-cta">
-        <h3>{a.ctaTitle}</h3>
-        <p>{a.ctaSub}</p>
-        <a class="btn" href={isAr ? `/?lang=ar&ref=${a.slug}` : `/?ref=${a.slug}`} data-cta="bottom" data-slug={a.slug}>{a.ctaBtn}</a>
-      </div>
-
-      <section class="faq">
-        <h2>{faqHeading}</h2>
-        <div set:html={faqHtml} />
-      </section>
-
-      {/* ── Email Capture ──────────────────────────────────────────────── */}
-      {!isAr && (
-        <section class="newsletter">
-          <div class="nl-inner">
-            <p class="nl-emoji">✉️</p>
-            <h3 class="nl-title">Get weekly outfit ideas</h3>
-            <p class="nl-sub">Fresh looks for every occasion, straight to your inbox. No spam — unsubscribe anytime.</p>
-            <form class="nl-form" id="nl-form" action="https://formsubmit.co/mn.oun93@gmail.com" method="POST">
-              <input type="hidden" name="_subject" value="New Askoutfit subscriber" />
-              <input type="hidden" name="_captcha" value="false" />
-              <input type="hidden" name="_template" value="table" />
-              <input type="hidden" name="_next" value="https://www.askoutfit.com/?subscribed=1" />
-              <div class="nl-row">
-                <input type="email" name="email" placeholder="your@email.com" required class="nl-email" />
-                <button type="submit" class="nl-btn">Subscribe</button>
-              </div>
-            </form>
-          </div>
-        </section>
-      )}
-
-      {/* ── Social Share ───────────────────────────────────────────────── */}
-      <div class="share-bar">
-        <span class="share-label">{isAr ? "شارك:" : "Share:"}</span>
-        <a id="pin-btn" class="share-btn share-pinterest" href="#" target="_blank" rel="noopener" aria-label="Save to Pinterest">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
-          Pinterest
-        </a>
-        <a id="wa-btn" class="share-btn share-whatsapp" href="#" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
-          WhatsApp
-        </a>
-        <button id="copy-btn" class="share-btn share-copy" aria-label="Copy link">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-          <span id="copy-label">Copy link</span>
-        </button>
-      </div>
-
-      {related.length > 0 && (
-        <section class="related">
-          <h2>{relatedHeading}</h2>
-          <div class="related-grid">
-            {related.map((r: any) => (
-              <a href={`/${r.slug}/`} class="related-card">
-                <span class="related-title">{r.h1}</span>
-                <span class="related-arrow">{isAr ? "←" : "→"}</span>
-              </a>
-            ))}
-          </div>
-        </section>
-      )}
-
-      {!isAr && hubSlug && (
-        <div class="hub-cta">
-          <a href={`/${hubSlug}/`} class="hub-cta-link">
-            Browse all {hubLabel} &rarr;
-          </a>
+  {isHub ? (
+    /* ══════════════════ HUB PAGE TEMPLATE ══════════════════ */
+    <>
+      <header class="site-header">
+        <div class="site-header-inner hub-header-inner">
+          <a href="/" class="site-logo">Askoutfit</a>
+          <nav class="site-nav">
+            <a href="/articles/" class="site-nav-link">All Guides</a>
+          </nav>
         </div>
-      )}
-    </article>
+      </header>
 
-    <footer>
-      <p>&copy; {new Date().getFullYear()} Askoutfit.
-        {isAr ? " قد نربح عمولة على عمليات الشراء عبر الروابط." : " We may earn a commission on purchases through links."}
-      </p>
-      <p><a href={isAr ? "/articles-ar/" : "/articles/"}>{articlesLabel}</a> &middot; <a href={`/${a.altSlug || ""}/`}>{altLabel}</a></p>
-      <p class="aiom">{isAr ? "أحد مشاريع " : "A project by "}<a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
-    </footer>
-  </main>
+      <main class="hub-wrap">
+        <nav class="crumb"><a href="/">Askoutfit</a> › <span>{cat!.h1}</span></nav>
 
-  <script is:inline>
-    document.querySelectorAll("[data-cta]").forEach((el) => {
-      el.addEventListener("click", () => {
-        if (typeof gtag === "function") {
-          gtag("event", "cta_click", { location: el.getAttribute("data-cta"), slug: el.getAttribute("data-slug") });
-        }
-      });
-    });
+        <h1 class="hub-h1">{cat!.h1}</h1>
+        <p class="hub-intro">{cat!.intro}</p>
 
-    // ── Social share ─────────────────────────────────────────────────────────
-    const pageUrl  = encodeURIComponent(window.location.href);
-    const pageTitle = encodeURIComponent(document.title);
+        <div class="tool-cta">
+          <h3>Not sure what to wear?</h3>
+          <p>Describe your occasion and get a personalised outfit in seconds.</p>
+          <a class="btn" href={`/?ref=${cat!.slug}`}>Get My Outfit →</a>
+        </div>
 
-    const pinBtn = document.getElementById("pin-btn");
-    if (pinBtn) pinBtn.href = `https://pinterest.com/pin/create/button/?url=${pageUrl}&description=${pageTitle}`;
+        {hubMen.length > 0 && (
+          <section class="group">
+            <h2>For Men</h2>
+            <div class="art-grid">
+              {hubMen.map((x: any) => (
+                <a href={`/${x.slug}/`} class="art-card">
+                  <span class="art-title">{x.h1}</span>
+                  <span class="art-arrow">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
-    const waBtn = document.getElementById("wa-btn");
-    if (waBtn) waBtn.href = `https://wa.me/?text=${pageTitle}%20${pageUrl}`;
+        {hubWomen.length > 0 && (
+          <section class="group">
+            <h2>For Women</h2>
+            <div class="art-grid">
+              {hubWomen.map((x: any) => (
+                <a href={`/${x.slug}/`} class="art-card">
+                  <span class="art-title">{x.h1}</span>
+                  <span class="art-arrow">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
 
-    const copyBtn = document.getElementById("copy-btn");
-    const copyLabel = document.getElementById("copy-label");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", () => {
-        navigator.clipboard.writeText(window.location.href).then(() => {
-          copyLabel.textContent = "Copied!";
-          setTimeout(() => { copyLabel.textContent = "Copy link"; }, 2000);
+        {hubOther.length > 0 && (
+          <section class="group">
+            <h2>More Guides</h2>
+            <div class="art-grid">
+              {hubOther.map((x: any) => (
+                <a href={`/${x.slug}/`} class="art-card">
+                  <span class="art-title">{x.h1}</span>
+                  <span class="art-arrow">→</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section class="faq-section">
+          <h2>Frequently Asked Questions</h2>
+          {cat!.faq.map(f => (
+            <details class="faq-item">
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+        </section>
+      </main>
+
+      <footer class="site-footer-hub">
+        <p>© {new Date().getFullYear()} Askoutfit — <a href="/articles/">All Guides</a></p>
+        <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+      </footer>
+    </>
+  ) : (
+    /* ══════════════════ ARTICLE PAGE TEMPLATE ══════════════════ */
+    <>
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a href="/" class="site-logo">Askoutfit</a>
+          <nav class="site-nav">
+            <a href={isAr ? "/articles-ar/" : "/articles/"} class="site-nav-link">{articlesLabel}</a>
+            <a href={`/${a.altSlug || ""}/`} class="site-lang">{altLabel}</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="wrap">
+        <nav class="crumb" aria-label="breadcrumb">
+          <a href="/">Askoutfit</a> &rsaquo;
+          <a href={isAr ? "/articles-ar/" : "/articles/"}>{isAr ? "المقالات" : "Articles"}</a>
+          {!isAr && hubSlug && (
+            <Fragment>&nbsp;&rsaquo; <a href={`/${hubSlug}/`}>{hubLabel}</a></Fragment>
+          )}
+          &nbsp;&rsaquo; <span>{a.h1}</span>
+        </nav>
+
+        <article class="article">
+          <h1>{a.h1}</h1>
+          <div class="lead" set:html={a.introHtml} />
+
+          <div class="tool-cta">
+            <h3>{a.ctaTitle}</h3>
+            <p>{a.ctaSub}</p>
+            <a class="btn" href={isAr ? `/?lang=ar&ref=${a.slug}` : `/?ref=${a.slug}`} data-cta="top" data-slug={a.slug}>{a.ctaBtn}</a>
+          </div>
+
+          <div class="body" set:html={a.bodyHtml} />
+
+          {shopItems.length > 0 && (
+            <section class="shop-look">
+              <h2 class="shop-heading">Shop the Look</h2>
+              <p class="shop-sub">Tap any item to find it on Amazon — affiliate links help keep this site free.</p>
+              <div class="shop-grid">
+                {shopItems.map((item: string) => (
+                  <a href={amz(item)} target="_blank" rel="noopener nofollow sponsored" class="shop-card"
+                     onclick={`if(typeof gtag==='function')gtag('event','shop_click',{item:'${item}',slug:'${a.slug}'})`}>
+                    <span class="shop-icon">🛍</span>
+                    <span class="shop-label">{item.replace(/\b\w/g, (c: string) => c.toUpperCase())}</span>
+                    <span class="shop-arrow">→</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <div class="tool-cta">
+            <h3>{a.ctaTitle}</h3>
+            <p>{a.ctaSub}</p>
+            <a class="btn" href={isAr ? `/?lang=ar&ref=${a.slug}` : `/?ref=${a.slug}`} data-cta="bottom" data-slug={a.slug}>{a.ctaBtn}</a>
+          </div>
+
+          <section class="faq">
+            <h2>{faqHeading}</h2>
+            <div set:html={faqHtml} />
+          </section>
+
+          {!isAr && (
+            <section class="newsletter">
+              <div class="nl-inner">
+                <p class="nl-emoji">✉️</p>
+                <h3 class="nl-title">Get weekly outfit ideas</h3>
+                <p class="nl-sub">Fresh looks for every occasion, straight to your inbox. No spam — unsubscribe anytime.</p>
+                <form class="nl-form" action="https://formsubmit.co/mn.oun93@gmail.com" method="POST">
+                  <input type="hidden" name="_subject" value="New Askoutfit subscriber" />
+                  <input type="hidden" name="_captcha" value="false" />
+                  <input type="hidden" name="_template" value="table" />
+                  <input type="hidden" name="_next" value="https://www.askoutfit.com/?subscribed=1" />
+                  <div class="nl-row">
+                    <input type="email" name="email" placeholder="your@email.com" required class="nl-email" />
+                    <button type="submit" class="nl-btn">Subscribe</button>
+                  </div>
+                </form>
+              </div>
+            </section>
+          )}
+
+          <div class="share-bar">
+            <span class="share-label">{isAr ? "شارك:" : "Share:"}</span>
+            <a id="pin-btn" class="share-btn share-pinterest" href="#" target="_blank" rel="noopener" aria-label="Save to Pinterest">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738a.36.36 0 0 1 .083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.632-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/></svg>
+              Pinterest
+            </a>
+            <a id="wa-btn" class="share-btn share-whatsapp" href="#" target="_blank" rel="noopener" aria-label="Share on WhatsApp">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+              WhatsApp
+            </a>
+            <button id="copy-btn" class="share-btn share-copy" aria-label="Copy link">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span id="copy-label">Copy link</span>
+            </button>
+          </div>
+
+          {related.length > 0 && (
+            <section class="related">
+              <h2>{relatedHeading}</h2>
+              <div class="related-grid">
+                {related.map((r: any) => (
+                  <a href={`/${r.slug}/`} class="related-card">
+                    <span class="related-title">{r.h1}</span>
+                    <span class="related-arrow">{isAr ? "←" : "→"}</span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {!isAr && hubSlug && (
+            <div class="hub-cta">
+              <a href={`/${hubSlug}/`} class="hub-cta-link">
+                Browse all {hubLabel} &rarr;
+              </a>
+            </div>
+          )}
+        </article>
+
+        <footer>
+          <p>&copy; {new Date().getFullYear()} Askoutfit.
+            {isAr ? " قد نربح عمولة على عمليات الشراء عبر الروابط." : " We may earn a commission on purchases through links."}
+          </p>
+          <p><a href={isAr ? "/articles-ar/" : "/articles/"}>{articlesLabel}</a> &middot; <a href={`/${a.altSlug || ""}/`}>{altLabel}</a></p>
+          <p class="aiom">{isAr ? "أحد مشاريع " : "A project by "}<a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+        </footer>
+      </main>
+
+      <script is:inline>
+        document.querySelectorAll("[data-cta]").forEach((el) => {
+          el.addEventListener("click", () => {
+            if (typeof gtag === "function") {
+              gtag("event", "cta_click", { location: el.getAttribute("data-cta"), slug: el.getAttribute("data-slug") });
+            }
+          });
         });
-        if (typeof gtag === "function") gtag("event", "share", { method: "copy_link" });
-      });
-    }
-  </script>
+        const pageUrl   = encodeURIComponent(window.location.href);
+        const pageTitle = encodeURIComponent(document.title);
+        const pinBtn = document.getElementById("pin-btn");
+        if (pinBtn) pinBtn.href = `https://pinterest.com/pin/create/button/?url=${pageUrl}&description=${pageTitle}`;
+        const waBtn = document.getElementById("wa-btn");
+        if (waBtn) waBtn.href = `https://wa.me/?text=${pageTitle}%20${pageUrl}`;
+        const copyBtn   = document.getElementById("copy-btn");
+        const copyLabel = document.getElementById("copy-label");
+        if (copyBtn) {
+          copyBtn.addEventListener("click", () => {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+              copyLabel.textContent = "Copied!";
+              setTimeout(() => { copyLabel.textContent = "Copy link"; }, 2000);
+            });
+            if (typeof gtag === "function") gtag("event", "share", { method: "copy_link" });
+          });
+        }
+      </script>
+    </>
+  )}
 </Base>
 
 <style>
+  /* ── Shared header ───────────────────────────────────────────────────────── */
   .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.6); background: rgba(26,20,16,.85); backdrop-filter: blur(12px); }
   .site-header-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+  .hub-header-inner { max-width: 960px; }
   .site-logo { font-family: "Playfair Display", Georgia, serif; font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
   html[dir="rtl"] .site-logo { font-family: "Tajawal", sans-serif; font-weight: 700; }
   .site-nav { display: flex; align-items: center; gap: 16px; }
@@ -353,9 +640,18 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
   .site-lang { display: inline-flex; align-items: center; border: 1px solid var(--line); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 999px; text-decoration: none; }
   .site-lang:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--ink); }
 
-  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
+  /* ── Shared crumb + btn ──────────────────────────────────────────────────── */
   .crumb { font-size: 13px; color: var(--faint); margin-bottom: 28px; }
   .crumb a { text-decoration: none; color: var(--gold); }
+  .btn { display: inline-block; background: var(--gold); color: var(--bg); font-weight: 600; text-decoration: none; padding: 13px 26px; border-radius: 12px; transition: background 0.2s; }
+  .btn:hover { background: #d8b67e; }
+  .tool-cta { margin: 40px 0; padding: 28px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 12%, var(--surface)), var(--surface)); text-align: center; }
+  .tool-cta h3 { font-family: "Playfair Display", serif; font-size: 22px; margin-bottom: 8px; }
+  html[dir="rtl"] .tool-cta h3 { font-family: "Tajawal", sans-serif; font-weight: 700; }
+  .tool-cta p { color: var(--muted); margin: 0 0 16px; }
+
+  /* ── ARTICLE layout ──────────────────────────────────────────────────────── */
+  .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
   h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(28px, 5vw, 42px); line-height: 1.2; margin-bottom: 18px; }
   html[dir="rtl"] h1 { font-family: "Tajawal", sans-serif; font-weight: 700; }
   .lead :global(p) { font-size: 18px; color: var(--muted); margin-bottom: 8px; }
@@ -365,12 +661,6 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
   .body :global(p) { margin: 14px 0; }
   .body :global(ul), .body :global(ol) { margin: 14px 0; padding-inline-start: 22px; }
   .body :global(li) { margin: 8px 0; }
-  .tool-cta { margin: 40px 0; padding: 28px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 12%, var(--surface)), var(--surface)); text-align: center; }
-  .tool-cta h3 { font-family: "Playfair Display", serif; font-size: 22px; margin-bottom: 8px; }
-  html[dir="rtl"] .tool-cta h3 { font-family: "Tajawal", sans-serif; font-weight: 700; }
-  .tool-cta p { color: var(--muted); margin: 0 0 16px; }
-  .btn { display: inline-block; background: var(--gold); color: var(--bg); font-weight: 600; text-decoration: none; padding: 13px 26px; border-radius: 12px; transition: background 0.2s; }
-  .btn:hover { background: #d8b67e; }
   .faq { margin-top: 40px; }
   .faq h2 { font-family: "Playfair Display", serif; font-size: 24px; margin-bottom: 8px; }
   html[dir="rtl"] .faq h2 { font-family: "Tajawal", sans-serif; font-weight: 700; }
@@ -424,4 +714,28 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
   footer a { color: var(--faint); }
   footer .aiom { margin-top: 8px; }
   footer .aiom a { color: var(--gold); font-weight: 500; }
+
+  /* ── HUB layout ──────────────────────────────────────────────────────────── */
+  .hub-wrap { max-width: 960px; margin: 0 auto; padding: 36px 20px 80px; }
+  .hub-h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(30px, 5vw, 46px); margin: 0 0 16px; }
+  .hub-intro { color: var(--muted); font-size: 17px; line-height: 1.7; margin-bottom: 32px; }
+  .group { margin-bottom: 48px; }
+  .group h2 { font-family: "Playfair Display", Georgia, serif; font-size: 26px; color: var(--gold); margin-bottom: 18px; }
+  .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
+  @media (min-width: 640px)  { .art-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .art-grid { grid-template-columns: repeat(3, 1fr); } }
+  .art-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 12px; text-decoration: none; transition: .2s; }
+  .art-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
+  .art-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--gold); }
+  .art-arrow { color: var(--gold); flex-shrink: 0; }
+  .faq-section { margin-top: 50px; }
+  .faq-section h2 { font-family: "Playfair Display", serif; font-size: 26px; margin-bottom: 18px; }
+  .faq-item { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  .faq-item summary { cursor: pointer; font-weight: 600; list-style: none; font-size: 16px; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item p { color: var(--muted); margin-top: 10px; line-height: 1.7; }
+  .site-footer-hub { border-top: 1px solid rgba(58,48,38,.6); text-align: center; padding: 32px 20px; font-size: 12px; color: var(--faint); }
+  .site-footer-hub a { color: var(--gold); text-decoration: none; }
+  .site-footer-hub .aiom { margin-top: 8px; }
+  .site-footer-hub .aiom a { color: var(--gold); font-weight: 500; }
 </style>

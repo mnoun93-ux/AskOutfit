@@ -135,6 +135,14 @@ const articlesJson = JSON.stringify(articles);
 
     render();
 
+    // ── URL param ?q= (Google SearchAction sitelinks) ────────────────────────
+    const urlQ = new URLSearchParams(window.location.search).get("q");
+    if (urlQ) {
+      searchQ = urlQ;
+      document.getElementById("search").value = urlQ;
+      render();
+    }
+
     // ── tabs ─────────────────────────────────────────────────────────────────
     document.querySelectorAll(".tab").forEach(btn => {
       btn.addEventListener("click", () => {
