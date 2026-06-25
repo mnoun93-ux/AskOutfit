@@ -535,7 +535,7 @@ const occasion  = (isHub || isGeo) ? "" : getOccasion(_lookupSlug);
 const gender    = (isHub || isGeo) ? "" : getGender(_lookupSlug);
 const shopItems: string[] = !isHub && !isGeo && occasion && (gender === "men" || gender === "women")
   ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
-const shopLabelsAr: string[] = isAr && occasion && (gender === "men" || gender === "women")
+const shopLabelsAr: string[] = (!isHub && !isGeo && (a as any).lang === "ar") && occasion && (gender === "men" || gender === "women")
   ? (SHOP_MAP_AR[occasion]?.[gender] ?? []) : [];
 
 // ── Hero images — Pexels photo IDs (allows hotlinking) ───────────────────────

@@ -55,14 +55,19 @@ const totalPages = cities.length * SEASONS.length;
         Climate-specific outfit guides for {cities.length} cities — covering every season.
         {totalPages} guides total.
       </p>
+      <div class="search-box">
+        <input id="city-search" type="search" placeholder="Search a city… e.g. Tokyo, Dubai, Paris" autocomplete="off" />
+      </div>
     </div>
+
+    <div id="no-results" class="no-results" style="display:none">No cities found. Try another name.</div>
 
     {REGION_ORDER.filter(r => byRegion[r]?.length > 0).map(regionId => (
       <section class="region-section">
         <h2 class="region-title">{REGION_LABELS[regionId]}</h2>
         <div class="city-grid">
           {byRegion[regionId].map((city: any) => (
-            <div class="city-card">
+            <div class="city-card" data-city={`${city.name} ${city.country}`.toLowerCase()}>
               <div class="city-header">
                 <div>
                   <p class="city-name">{city.name}</p>
@@ -98,6 +103,28 @@ const totalPages = cities.length * SEASONS.length;
 
   <script is:inline>
     document.getElementById("y").textContent = new Date().getFullYear();
+
+    // City search
+    const input = document.getElementById("city-search");
+    const noResults = document.getElementById("no-results");
+    const cards = document.querySelectorAll(".city-card");
+    const sections = document.querySelectorAll(".region-section");
+
+    input.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      let visible = 0;
+      cards.forEach(card => {
+        const match = !q || card.dataset.city.includes(q);
+        card.style.display = match ? "" : "none";
+        if (match) visible++;
+      });
+      // Hide empty region sections
+      sections.forEach(sec => {
+        const anyVisible = [...sec.querySelectorAll(".city-card")].some(c => c.style.display !== "none");
+        sec.style.display = anyVisible ? "" : "none";
+      });
+      noResults.style.display = (q && visible === 0) ? "" : "none";
+    });
   </script>
 </Base>
 
@@ -117,7 +144,12 @@ const totalPages = cities.length * SEASONS.length;
   .hero { text-align: center; padding: 40px 0 52px; }
   .hero-tag { font-size: 13px; color: var(--gold); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; margin: 0 0 12px; }
   .hero h1 { font-family: "Playfair Display", Georgia, serif; font-size: clamp(28px, 5vw, 44px); font-weight: 600; line-height: 1.2; margin: 0 0 14px; color: var(--ink); }
-  .hero-sub { color: var(--muted); font-size: 17px; margin: 0; }
+  .hero-sub { color: var(--muted); font-size: 17px; margin: 0 0 24px; }
+  .search-box { max-width: 480px; margin: 0 auto; }
+  .search-box input { width: 100%; box-sizing: border-box; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 13px 18px; font-size: 15px; color: var(--ink); outline: none; transition: border-color .2s; }
+  .search-box input::placeholder { color: var(--faint); }
+  .search-box input:focus { border-color: var(--gold); }
+  .no-results { text-align: center; color: var(--muted); padding: 32px 0; font-size: 15px; }
 
   /* ── Region sections ──────────────────────────────────────────────────────── */
   .region-section { margin-bottom: 56px; }
