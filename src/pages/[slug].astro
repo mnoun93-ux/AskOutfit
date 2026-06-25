@@ -510,12 +510,33 @@ const SHOP_MAP: Record<string, { men: string[]; women: string[] }> = {
   "travel-day":        { men: ["mens travel outfit jogger","mens hoodie travel","mens trainers white","mens crossbody bag travel"], women: ["women travel outfit leggings","women oversized hoodie","women travel shoes","women travel backpack"] },
 };
 
+// Arabic display labels — same order as SHOP_MAP arrays
+const SHOP_MAP_AR: Record<string, { men: string[]; women: string[] }> = {
+  "wedding-guest":    { men: ["بدلة كتانية رجالي","قميص رسمي أبيض","حذاء أكسفورد جلدي","منديل جيب رجالي"], women: ["فستان ميدي للأعراس","صندل بكعب للأعراس","حقيبة سهرة","قبعة أنيقة"] },
+  "beach-party":      { men: ["قميص كتاني كاجوال","شورت شينو صيفي","حذاء إسبادريل","نظارة شمسية مستقطبة"], women: ["فستان حفلة شاطئية","صندل برابط","قبعة شمس واسعة","حقيبة رافيا"] },
+  "brunch":           { men: ["بنطال شينو كاجوال","بولو شيرت","حذاء رياضي أبيض","بليزر خفيف"], women: ["فستان راب للبرنش","حذاء ميول مريح","حقيبة كروس بودي","طقم كتاني"] },
+  "birthday-party":   { men: ["طقم كاجوال أنيق","حذاء تشيلسي بوت","بنطال ضيق","قميص مطبوع"], women: ["فستان ساتان للحفلات","كعب عالٍ برابط","أقراط مميزة","حقيبة صغيرة"] },
+  "business-meeting": { men: ["بدلة عمل رجالي","قميص رسمي","ربطة عنق حرير","حذاء أكسفورد جلدي"], women: ["بليزر مكتبي","بنطال مفصّل","بلوزة حرير","حذاء كعب مدبب"] },
+  "casual-outing":    { men: ["جينز ضيق رجالي","قميص كاجوال","حذاء رياضي جلدي أبيض","جاكيت كاجوال"], women: ["جينز مستقيم نسائي","بلوزة كاجوال","حذاء رياضي أبيض","حقيبة كانفاس كبيرة"] },
+  "concert":          { men: ["تيشيرت فرقة موسيقية","جاكيت جلدي","بوت تشيلسي","جينز داكن ضيق"], women: ["إطلالة كونسيرت نسائية","بوت كاحل","جاكيت أوفرسايز","حقيبة كروس جلدية"] },
+  "dinner-party":     { men: ["بنطال شينو مفصّل","بليزر كحلي","لوفر جلدي","قميص بدون ربطة"], women: ["فستان ميدي سهرة","كعب كيتن","حقيبة سهرة","بليزر أنثوي"] },
+  "eid-celebration":  { men: ["ثوب أبيض رجالي","كندورة رجالي","حذاء رسمي","ساعة ذهبية"], women: ["عباءة أنيقة","جلابية","كعب رسمي","حقيبة سهرة ذهبية"] },
+  "engagement-party": { men: ["بليزر فاتح","شينو أنيق","لوفر رجالي","منديل جيب بزهور"], women: ["فستان بزهور للخطوبة","كعب ويدج","دبوس شعر بزهور","حقيبة صغيرة"] },
+  "first-date":       { men: ["طقم كاجوال أنيق","شينو كحلي","قميص أكسفورد أبيض","حذاء رياضي نظيف"], women: ["فستان للموعد الأول","بوت بكعب","حقيبة كتف صغيرة","مجوهرات ذهبية"] },
+  "graduation":       { men: ["بدلة تخرج","قميص رسمي","حذاء تخرج","ربطة عنق تخرج"], women: ["فستان ميدي للتخرج","كعب للتخرج","حقيبة للتخرج","فستان بزهور للحفل"] },
+  "job-interview":    { men: ["بدلة مقابلة كحلية","قميص مقابلة أبيض","حذاء جلدي أسود","ربطة عنق كلاسيك"], women: ["بليزر مقابلة عمل","فستان مفصّل","حذاء كورت","حقيبة هيكلية"] },
+  "office":           { men: ["بنطال مكتبي","قميص مكتبي","حذاء أكسفورد","حزام جلدي"], women: ["فستان مكتبي","بليزر مكتبي","حذاء كورت بكعب","حقيبة كبيرة مكتبية"] },
+  "travel-day":       { men: ["طقم سفر مريح","هودي سفر","حذاء رياضي أبيض","حقيبة كروس للسفر"], women: ["طقم سفر نسائي","هودي أوفرسايز","حذاء سفر مريح","حقيبة ظهر للسفر"] },
+};
+
 // For Arabic articles, use altSlug (English) for occasion/gender lookup
 const _lookupSlug = (!isHub && !isGeo) ? (a.lang === "ar" && a.altSlug ? a.altSlug : a.slug) : "";
 const occasion  = (isHub || isGeo) ? "" : getOccasion(_lookupSlug);
 const gender    = (isHub || isGeo) ? "" : getGender(_lookupSlug);
 const shopItems: string[] = !isHub && !isGeo && occasion && (gender === "men" || gender === "women")
   ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
+const shopLabelsAr: string[] = isAr && occasion && (gender === "men" || gender === "women")
+  ? (SHOP_MAP_AR[occasion]?.[gender] ?? []) : [];
 
 // ── Hero images — Pexels photo IDs (allows hotlinking) ───────────────────────
 // URL: images.pexels.com/photos/{id}/pexels-photo-{id}.jpeg?auto=compress&cs=tinysrgb&w=760&h=400&fit=crop
@@ -658,14 +679,16 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
         <div class="site-header-inner">
           <a href="/" class="site-logo">Askoutfit</a>
           <nav class="site-nav">
-            <a href="/articles/" class="site-nav-link">All Guides</a>
+            <a href="/articles/" class="site-nav-link">Guides</a>
+            <a href="/travel-guides/" class="site-nav-link">Travel</a>
+            <a href="/?lang=ar" class="site-lang">العربية</a>
           </nav>
         </div>
       </header>
 
       <main class="wrap">
         <nav class="crumb" aria-label="breadcrumb">
-          <a href="/">Askoutfit</a> &rsaquo;
+          <a href="/">Askoutfit</a> &rsaquo; <a href="/travel-guides/">Travel Guides</a> &rsaquo;
           <span>Travel Style Guides</span> &rsaquo;
           <span>{geoH1}</span>
         </nav>
@@ -809,7 +832,7 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
 
         <footer>
           <p>&copy; {new Date().getFullYear()} Askoutfit. We may earn a commission on purchases through links.</p>
-          <p><a href="/articles/">All Guides</a></p>
+          <p><a href="/articles/">Outfit Guides</a> · <a href="/travel-guides/">Travel Guides</a></p>
           <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
         </footer>
       </main>
@@ -951,12 +974,12 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
               <h2 class="shop-heading">{isAr ? "تسوق الإطلالة" : "Shop the Look"}</h2>
               <p class="shop-sub">{isAr ? "اضغط على أي قطعة لإيجادها على أمازون — روابط الأفيليت تساعد في إبقاء الموقع مجانياً." : "Tap any item to find it on Amazon — affiliate links help keep this site free."}</p>
               <div class="shop-grid">
-                {shopItems.map((item: string) => (
+                {shopItems.map((item: string, idx: number) => (
                   <a href={amz(item)} target="_blank" rel="noopener nofollow sponsored" class="shop-card"
                      onclick={`if(typeof gtag==='function')gtag('event','shop_click',{item:'${item}',slug:'${a.slug}'})`}>
                     <span class="shop-icon">🛍</span>
-                    <span class="shop-label">{item.replace(/\b\w/g, (c: string) => c.toUpperCase())}</span>
-                    <span class="shop-arrow">→</span>
+                    <span class="shop-label">{isAr && shopLabelsAr[idx] ? shopLabelsAr[idx] : item.replace(/\b\w/g, (c: string) => c.toUpperCase())}</span>
+                    <span class="shop-arrow">{isAr ? "←" : "→"}</span>
                   </a>
                 ))}
               </div>
@@ -973,6 +996,15 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
             <h2>{faqHeading}</h2>
             <div set:html={faqHtml} />
           </section>
+
+          {!isAr && (
+            <div class="travel-cta">
+              <p class="travel-cta-tag">✈️ Travelling soon?</p>
+              <h3 class="travel-cta-title">Climate-Specific Outfit Guides for 49 Cities</h3>
+              <p class="travel-cta-sub">From Dubai summer to London winter — find exactly what to pack and wear.</p>
+              <a href="/travel-guides/" class="travel-cta-btn">Explore Travel Guides →</a>
+            </div>
+          )}
 
           <section class="newsletter">
               <div class="nl-inner">
@@ -1124,6 +1156,14 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
   .related-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
   .related-title { font-weight: 500; font-size: 15px; }
   .related-arrow { color: var(--gold); flex-shrink: 0; }
+  /* ── Travel CTA banner ───────────────────────────────────────────────────── */
+  .travel-cta { margin: 40px 0; padding: 28px 32px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 10%, var(--surface)), var(--surface)); text-align: center; }
+  .travel-cta-tag { font-size: 12px; color: var(--gold); letter-spacing: .1em; text-transform: uppercase; font-weight: 700; margin: 0 0 8px; }
+  .travel-cta-title { font-family: "Playfair Display", serif; font-size: 20px; font-weight: 600; margin: 0 0 8px; color: var(--ink); }
+  .travel-cta-sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+  .travel-cta-btn { display: inline-block; background: var(--gold); color: var(--bg); font-size: 14px; font-weight: 600; text-decoration: none; padding: 10px 22px; border-radius: 10px; transition: background .2s; }
+  .travel-cta-btn:hover { background: #d8b67e; }
+
   .newsletter { margin: 44px 0; }
   .nl-inner { border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent); border-radius: 18px; padding: 32px 28px; background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 8%, var(--surface)), var(--surface)); text-align: center; }
   .nl-emoji { font-size: 28px; margin-bottom: 10px; }

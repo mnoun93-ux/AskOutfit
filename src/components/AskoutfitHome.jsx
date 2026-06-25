@@ -208,7 +208,7 @@ export default function AskoutfitHome() {
           <a href="/" className="ao-logo">Askoutfit</a>
           <div className="ao-nav-right">
             <a href={ar ? "/articles-ar/" : "/articles/"} className="ao-nav-link">{ar ? "المقالات" : "Guides"}</a>
-            {!ar && <a href="/travel-guides/" className="ao-nav-link">Travel</a>}
+            <a href="/travel-guides/" className="ao-nav-link">{ar ? "أدلة السفر" : "Travel"}</a>
             <button className="ao-lang-btn" onClick={() => { const n = ar ? "en" : "ar"; setLang(n); track("lang_toggle", { to: n }); }}>
               <Globe size={13} /> {ar ? "English" : "العربية"}
             </button>
@@ -382,6 +382,35 @@ export default function AskoutfitHome() {
       </section>
 
       {/* Email Capture */}
+      {/* Travel Guides section */}
+      <section className="ao-section ao-section-alt">
+        <div className="ao-wrap">
+          <div className="ao-travel-header">
+            <h2 className="ao-h2">{ar ? "أدلة أزياء السفر" : "Travel Style Guides"}</h2>
+            <p className="ao-section-sub">{ar ? "ماذا تلبس في ٤٩ مدينة حول العالم — حسب الفصل والمناخ." : "What to wear in 49 cities around the world — by season and climate."}</p>
+          </div>
+          <div className="ao-travel-grid">
+            {[
+              { city: "Dubai", id: "dubai", flag: "🇦🇪", season: "summer" },
+              { city: "London", id: "london", flag: "🇬🇧", season: "winter" },
+              { city: "Paris", id: "paris", flag: "🇫🇷", season: "spring" },
+              { city: "New York", id: "new-york", flag: "🇺🇸", season: "fall" },
+              { city: "Tokyo", id: "tokyo", flag: "🇯🇵", season: "spring" },
+              { city: "Istanbul", id: "istanbul", flag: "🇹🇷", season: "summer" },
+            ].map(({ city, id, flag, season }) => (
+              <a key={id} href={`/what-to-wear-in-${id}-${season}/`} className="ao-travel-card">
+                <span className="ao-travel-flag">{flag}</span>
+                <span className="ao-travel-city">{city}</span>
+                <span className="ao-travel-season">{ar ? (season === "summer" ? "صيف" : season === "winter" ? "شتاء" : season === "spring" ? "ربيع" : "خريف") : season.charAt(0).toUpperCase() + season.slice(1)}</span>
+              </a>
+            ))}
+          </div>
+          <div style={{textAlign:"center",marginTop:"24px"}}>
+            <a href="/travel-guides/" className="ao-travel-more">{ar ? "عرض كل المدن ←" : "View all 49 cities →"}</a>
+          </div>
+        </div>
+      </section>
+
       <section className="ao-section">
         <div className="ao-wrap">
           <div className="ao-nl-box">
@@ -524,6 +553,17 @@ const CSS = `
 .ao-section{border-top:1px solid rgba(58,48,38,.6);}
 .ao-section-alt{background:#1d1610;}
 .ao-wrap{max-width:64rem;margin:0 auto;padding:64px 20px;}
+.ao-travel-header{text-align:center;margin-bottom:28px;}
+.ao-travel-grid{display:grid;gap:12px;grid-template-columns:repeat(2,1fr);}
+@media(min-width:560px){.ao-travel-grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:900px){.ao-travel-grid{grid-template-columns:repeat(6,1fr);}}
+.ao-travel-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;text-decoration:none;transition:.2s;}
+.ao-travel-card:hover{border-color:color-mix(in srgb,var(--gold) 50%,transparent);background:#271f17;}
+.ao-travel-flag{font-size:26px;}
+.ao-travel-city{font-size:13px;font-weight:700;color:var(--ink);}
+.ao-travel-season{font-size:11px;color:var(--gold);text-transform:capitalize;}
+.ao-travel-more{display:inline-block;color:var(--gold);font-size:14px;font-weight:600;text-decoration:none;border:1px solid color-mix(in srgb,var(--gold) 40%,transparent);padding:10px 22px;border-radius:10px;transition:.2s;}
+.ao-travel-more:hover{background:color-mix(in srgb,var(--gold) 10%,transparent);}
 .ao-h2{font-family:'Playfair Display',serif;font-size:clamp(22px,3.5vw,30px);font-weight:600;text-align:center;margin:0;}
 .ao-ar .ao-h2{font-family:'Tajawal',sans-serif;font-weight:700;}
 .ao-h2-inline{text-align:start;}
