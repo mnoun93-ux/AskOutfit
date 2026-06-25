@@ -279,8 +279,10 @@ const SHOP_MAP: Record<string, { men: string[]; women: string[] }> = {
   "travel-day":        { men: ["mens travel outfit jogger","mens hoodie travel","mens trainers white","mens crossbody bag travel"], women: ["women travel outfit leggings","women oversized hoodie","women travel shoes","women travel backpack"] },
 };
 
-const occasion  = isHub ? "" : getOccasion(a.slug);
-const gender    = isHub ? "" : getGender(a.slug);
+// For Arabic articles, use altSlug (English) for occasion/gender lookup
+const _lookupSlug = !isHub ? (a.lang === "ar" && a.altSlug ? a.altSlug : a.slug) : "";
+const occasion  = isHub ? "" : getOccasion(_lookupSlug);
+const gender    = isHub ? "" : getGender(_lookupSlug);
 const shopItems: string[] = !isHub && occasion && (gender === "men" || gender === "women")
   ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
 
@@ -315,7 +317,7 @@ const canonical = `${SITE}/${isHub ? cat!.slug : a.slug}/`;
 const isAr      = !isHub && a.lang === "ar";
 const altUrl    = !isHub && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
 const ogImage   = isHub ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
-const _heroId = !isHub && !isAr && occasion && (gender === "men" || gender === "women")
+const _heroId = !isHub && occasion && (gender === "men" || gender === "women")
   ? (IMAGE_QUERIES[occasion]?.[gender as "men" | "women"] ?? "")
   : "";
 const heroImgSrc: string = _heroId
@@ -544,8 +546,8 @@ const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
 
           {shopItems.length > 0 && (
             <section class="shop-look">
-              <h2 class="shop-heading">Shop the Look</h2>
-              <p class="shop-sub">Tap any item to find it on Amazon — affiliate links help keep this site free.</p>
+              <h2 class="shop-heading">{isAr ? "تسوق الإطلالة" : "Shop the Look"}</h2>
+              <p class="shop-sub">{isAr ? "اضغط على أي قطعة لإيجادها على أمازون — روابط الأفيليت تساعد في إبقاء الموقع مجانياً." : "Tap any item to find it on Amazon — affiliate links help keep this site free."}</p>
               <div class="shop-grid">
                 {shopItems.map((item: string) => (
                   <a href={amz(item)} target="_blank" rel="noopener nofollow sponsored" class="shop-card"
@@ -570,25 +572,23 @@ const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
             <div set:html={faqHtml} />
           </section>
 
-          {!isAr && (
-            <section class="newsletter">
+          <section class="newsletter">
               <div class="nl-inner">
                 <p class="nl-emoji">✉️</p>
-                <h3 class="nl-title">Get weekly outfit ideas</h3>
-                <p class="nl-sub">Fresh looks for every occasion, straight to your inbox. No spam — unsubscribe anytime.</p>
+                <h3 class="nl-title">{isAr ? "أفكار أزياء أسبوعية" : "Get weekly outfit ideas"}</h3>
+                <p class="nl-sub">{isAr ? "أحدث إطلالات لكل مناسبة، مباشرة إلى بريدك. بدون إزعاج — إلغاء الاشتراك في أي وقت." : "Fresh looks for every occasion, straight to your inbox. No spam — unsubscribe anytime."}</p>
                 <form class="nl-form" action="https://formsubmit.co/mn.oun93@gmail.com" method="POST">
                   <input type="hidden" name="_subject" value="New Askoutfit subscriber" />
                   <input type="hidden" name="_captcha" value="false" />
                   <input type="hidden" name="_template" value="table" />
                   <input type="hidden" name="_next" value="https://www.askoutfit.com/?subscribed=1" />
                   <div class="nl-row">
-                    <input type="email" name="email" placeholder="your@email.com" required class="nl-email" />
-                    <button type="submit" class="nl-btn">Subscribe</button>
+                    <input type="email" name="email" placeholder={isAr ? "بريدك@الإلكتروني.com" : "your@email.com"} required class="nl-email" />
+                    <button type="submit" class="nl-btn">{isAr ? "اشترك" : "Subscribe"}</button>
                   </div>
                 </form>
               </div>
             </section>
-          )}
 
           <div class="share-bar">
             <span class="share-label">{isAr ? "شارك:" : "Share:"}</span>
