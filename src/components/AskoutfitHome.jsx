@@ -126,15 +126,23 @@ export default function AskoutfitHome() {
         const res = await fetch(`${WEATHER_ENDPOINT}?city=${encodeURIComponent(city.trim())}&units=metric`);
         const data = await res.json();
         if (!res.ok) {
-          setWeatherError(ar ? "لم يُعثر على المدينة" : "City not found");
-          setWeather(null);
+          if (res.status === 503) {
+            // Worker deployed but API key not configured yet — silent fail
+            setWeather(null); setWeatherError("");
+          } else if (res.status === 404 || res.status === 400) {
+            setWeatherError(ar ? "لم يُعثر على المدينة" : "City not found");
+            setWeather(null);
+          } else {
+            // 405 = old worker without /weather route, 403 = CORS, etc. — silent fail
+            setWeather(null); setWeatherError("");
+          }
         } else {
           setWeather(data);
           setWeatherError("");
         }
       } catch {
-        setWeatherError(ar ? "تعذّر تحميل الطقس" : "Could not load weather");
-        setWeather(null);
+        // Network error — silent fail, don't block the user
+        setWeather(null); setWeatherError("");
       } finally {
         setWeatherLoading(false);
       }
@@ -199,7 +207,8 @@ export default function AskoutfitHome() {
         <div className="ao-nav-inner">
           <a href="/" className="ao-logo">Askoutfit</a>
           <div className="ao-nav-right">
-            <a href={ar ? "/articles-ar/" : "/articles/"} className="ao-nav-link">{ar ? "المقالات" : "Articles"}</a>
+            <a href={ar ? "/articles-ar/" : "/articles/"} className="ao-nav-link">{ar ? "المقالات" : "Guides"}</a>
+            {!ar && <a href="/travel-guides/" className="ao-nav-link">Travel</a>}
             <button className="ao-lang-btn" onClick={() => { const n = ar ? "en" : "ar"; setLang(n); track("lang_toggle", { to: n }); }}>
               <Globe size={13} /> {ar ? "English" : "العربية"}
             </button>

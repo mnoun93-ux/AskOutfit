@@ -54,6 +54,9 @@ export async function GET() {
     `    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/privacy/"/>\n` +
     `    <lastmod>${today}</lastmod>\n    <priority>0.3</priority>\n  </url>`,
 
+    // Travel guides index
+    `  <url>\n    <loc>${SITE}/travel-guides/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.9</priority>\n  </url>`,
+
     // Geo pSEO pages (196 pages)
     ...(geoCitiesData as any[]).flatMap((city: any) =>
       GEO_SEASONS.map(season =>
