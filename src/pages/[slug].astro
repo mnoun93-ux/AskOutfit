@@ -284,24 +284,24 @@ const gender    = isHub ? "" : getGender(a.slug);
 const shopItems: string[] = !isHub && occasion && (gender === "men" || gender === "women")
   ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
 
-// ── Hero images — Unsplash Source query per occasion × gender ────────────────
-// source.unsplash.com caches per query → consistent photo per URL
+// ── Hero images — verified Unsplash photo IDs per occasion × gender ──────────
+// All IDs sourced directly from Unsplash search results
 const IMAGE_QUERIES: Record<string, { men: string; women: string }> = {
-  "wedding-guest":    { men: "mens+suit+wedding+formal",         women: "women+wedding+guest+dress+elegant" },
-  "beach-party":      { men: "men+beach+casual+summer+outfit",   women: "women+beach+summer+dress+fashion" },
-  "brunch":           { men: "men+smart+casual+cafe+style",      women: "women+brunch+outfit+chic" },
-  "birthday-party":   { men: "men+party+outfit+stylish+night",   women: "women+birthday+party+dress+fashion" },
-  "business-meeting": { men: "men+business+suit+professional",   women: "women+business+professional+outfit" },
-  "casual-outing":    { men: "men+casual+street+style+outfit",   women: "women+casual+street+fashion+style" },
-  "concert":          { men: "men+concert+night+outfit+cool",    women: "women+concert+night+outfit+edgy" },
-  "dinner-party":     { men: "men+dinner+blazer+smart+style",    women: "women+dinner+party+elegant+dress" },
-  "eid-celebration":  { men: "men+formal+celebration+fashion",   women: "women+elegant+celebration+fashion" },
-  "engagement-party": { men: "men+smart+event+blazer+style",     women: "women+engagement+party+floral+dress" },
-  "first-date":       { men: "men+date+night+smart+casual",      women: "women+date+night+outfit+fashion" },
-  "graduation":       { men: "men+graduation+gown+cap+smile",    women: "women+graduation+gown+cap+smile" },
-  "job-interview":    { men: "men+interview+suit+professional",  women: "women+interview+professional+office" },
-  "office":           { men: "men+office+work+professional",     women: "women+office+work+fashion" },
-  "travel-day":       { men: "men+travel+airport+casual+style",  women: "women+travel+airport+casual+style" },
+  "wedding-guest":    { men: "1681841596729-4e6c62e23f0a", women: "1664540415216-26724f9f5ba5" },
+  "beach-party":      { men: "1726877184542-a8cc53415b79", women: "1721830698195-ff1f7daa5ce5" },
+  "brunch":           { men: "1661326297568-65045688d10a", women: "1679415150903-c49c1a81bd41" },
+  "birthday-party":   { men: "1723586403645-9ba604f4c5d0", women: "1691963099466-f4f9b9881e0e" },
+  "business-meeting": { men: "1723773713591-80a93c46f927", women: "1683140908202-a8741a87045a" },
+  "casual-outing":    { men: "1617114919297-3c8ddb01f599", women: "1721742733156-736e11c918bb" },
+  "concert":          { men: "1661286678499-211423a9ff5e", women: "1681503974123-6cada12d0414" },
+  "dinner-party":     { men: "1661328296168-a176df63bcfc", women: "1681841594224-ad729a249113" },
+  "eid-celebration":  { men: "1661434624086-e02557c68815", women: "1661609031605-7374dbf181b6" },
+  "engagement-party": { men: "1661326286990-fcf770fcb4a7", women: "1729708587889-fe93ba022cb1" },
+  "first-date":       { men: "1626557981101-aae6f84aa6ff", women: "1665423290662-e9886f0aaeb3" },
+  "graduation":       { men: "1714265045475-19f5114a3942", women: "1664474865451-a15999296765" },
+  "job-interview":    { men: "1683121523671-9617aba661d7", women: "1676666379090-e0fc81f41e7e" },
+  "office":           { men: "1661492413927-5bdcbb198a30", women: "1661593195372-874ca9d29713" },
+  "travel-day":       { men: "1683133694944-3d2b145adc3a", women: "1661501562127-a8bb26defb35" },
 };
 
 // ── Hub page article lists ────────────────────────────────────────────────────
@@ -315,11 +315,11 @@ const canonical = `${SITE}/${isHub ? cat!.slug : a.slug}/`;
 const isAr      = !isHub && a.lang === "ar";
 const altUrl    = !isHub && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
 const ogImage   = isHub ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
-const _heroQuery = !isHub && !isAr && occasion && (gender === "men" || gender === "women")
+const _heroId = !isHub && !isAr && occasion && (gender === "men" || gender === "women")
   ? (IMAGE_QUERIES[occasion]?.[gender as "men" | "women"] ?? "")
   : "";
-const heroImgSrc: string = _heroQuery
-  ? `https://source.unsplash.com/featured/760x400/?${_heroQuery}`
+const heroImgSrc: string = _heroId
+  ? `https://images.unsplash.com/photo-${_heroId}?auto=format&fit=crop&w=760&h=400&q=80`
   : "";
 
 // ── Hub Map for article → hub linking ────────────────────────────────────────
