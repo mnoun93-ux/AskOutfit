@@ -1,5 +1,7 @@
-// Dynamic sitemap.xml with hreflang for every article + homepage + category hubs.
+// Dynamic sitemap.xml with hreflang for every article + homepage + category hubs + geo pages.
+import geoCitiesData from "../content/geo-cities.json";
 const SITE = "https://askoutfit.com";
+const GEO_SEASONS = ["summer","winter","spring","fall"] as const;
 
 const CATEGORY_SLUGS = [
   "wedding-guest-outfits",
@@ -51,6 +53,13 @@ export async function GET() {
     `    <xhtml:link rel="alternate" hreflang="ar" href="${SITE}/privacy-ar/"/>\n` +
     `    <xhtml:link rel="alternate" hreflang="en" href="${SITE}/privacy/"/>\n` +
     `    <lastmod>${today}</lastmod>\n    <priority>0.3</priority>\n  </url>`,
+
+    // Geo pSEO pages (196 pages)
+    ...(geoCitiesData as any[]).flatMap((city: any) =>
+      GEO_SEASONS.map(season =>
+        `  <url>\n    <loc>${SITE}/what-to-wear-in-${city.id}-${season}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.7</priority>\n  </url>`
+      )
+    ),
 
     ...articles.map((a: any) => {
       const loc = `${SITE}/${a.slug}/`;

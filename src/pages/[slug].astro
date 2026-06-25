@@ -1,5 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
+import geoCitiesData from "../content/geo-cities.json";
+import { GEO_SEASONS, SEASON_LABELS, GEO_CLIMATE_CONTENT } from "../lib/geo-content";
 
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const allArticles = Object.values(modules).map((m: any) => m.default ?? m);
@@ -211,13 +213,38 @@ export function getStaticPaths() {
     props: { article: null, all, category: catSlug },
   }));
 
-  return [...articlePaths, ...categoryPaths];
+  const geoCities: any[] = geoCitiesData as any[];
+  const geoPaths = geoCities.flatMap((city: any) =>
+    (GEO_SEASONS as readonly string[]).map((season: string) => ({
+      params: { slug: `what-to-wear-in-${city.id}-${season}` },
+      props: { article: null, all, category: null, geoCity: city, geoSeason: season },
+    }))
+  );
+
+  return [...articlePaths, ...categoryPaths, ...geoPaths];
 }
 
 // ── Per-page props ────────────────────────────────────────────────────────────
-const { article, all, category: catSlugProp } = Astro.props as any;
-const isHub = !!catSlugProp;
+const { article, all, category: catSlugProp, geoCity, geoSeason } = Astro.props as any;
+const isGeo = !!geoCity;
+const isHub = !isGeo && !!catSlugProp;
 const cat   = isHub ? CATEGORIES[catSlugProp as string] : null;
+
+// ── Geo-page logic ────────────────────────────────────────────────────────────
+const geoContent = isGeo
+  ? (GEO_CLIMATE_CONTENT[geoCity.climate]?.[geoSeason] ?? GEO_CLIMATE_CONTENT.temperate[geoSeason])
+  : null;
+const geoSeasonLabel = isGeo ? (SEASON_LABELS[geoSeason] ?? geoSeason) : "";
+const geoSlug = isGeo ? `what-to-wear-in-${geoCity.id}-${geoSeason}` : "";
+const geoTitle = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel} — Outfit Guide` : "";
+const geoDesc  = isGeo ? `Everything you need to know about what to wear in ${geoCity.name} in ${geoSeasonLabel}. Climate-specific outfit advice, packing tips, and local dress culture for ${geoCity.country}.` : "";
+const geoH1    = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel}` : "";
+const geoRelated = isGeo
+  ? (allArticles as any[])
+      .filter((x: any) => x.lang === "en" && geoContent?.occasions.some((o: string) => x.slug.includes(o)))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 4)
+  : [];
 
 // ── Article-only logic ────────────────────────────────────────────────────────
 const a = article ?? {};
@@ -251,7 +278,7 @@ function similarity(slugA: string, slugB: string): number {
   return score;
 }
 
-const related = isHub ? [] : (all as any[])
+const related = (isHub || isGeo) ? [] : (all as any[])
   .filter((x: any) => x.lang === a.lang && x.slug !== a.slug)
   .map((x: any) => ({ ...x, _score: similarity(a.slug, x.slug) }))
   .sort((x: any, y: any) => y._score - x._score || x.slug.localeCompare(y.slug))
@@ -280,10 +307,10 @@ const SHOP_MAP: Record<string, { men: string[]; women: string[] }> = {
 };
 
 // For Arabic articles, use altSlug (English) for occasion/gender lookup
-const _lookupSlug = !isHub ? (a.lang === "ar" && a.altSlug ? a.altSlug : a.slug) : "";
-const occasion  = isHub ? "" : getOccasion(_lookupSlug);
-const gender    = isHub ? "" : getGender(_lookupSlug);
-const shopItems: string[] = !isHub && occasion && (gender === "men" || gender === "women")
+const _lookupSlug = (!isHub && !isGeo) ? (a.lang === "ar" && a.altSlug ? a.altSlug : a.slug) : "";
+const occasion  = (isHub || isGeo) ? "" : getOccasion(_lookupSlug);
+const gender    = (isHub || isGeo) ? "" : getGender(_lookupSlug);
+const shopItems: string[] = !isHub && !isGeo && occasion && (gender === "men" || gender === "women")
   ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
 
 // ── Hero images — Pexels photo IDs (allows hotlinking) ───────────────────────
@@ -307,16 +334,16 @@ const IMAGE_QUERIES: Record<string, { men: string; women: string }> = {
 };
 
 // ── Hub page article lists ────────────────────────────────────────────────────
-const hubFiltered   = isHub ? allArticles.filter((x: any) => x.lang === "en" && x.slug.includes(cat!.occasion)).sort((x: any, y: any) => x.h1.localeCompare(y.h1)) : [];
+const hubFiltered   = isHub ? allArticles.filter((x: any) => x.lang === "en" && x.slug.includes(cat!.occasion)).sort((x: any, y: any) => x.h1.localeCompare(y.h1)) : ([] as any[]);
 const hubMen        = hubFiltered.filter((x: any) => x.slug.includes("-men") || x.slug.includes("for-men"));
 const hubWomen      = hubFiltered.filter((x: any) => x.slug.includes("-women") || x.slug.includes("for-women"));
 const hubOther      = hubFiltered.filter((x: any) => !hubMen.includes(x) && !hubWomen.includes(x));
 
 // ── Shared computed ────────────────────────────────────────────────────────────
-const canonical = `${SITE}/${isHub ? cat!.slug : a.slug}/`;
-const isAr      = !isHub && a.lang === "ar";
-const altUrl    = !isHub && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
-const ogImage   = isHub ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
+const canonical = isGeo ? `${SITE}/${geoSlug}/` : `${SITE}/${isHub ? cat!.slug : a.slug}/`;
+const isAr      = !isHub && !isGeo && a.lang === "ar";
+const altUrl    = !isHub && !isGeo && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
+const ogImage   = (isHub || isGeo) ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
 const _heroId = !isHub && occasion && (gender === "men" || gender === "women")
   ? (IMAGE_QUERIES[occasion]?.[gender as "men" | "women"] ?? "")
   : "";
@@ -360,7 +387,13 @@ const articleSchema = isHub ? null : {
   mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
 };
 
-const breadcrumbItems: any[] = isHub
+const breadcrumbItems: any[] = isGeo
+  ? [
+      { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
+      { "@type": "ListItem", position: 2, name: "Travel Style Guides", item: `${SITE}/` },
+      { "@type": "ListItem", position: 3, name: geoH1, item: canonical },
+    ]
+  : isHub
   ? [
       { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
       { "@type": "ListItem", position: 2, name: cat!.h1, item: canonical },
@@ -377,7 +410,9 @@ const breadcrumbItems: any[] = isHub
 
 const breadcrumbSchema = { "@context": "https://schema.org", "@type": "BreadcrumbList", itemListElement: breadcrumbItems };
 
-const faqSchema = isHub
+const faqSchema = isGeo
+  ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: (geoContent?.faq ?? []).map((f: any) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }
+  : isHub
   ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: cat!.faq.map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }
   : (a.faq?.length > 0 ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: (a.faq || []).map((f: any) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) } : null);
 
@@ -395,8 +430,8 @@ const altLabel      = !isHub && a.altLang === "ar" ? "العربية" : "English
 const articlesLabel = isAr ? "كل المقالات" : "All articles";
 const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
 
-const pageTitle = isHub ? cat!.title : a.title;
-const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
+const pageTitle = isGeo ? geoTitle : isHub ? cat!.title : a.title;
+const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
 ---
 
 <Base title={pageTitle} description={pageDesc}
@@ -412,7 +447,102 @@ const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
     {shopSchema && (<script type="application/ld+json" is:inline set:html={JSON.stringify(shopSchema)} />)}
   </Fragment>
 
-  {isHub ? (
+  {isGeo ? (
+    /* ══════════════════ GEO pSEO PAGE TEMPLATE ══════════════════ */
+    <>
+      <header class="site-header">
+        <div class="site-header-inner">
+          <a href="/" class="site-logo">Askoutfit</a>
+          <nav class="site-nav">
+            <a href="/articles/" class="site-nav-link">All Guides</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="wrap">
+        <nav class="crumb" aria-label="breadcrumb">
+          <a href="/">Askoutfit</a> &rsaquo;
+          <span>Travel Style Guides</span> &rsaquo;
+          <span>{geoH1}</span>
+        </nav>
+
+        <article class="article">
+          <h1>{geoH1}</h1>
+
+          <div class="geo-meta">
+            <span class="geo-badge">📍 {geoCity.name}, {geoCity.country}</span>
+            <span class="geo-badge">🌡 {geoCity.temps[geoSeason as keyof typeof geoCity.temps]}</span>
+          </div>
+
+          <div class="lead">
+            <p>{geoContent?.intro}</p>
+          </div>
+
+          <div class="tool-cta">
+            <h3>Not sure what to wear?</h3>
+            <p>Get a personalised outfit recommendation for {geoCity.name} in {geoSeasonLabel} — in seconds.</p>
+            <a class="btn" href={`/?ref=${geoSlug}`}>Get My Outfit →</a>
+          </div>
+
+          <div class="body">
+            <h2>What to Wear — {geoSeasonLabel} Outfit Tips</h2>
+            <ul>
+              {geoContent?.tips.map((tip: string) => <li>{tip}</li>)}
+            </ul>
+
+            <h2>{geoSeasonLabel} Packing List for {geoCity.name}</h2>
+            <ul class="packing-list">
+              {geoContent?.packing.map((item: string) => <li>✓ {item}</li>)}
+            </ul>
+
+            {geoCity.culturalNote && (
+              <div class="cultural-note">
+                <h3>🧭 Local Dress Culture</h3>
+                <p>{geoCity.culturalNote}</p>
+              </div>
+            )}
+
+            {geoRelated.length > 0 && (
+              <section class="geo-related">
+                <h2>Related Outfit Guides</h2>
+                <p class="geo-related-sub">In-depth guides for occasions you'll encounter in {geoCity.name}:</p>
+                <div class="related-grid">
+                  {geoRelated.map((r: any) => (
+                    <a href={`/${r.slug}/`} class="related-card">
+                      <span class="related-title">{r.h1}</span>
+                      <span class="related-arrow">→</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+
+          <div class="tool-cta">
+            <h3>Get a personalised recommendation</h3>
+            <p>Describe your {geoCity.name} {geoSeasonLabel.toLowerCase()} plans and our AI stylist will suggest the perfect outfit.</p>
+            <a class="btn" href={`/?ref=${geoSlug}`}>Try the AI Stylist →</a>
+          </div>
+
+          <section class="faq">
+            <h2>Frequently Asked Questions</h2>
+            {geoContent?.faq.map((f: any) => (
+              <details class="faq-item">
+                <summary>{f.q}</summary>
+                <p>{f.a}</p>
+              </details>
+            ))}
+          </section>
+        </article>
+
+        <footer>
+          <p>&copy; {new Date().getFullYear()} Askoutfit. We may earn a commission on purchases through links.</p>
+          <p><a href="/articles/">All Guides</a></p>
+          <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+        </footer>
+      </main>
+    </>
+  ) : isHub ? (
     /* ══════════════════ HUB PAGE TEMPLATE ══════════════════ */
     <>
       <header class="site-header">
@@ -784,4 +914,26 @@ const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
   .site-footer-hub a { color: var(--gold); text-decoration: none; }
   .site-footer-hub .aiom { margin-top: 8px; }
   .site-footer-hub .aiom a { color: var(--gold); font-weight: 500; }
+
+  /* ── GEO pSEO ─────────────────────────────────────────────────────────────── */
+  .geo-meta { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 28px; }
+  .geo-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--surface); border: 1px solid var(--line); color: var(--muted); font-size: 13px; padding: 6px 14px; border-radius: 999px; }
+  .body h2 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(22px, 3.5vw, 28px); margin: 38px 0 14px; color: var(--gold); }
+  .body h3 { font-size: 19px; font-weight: 600; margin: 26px 0 10px; color: #e0c89a; }
+  .body p { margin: 14px 0; }
+  .body ul, .body ol { margin: 14px 0; padding-inline-start: 22px; }
+  .body li { margin: 10px 0; line-height: 1.6; }
+  .packing-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+  @media (max-width: 540px) { .packing-list { grid-template-columns: 1fr; } }
+  .packing-list li { color: var(--muted); font-size: 14px; }
+  .cultural-note { margin: 32px 0; padding: 20px 24px; background: color-mix(in srgb, var(--gold) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent); border-radius: 12px; }
+  .cultural-note h3 { margin: 0 0 8px; font-size: 16px; font-weight: 600; color: var(--gold); }
+  .cultural-note p { margin: 0; color: var(--muted); line-height: 1.7; }
+  .geo-related { margin-top: 40px; }
+  .geo-related h2 { font-family: "Playfair Display", serif; font-size: 24px; margin-bottom: 8px; color: var(--ink); }
+  .geo-related-sub { color: var(--muted); font-size: 15px; margin: 0 0 18px; }
+  .faq-item { border-bottom: 1px solid var(--line); padding: 16px 0; }
+  .faq-item summary { cursor: pointer; font-weight: 600; list-style: none; font-size: 16px; }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item p { color: var(--muted); margin-top: 10px; line-height: 1.7; }
 </style>
