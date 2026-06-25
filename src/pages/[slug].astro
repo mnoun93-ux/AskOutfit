@@ -284,6 +284,29 @@ const gender    = isHub ? "" : getGender(a.slug);
 const shopItems: string[] = !isHub && occasion && (gender === "men" || gender === "women")
   ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
 
+// ── Hero images — curated Unsplash photo IDs per occasion × gender ────────────
+// Format: images.unsplash.com/photo-{ID}?auto=format&fit=crop&w=760&h=400&q=80
+const IMAGE_MAP: Record<string, { men: string; women: string }> = {
+  "wedding-guest":    { men: "1519085360753-af0119f7cbe7", women: "1490481651871-ab68de25d43d" },
+  "beach-party":      { men: "1507525428034-b723cf961d3e", women: "1509631179647-0177331693ae" },
+  "brunch":           { men: "1441794016364-29d6038da876", women: "1452868865778-6aca4c5f2524" },
+  "birthday-party":   { men: "1463453788686-4ae1cef0f8df", women: "1519389950473-47ba0277781c" },
+  "business-meeting": { men: "1521737604082-a20c93e1103b", women: "1573496359142-b8d87734a5a2" },
+  "casual-outing":    { men: "1516257984-b1b4d707412e", women: "1441984904996-e0b6ba687e04" },
+  "concert":          { men: "1540575467063-178a50c2df87", women: "1524368535828-06bea1d5f929" },
+  "dinner-party":     { men: "1490578474895-06ad8dc8d3f6", women: "1566174053879-31528523f8ae" },
+  "eid-celebration":  { men: "1526976981781-58c9bf0d0cb6", women: "1583391265800-93a9f4e5c756" },
+  "engagement-party": { men: "1493863641943-9b68992a8d07", women: "1529636798458-0babf49a1b50" },
+  "first-date":       { men: "1534030347209-467a573a27c3", women: "1488716820095-cbe54b817656" },
+  "graduation":       { men: "1523050854058-8df90110c9f1", women: "1543269865-cbf427effbad" },
+  "job-interview":    { men: "1560250097-0b93528c311a", women: "1573497019940-1c28c88b4f3e" },
+  "office":           { men: "1488426862026-3ee34a7d66df", women: "1551836022-d5d88e9218df" },
+  "travel-day":       { men: "1469521667743-d33b8934e04a", women: "1469854523086-cc02fe5d8800" },
+};
+const heroPhotoId: string = !isHub && !isAr && occasion && (gender === "men" || gender === "women")
+  ? (IMAGE_MAP[occasion]?.[gender as "men" | "women"] ?? "")
+  : "";
+
 // ── Hub page article lists ────────────────────────────────────────────────────
 const hubFiltered   = isHub ? allArticles.filter((x: any) => x.lang === "en" && x.slug.includes(cat!.occasion)).sort((x: any, y: any) => x.h1.localeCompare(y.h1)) : [];
 const hubMen        = hubFiltered.filter((x: any) => x.slug.includes("-men") || x.slug.includes("for-men"));
@@ -491,6 +514,22 @@ const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
 
         <article class="article">
           <h1>{a.h1}</h1>
+
+          {heroPhotoId && (
+            <div class="hero-img-wrap">
+              <img
+                src={`https://images.unsplash.com/photo-${heroPhotoId}?auto=format&fit=crop&w=760&h=400&q=80`}
+                alt={a.h1}
+                width="760" height="400"
+                loading="lazy"
+                decoding="async"
+                class="hero-img"
+                onerror="this.closest('.hero-img-wrap').style.display='none'"
+              />
+              <a href="https://unsplash.com" target="_blank" rel="noopener" class="unsplash-credit">Photo: Unsplash</a>
+            </div>
+          )}
+
           <div class="lead" set:html={a.introHtml} />
 
           <div class="tool-cta">
@@ -654,6 +693,13 @@ const pageDesc  = isHub ? cat!.metaDesc : a.metaDesc;
   .wrap { max-width: 760px; margin: 0 auto; padding: 28px 20px 80px; }
   h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(28px, 5vw, 42px); line-height: 1.2; margin-bottom: 18px; }
   html[dir="rtl"] h1 { font-family: "Tajawal", sans-serif; font-weight: 700; }
+
+  /* ── Hero image ─────────────────────────────────────────────────────────── */
+  .hero-img-wrap { position: relative; margin: 0 0 28px; border-radius: 14px; overflow: hidden; aspect-ratio: 19/10; background: var(--surface); }
+  .hero-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .unsplash-credit { position: absolute; bottom: 8px; right: 10px; font-size: 10px; color: rgba(255,255,255,.6); text-decoration: none; background: rgba(0,0,0,.35); padding: 2px 6px; border-radius: 4px; }
+  .unsplash-credit:hover { color: rgba(255,255,255,.9); }
+
   .lead :global(p) { font-size: 18px; color: var(--muted); margin-bottom: 8px; }
   .body :global(h2) { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(22px, 3.5vw, 28px); margin: 38px 0 14px; color: var(--gold); }
   html[dir="rtl"] .body :global(h2) { font-family: "Tajawal", sans-serif; font-weight: 700; }
