@@ -236,14 +236,218 @@ const geoContent = isGeo
   : null;
 const geoSeasonLabel = isGeo ? (SEASON_LABELS[geoSeason] ?? geoSeason) : "";
 const geoSlug = isGeo ? `what-to-wear-in-${geoCity.id}-${geoSeason}` : "";
-const geoTitle = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel} — Outfit Guide` : "";
-const geoDesc  = isGeo ? `Everything you need to know about what to wear in ${geoCity.name} in ${geoSeasonLabel}. Climate-specific outfit advice, packing tips, and local dress culture for ${geoCity.country}.` : "";
+const geoTitle = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel} — Packing & Outfit Guide` : "";
+const geoDesc  = isGeo ? `What to wear in ${geoCity.name} in ${geoSeasonLabel}: climate-specific outfit tips, a full packing list, local dress culture, and occasion-by-occasion advice for ${geoCity.country}.` : "";
 const geoH1    = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel}` : "";
+
+// Related articles — deterministic sort (by slug), show up to 8
 const geoRelated = isGeo
   ? (allArticles as any[])
       .filter((x: any) => x.lang === "en" && geoContent?.occasions.some((o: string) => x.slug.includes(o)))
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 4)
+      .sort((a: any, b: any) => a.slug.localeCompare(b.slug))
+      .slice(0, 8)
+  : [];
+
+// Other seasons for this city (internal links)
+const geoOtherSeasons = isGeo
+  ? (GEO_SEASONS as readonly string[]).filter((s: string) => s !== geoSeason)
+  : [];
+
+// Similar climate cities (internal links)
+const geoSimilarCities = isGeo
+  ? (geoCitiesData as any[])
+      .filter((c: any) => c.climate === geoCity.climate && c.id !== geoCity.id)
+      .slice(0, 5)
+  : [];
+
+// Occasion outfit cards — climate × season specific advice
+const GEO_OCCASION_OUTFITS: Record<string, Record<string, Array<{icon:string; title:string; outfit:string}>>> = {
+  hot_dry: {
+    summer: [
+      { icon:"🗺", title:"Sightseeing & Outdoor Exploring", outfit:`Loose linen trousers with a lightweight linen shirt or kaftan in a pale colour. Wide-brim hat, quality sunglasses, and a lightweight scarf you can drape for shade. Comfortable flat sandals — pavements will be extremely hot.` },
+      { icon:"🍽", title:"Evening Dining & Nightlife", outfit:`The evenings cool slightly, making them the social highlight of the day. A flowy midi dress or smart linen trousers with a silk or satin blouse are ideal. Add a light wrap in case air conditioning is strong indoors.` },
+      { icon:"🏊", title:"Beach, Pool & Resort", outfit:`Swimwear is perfectly appropriate at beaches and hotel pools. A kaftan or linen cover-up for moving between pool and restaurant. Smart sandals that work from poolside to a casual lunch. Cover up modestly when leaving resort grounds.` },
+      { icon:"💼", title:"Business Meetings & Offices", outfit:`Offices are heavily air-conditioned — bring a blazer or structured jacket even in summer. Lightweight tailored trousers, a pressed shirt or smart blouse, and closed smart shoes. The contrast between outdoor heat and indoor cold is significant.` },
+    ],
+    winter: [
+      { icon:"🗺", title:"Sightseeing & Outdoor Exploring", outfit:`Comfortable smart-casual clothing — chinos or light jeans, a collared shirt or blouse, and comfortable walking shoes. A light jacket or blazer for the evenings. This is the best season to explore outdoor attractions.` },
+      { icon:"🍽", title:"Evening Dining & Restaurants", outfit:`Smart casual is the standard for evening dining in Gulf cities. Chinos and a blazer for men, a midi dress or elegant trousers with a blouse for women. Add a light wrap or jacket as indoor air conditioning is common year-round.` },
+      { icon:"🛍", title:"Shopping Malls & Indoor Venues", outfit:`Malls are heavily air-conditioned — a light jacket or cardigan is essential. Smart casual dress that's appropriate for both the comfortable outdoor temperatures and the colder indoor environment.` },
+      { icon:"💼", title:"Business & Formal Events", outfit:`Business formal remains appropriate year-round. A well-fitted suit or smart dress with a blazer, quality shoes, and conservative accessories. The comfortable winter temperatures make this an easier season for formal dressing.` },
+    ],
+    spring: [
+      { icon:"🗺", title:"Sightseeing & Day Trips", outfit:`Light, breathable layers — linen trousers or a cotton dress with a long-sleeved layer you can remove as the day heats up. A hat and sunglasses are increasingly important as spring progresses. Comfortable walking shoes or sandals.` },
+      { icon:"🍽", title:"Evening Dining & Socialising", outfit:`Early spring evenings are particularly pleasant for outdoor dining. Smart casual — a light dress or chinos with a neat shirt — is the perfect balance. You may not need a jacket in early spring, but have one available by May.` },
+      { icon:"🌅", title:"Outdoor Events & Activities", outfit:`Lightweight, practical clothing in breathable fabrics. Sun protection is key — a long-sleeved linen shirt is both stylish and protective. Comfortable footwear for uneven surfaces like souqs and heritage sites.` },
+      { icon:"💼", title:"Business & Professional", outfit:`Lightweight suits or tailored separates work well in the mild spring temperatures. A blazer or jacket for air-conditioned environments. Quality, conservative dress that is both comfortable in the warming weather and professionally appropriate.` },
+    ],
+    fall: [
+      { icon:"🗺", title:"Sightseeing & Exploring", outfit:`Early autumn calls for full summer clothing — linen, breathable fabrics, hat and sunglasses. By November, you can layer slightly with a light long-sleeved shirt or a light jacket for evening sightseeing.` },
+      { icon:"🍽", title:"Evening Dining & Outdoor Events", outfit:`Autumn marks the return of outdoor dining and events. Smart casual for evenings — a light dress or tailored pieces that work indoors and in the increasingly pleasant evening air. A light wrap or jacket for later in the season.` },
+      { icon:"🛍", title:"Shopping & Indoor Activities", outfit:`The indoor-outdoor temperature contrast eases slightly in autumn. Smart casual still works — light trousers or a skirt with a blouse and a light layer for air-conditioned spaces.` },
+      { icon:"💼", title:"Business & Professional", outfit:`Comfortable business attire — the cooling temperatures make autumn a slightly easier season for formal wear. Lightweight suits in breathable fabrics, smart shoes, and conservative accessories are appropriate for most professional contexts.` },
+    ],
+  },
+  hot_humid: {
+    summer: [
+      { icon:"🗺", title:"Sightseeing & Outdoor Exploring", outfit:`Moisture-wicking, loose-fitting clothing in light colours is non-negotiable. A breathable performance fabric shirt, light quick-dry trousers, and comfortable shoes that can handle sudden rain. Carry a compact packable rain jacket.` },
+      { icon:"🍽", title:"Evening Dining", outfit:`A change of clothes for the evening is highly recommended after a day of sightseeing. A light dress or fresh smart-casual separates — the evening temperatures are still warm but more comfortable than midday.` },
+      { icon:"🏖", title:"Beach & Waterfront", outfit:`Lightweight beach-to-bar resort wear — a cover-up over swimwear for the beach, transitioning to a casual dress or shorts and shirt for waterfront dining. Quick-dry fabrics are essential near the water.` },
+      { icon:"💼", title:"Business Meetings", outfit:`Always carry a blazer — offices are aggressively air-conditioned. A light, crisp shirt or blouse (that doesn't show sweat easily) with lightweight tailored trousers. Change into the blazer before entering the meeting.` },
+    ],
+    winter: [
+      { icon:"🗺", title:"Sightseeing & Day Activities", outfit:`This is the ideal season for exploring — comfortable smart casual clothing, a light jacket for the occasional cooler breeze. Light trousers or a smart dress with comfortable walking shoes.` },
+      { icon:"🍽", title:"Evening Dining & Entertainment", outfit:`Smart casual for most evening venues. A light jacket or blazer is useful for air-conditioned restaurants. This is the social peak season — dress up slightly for dinner, as locals do.` },
+      { icon:"🌊", title:"Watersports & Beach", outfit:`Dry-season beach weather is excellent. Standard swimwear at beach resorts, with a light cover-up and sandals for transitions. The clearer, calmer water makes this the best season for water activities.` },
+      { icon:"💼", title:"Business & Professional", outfit:`This is prime business season in most humid coastal cities. Smart business attire — a suit or structured dress — is appropriate. Air conditioning means you'll need the full professional wardrobe even in the mild temperatures.` },
+    ],
+    spring: [
+      { icon:"🗺", title:"Sightseeing & Exploring", outfit:`Transition into summer mode — light, breathable fabrics from the start of the day. A lightweight scarf for sun protection and modesty at heritage sites. Comfortable shoes that can handle both indoor and outdoor environments.` },
+      { icon:"🍽", title:"Evening Dining", outfit:`Spring evenings are still pleasant enough for outdoor dining. A fresh light dress or smart casual separates work well. Carry a light layer for air-conditioned restaurants.` },
+      { icon:"🛍", title:"Shopping Malls", outfit:`A light cardigan or jacket for the cold air conditioning in malls. The outdoor heat means you'll be in summer clothing — the contrast with heavily air-conditioned interiors is significant in spring.` },
+      { icon:"💼", title:"Business Professional", outfit:`Lightweight breathable business attire. As humidity builds, moisture-wicking undershirts become helpful. A jacket for meetings (keep it in your bag, put it on before entering), light tailored trousers and a fresh shirt or blouse.` },
+    ],
+    fall: [
+      { icon:"🗺", title:"Sightseeing & Activities", outfit:`Full summer wardrobe in early autumn — moisture-wicking fabrics, light colours, practical shoes. By November, you can transition towards slightly less heat-resistant clothing as temperatures ease.` },
+      { icon:"🍽", title:"Evening Dining & Events", outfit:`Outdoor dining becomes more enjoyable through the autumn season. Smart casual that works in the still-warm evenings — light dresses or smart trousers and blouses are ideal as the season progresses.` },
+      { icon:"🌊", title:"Beach & Water Activities", outfit:`Warm water and still-warm temperatures make autumn a good season for beach activities. Standard beach and swimwear, with a light cover-up. The rain risk increases through the season.` },
+      { icon:"💼", title:"Business Professional", outfit:`Business attire remains important year-round. As temperatures ease through autumn, dressing professionally becomes slightly more comfortable. Quality lightweight suits or tailored pieces work well.` },
+    ],
+  },
+  mediterranean: {
+    summer: [
+      { icon:"🗺", title:"Sightseeing & Historic Sites", outfit:`Linen or cotton clothing in light colours — a flowy dress or loose linen trousers with a breathable blouse. Always carry a lightweight scarf for churches, mosques, and ancient sites that require covered shoulders and knees.` },
+      { icon:"🍽", title:"Outdoor Dining & Aperitivo", outfit:`Mediterranean summer evenings are perfect for outdoor dining. An elevated summer outfit — a linen set, a silk blouse with smart trousers, or a chic midi dress — is appropriate for most restaurants. Heels are difficult on cobblestones.` },
+      { icon:"🏖", title:"Beach & Coastal Activities", outfit:`Standard beach and resort wear. A stylish cover-up transitions from beach to a casual waterfront lunch. Quality sandals that work both on the beach and for a beach-town stroll. A light wrap for the evening sea breeze.` },
+      { icon:"🥂", title:"Sunset Bars & Evening Events", outfit:`Mediterranean summer nightlife calls for a polished summer look. A smart linen set, a flowy summer dress, or chinos with a quality short-sleeved shirt elevated with accessories. Light footwear — smart sandals or leather loafers.` },
+    ],
+    winter: [
+      { icon:"🗺", title:"Sightseeing & Museums", outfit:`A mid-weight coat or trench over smart casual layers — light knitwear, jeans or tailored trousers, ankle boots. This is the classic European winter tourist look: put-together and practical for variable weather.` },
+      { icon:"🍽", title:"Restaurant Dining", outfit:`Smart casual — a blazer or light coat over a nice blouse or shirt, smart trousers, and good shoes. Mediterranean winter dining is indoor-focused, and locals dress with more care than summer tourists typically realise.` },
+      { icon:"☕", title:"Cafés & Cultural Venues", outfit:`The classic winter café outfit: a smart knitwear piece under a quality coat, with jeans or dark trousers and leather ankle boots. A scarf adds both warmth and a stylish finishing touch.` },
+      { icon:"🎭", title:"Concerts, Theatre & Events", outfit:`Smart casual to semi-formal depending on the venue. A blazer or structured coat over a nice shirt or dress, with quality footwear. Mediterranean winter cultural life is rich — dress for the occasion.` },
+    ],
+    spring: [
+      { icon:"🗺", title:"Outdoor Sightseeing", outfit:`The archetypal spring tourist outfit: a light dress or linen trousers with a blouse, topped with a light blazer or denim jacket for the cooler mornings. Comfortable walking shoes — cobblestones are everywhere in Mediterranean cities.` },
+      { icon:"🍽", title:"Terrace Dining", outfit:`Spring is terrace season in Mediterranean cities. A smart casual outfit that works from a morning café to an afternoon aperitivo — a nice blouse with trousers or a light midi dress are both perfect.` },
+      { icon:"🌿", title:"Day Trips & Nature", outfit:`Comfortable, practical layers for spring hiking or day trips — light trekking shoes or trainers, a waterproof layer for unexpected showers, and a light layer to peel off as it warms through the day.` },
+      { icon:"🥂", title:"Evening Socialising", outfit:`Spring evenings are mild and social. A dress elevated with a light blazer, or smart trousers with a quality top and leather shoes. The mild temperatures mean you can dress with more elegance without overheating.` },
+    ],
+    fall: [
+      { icon:"🗺", title:"Sightseeing & Exploring", outfit:`Autumn layers at their best — a quality knitwear piece under a light jacket or blazer, jeans or smart trousers, ankle boots. The golden light of Mediterranean autumn makes sightseeing genuinely beautiful.` },
+      { icon:"🍽", title:"Restaurant Dining", outfit:`Autumn is when Mediterranean restaurant culture peaks. Smart casual for most meals — well-fitted jeans with a quality blouse or shirt and a blazer are the go-to. A light coat for the walk there.` },
+      { icon:"🍷", title:"Wine Harvest & Food Events", outfit:`Many Mediterranean destinations have autumn harvest festivals and food events. Smart casual — elevated but comfortable — works well. Flat-soled boots are practical for vineyard visits.` },
+      { icon:"🎭", title:"Cultural Events & Nightlife", outfit:`Autumn is cultural season — concerts, art openings, and festivals. A smart blazer or quality coat over a nice outfit is the standard. Ankle boots elevate any autumn look and are practical for uneven terrain.` },
+    ],
+  },
+  temperate: {
+    summer: [
+      { icon:"🗺", title:"Sightseeing & Parks", outfit:`Light summer clothing plus a light waterproof jacket — the two essentials for a temperate summer day out. Comfortable trainers or leather sneakers, a light dress or jeans with a breathable top. Always be prepared for a sudden shower.` },
+      { icon:"🍽", title:"Restaurant & Pub Dining", outfit:`Smart casual works for most temperate summer venues. A light summer dress or jeans with a nice top and a cardigan for the often-cold indoor air conditioning. Quality trainers or smart sandals are fine for most restaurants.` },
+      { icon:"🎶", title:"Outdoor Festivals & Events", outfit:`Temperate summers are festival season. Practical festival dressing: comfortable footwear (wellies or chunky boots for muddy fields, trainers for city events), a light waterproof, and layers you can add as the evening cools.` },
+      { icon:"🌅", title:"Evening Drinks & Socialising", outfit:`On warm temperate summer evenings, a light dress or a smart casual outfit with a light jacket is perfect. Don't be tempted to leave the jacket at home — temperate evenings cool quickly.` },
+    ],
+    winter: [
+      { icon:"🗺", title:"Sightseeing & Outdoor Exploration", outfit:`Full winter armour: a quality wool or down coat over knitwear, warm trousers, and waterproof insulated boots. A hat, scarf and gloves are not optional in temperate winter — wind chill makes the cold much more intense.` },
+      { icon:"🍽", title:"Restaurant Dining & Pubs", outfit:`Smart casual with a good coat. Jeans or smart trousers with a quality knitwear piece and a blazer or structured coat, finished with ankle boots. Most restaurants are warm indoors so you'll be shedding layers.` },
+      { icon:"🎄", title:"Winter Markets & Seasonal Events", outfit:`Warm layers built for outdoor standing — thermal base layers, chunky knitwear, a proper coat, and waterproof boots. A warm hat that actually covers your ears. Comfort over style for extended outdoor winter events.` },
+      { icon:"💼", title:"Business & Professional", outfit:`Business formal adapted for winter — a quality coat worn over a suit or smart outfit. Waterproof smart shoes or boots. Thermal layers under the suit for particularly cold days. Your coat will be your most important professional garment.` },
+    ],
+    spring: [
+      { icon:"🗺", title:"Sightseeing & Walking", outfit:`The classic temperate spring outfit: a light waterproof jacket over a light knitwear piece with jeans or smart trousers, and comfortable ankle boots or trainers. Adaptable to both cool morning showers and warm afternoon sunshine.` },
+      { icon:"🍽", title:"Outdoor & Indoor Dining", outfit:`As terraces open for spring, a light blazer or trench coat over a nice outfit lets you enjoy outdoor tables on better days and transition inside comfortably. Ankle boots are the defining footwear of temperate spring.` },
+      { icon:"🌸", title:"Parks, Gardens & Green Spaces", outfit:`A light, cheerful spring outfit elevated by a good jacket — a floral dress under a denim or trench coat, or colourful separates with practical footwear. Temperate spring parks are beautiful on sunny days.` },
+      { icon:"🎭", title:"Cultural Events & Exhibitions", outfit:`Smart casual that balances the unpredictable spring weather with social appropriateness. A blazer or smart jacket works well for galleries, exhibitions, and cultural events in temperate spring cities.` },
+    ],
+    fall: [
+      { icon:"🗺", title:"Sightseeing & Walking", outfit:`The quintessential autumn look: an earth-tone knitwear piece under a quality trench coat or wool coat, dark jeans or tailored trousers, and ankle or knee-high boots. A scarf adds warmth and style in equal measure.` },
+      { icon:"🍽", title:"Restaurant Dining", outfit:`Smart casual autumn dressing at its best — a quality knitwear or a silk blouse under a structured blazer, tailored trousers, and leather boots. This is the season for looking your most effortlessly polished.` },
+      { icon:"🍂", title:"Parks & Scenic Walks", outfit:`Comfortable but stylish outdoor layers — a chunky knit, a quality coat, jeans, and Chelsea or lace-up boots. The autumn colours in temperate city parks are spectacular on dry days.` },
+      { icon:"🎶", title:"Concerts, Theatre & Culture", outfit:`This is the season for slightly elevated dressing at cultural venues. A blazer or quality coat over a nice outfit, with leather boots. The cool weather allows for richer fabrics — velvet, boucle, or quality wool all come into their own.` },
+    ],
+  },
+  continental: {
+    summer: [
+      { icon:"🗺", title:"Sightseeing & Day Out", outfit:`Light summer clothing for outdoor exploration, plus a cardigan or light blazer for heavily air-conditioned museums, shops, and restaurants. Quality trainers or flat sandals for extensive walking. Sunscreen is essential — continental summers can be intensely sunny.` },
+      { icon:"🍽", title:"Outdoor Dining & Terraces", outfit:`Continental summer terrace season is prime time for elevated casual dressing. Linen sets, summer dresses, or smart shorts with a quality top all work. Evening temperatures are usually very pleasant — a light layer is rarely essential early in the evening.` },
+      { icon:"🎆", title:"Summer Events & Festivals", outfit:`Continental cities have rich summer event calendars. Smart casual for most outdoor events — an elevated summer outfit that can handle both the daytime heat and the pleasant evenings. Flat shoes for extended standing.` },
+      { icon:"💼", title:"Business & Professional", outfit:`The most challenging continental season for business dressing. Lightweight suit fabrics — tropical wool or linen blends — are worth the investment. Always have a jacket available for air-conditioned offices, even when it's 30°C outside.` },
+    ],
+    winter: [
+      { icon:"🗺", title:"Sightseeing & Outdoor Activities", outfit:`Full continental winter outfit: a heavy down or wool coat, thermal base layers under your regular clothing, waterproof insulated boots, hat, scarf and gloves. Wind chill in cities like New York, Chicago, and Berlin can feel significantly colder than the actual temperature.` },
+      { icon:"🍽", title:"Restaurant Dining & Socialising", outfit:`Smart casual with excellent outerwear. A quality coat is your most important piece — wear it over any smart casual outfit. Warm ankle or knee-high boots. Inside restaurants will be warm, so dress in easy-to-remove layers underneath the coat.` },
+      { icon:"🎭", title:"Theatre, Concerts & Indoor Events", outfit:`A smart outfit elevated by quality outerwear. The event itself calls for smart casual to semi-formal; the journey there requires serious winter protection. A long, elegant coat over a smart dress or suit is the classic continental winter event outfit.` },
+      { icon:"🎿", title:"Winter Activities & Snow", outfit:`If the city receives snow, waterproof insulated boots with serious grip are essential. Layer up with thermals — continental winters with snow can be genuinely harsh. Practical outerwear over smart base layers lets you adapt between outdoors and heated interiors.` },
+    ],
+    spring: [
+      { icon:"🗺", title:"Sightseeing & Exploring", outfit:`Transitional layering is everything in continental spring. A medium-weight coat that you can open or remove, knitwear or a light sweatshirt, jeans or smart trousers, and versatile ankle boots. March calls for near-winter layers; May allows for spring dressing.` },
+      { icon:"🍽", title:"Café Culture & Dining", outfit:`As continental cities bloom in spring, café terraces fill up. A smart casual spring outfit — a nice blouse or shirt with trousers or a skirt, a light coat, and leather shoes or boots — captures the optimistic energy of continental spring.` },
+      { icon:"🌸", title:"Parks & Outdoor Spaces", outfit:`Continental spring parks are transformative. A colourful, cheerful outfit that embraces the season — a floral or bright-toned piece under a light coat or blazer, with comfortable shoes for grass and uneven paths.` },
+      { icon:"🎨", title:"Museums, Galleries & Culture", outfit:`Smart casual that works indoors and out — a light blazer or structured cardigan over a quality blouse or shirt, with smart trousers and leather shoes or boots. The spring gallery season in continental cities is among the world's best.` },
+    ],
+    fall: [
+      { icon:"🗺", title:"Sightseeing & Walking", outfit:`Classic continental autumn: a well-cut wool coat or leather jacket over a chunky knit, dark jeans or tailored trousers, and leather ankle or knee-high boots. A cashmere or quality wool scarf. This is the season continental cities are dressed for.` },
+      { icon:"🍽", title:"Dining & Restaurant Culture", outfit:`Continental autumn dining calls for elevated smart casual. Quality knitwear under a blazer, tailored trousers or a midi skirt, and leather boots. The cooler weather means richer fabrics — heavier cotton, wool, and velvet all work beautifully.` },
+      { icon:"🍂", title:"Autumn Walks & Markets", outfit:`A practical but stylish autumn outfit for outdoor activities — a waterproof outer layer over knitwear, dark jeans, and Chelsea or lace-up boots. A warm scarf is essential as October turns to November.` },
+      { icon:"🎭", title:"Theatre, Opera & Events", outfit:`Continental autumn is the cultural peak season. Semi-formal to smart dressing for concerts and theatre — a quality coat worn over an elegant outfit, with leather shoes or heeled boots. This is the season for your most sophisticated wardrobe pieces.` },
+    ],
+  },
+  tropical: {
+    summer: [
+      { icon:"🗺", title:"Temple & Cultural Site Visits", outfit:`Cover shoulders and knees for temple visits — a lightweight cotton sarong or linen trousers with a long-sleeved top are ideal. Many temples provide wraps, but having your own is more comfortable in the heat.` },
+      { icon:"🍽", title:"Street Food & Casual Dining", outfit:`Tropical casual — a breathable, loose-fitting outfit in quick-dry fabrics. A comfortable dress or linen trousers with a moisture-wicking top. Flat sandals or comfortable shoes that can handle wet pavement (tropical rain comes suddenly).` },
+      { icon:"🏖", title:"Beach & Water Activities", outfit:`Classic beach and resort wear — swimwear, a cover-up, and quality sandals. Quick-dry shorts and shirts are ideal for beach-to-restaurant transitions. Protect your skin: UV is intense in tropical destinations.` },
+      { icon:"🛍", title:"Shopping Malls & Modern Areas", outfit:`Malls are extremely cold — a cardigan or light jacket is essential for extended mall time in any tropical city. Light summer clothing is fine as your base; just have the layer ready for indoor environments.` },
+    ],
+    winter: [
+      { icon:"🗺", title:"Sightseeing & Cultural Exploration", outfit:`This is the ideal season for active exploration — comfortable smart casual in breathable fabrics, a light layer for air-conditioned spaces, and comfortable walking shoes. The dry season makes outdoor sightseeing genuinely pleasant.` },
+      { icon:"🍽", title:"Restaurant & Rooftop Dining", outfit:`The dry season is prime time for tropical city dining scenes. Smart casual — a light dress or smart casual separates — works for most venues. Add a light wrap or cardigan for rooftop venues where sea breezes can be cooling.` },
+      { icon:"🏄", title:"Water Sports & Beach", outfit:`Dry season brings calmer seas and clearer water — the best conditions for snorkelling, surfing, and beach activities. Standard beach and resort wear, with reef-safe sunscreen. Quick-dry fabrics for beach-to-town transitions.` },
+      { icon:"💼", title:"Business Meetings", outfit:`Smart business attire adapted for tropical climate — lightweight fabrics, a blazer or jacket kept for the meeting room (air-conditioned), and practical smart shoes that handle the outdoor-to-indoor temperature contrast.` },
+    ],
+    spring: [
+      { icon:"🗺", title:"Sightseeing & Temples", outfit:`Lightweight, modest layers for cultural sites — linen trousers or a knee-length skirt with a breathable blouse or shirt. A portable umbrella or packable rain jacket as wet season begins. Comfortable shoes that can handle both dry and wet conditions.` },
+      { icon:"🍽", title:"Dining & Food Markets", outfit:`Tropical spring dining is often outdoor or semi-outdoor. Comfortable, breathable clothing — a light dress or cotton shorts with a nice top — works for the transition from hot dry days to increasingly rainy afternoons.` },
+      { icon:"🌿", title:"Nature & Outdoor Activities", outfit:`Quick-dry, practical clothing for activities that may involve rain, mud, or water. Moisture-wicking fabrics, a packable rain jacket, and comfortable shoes with grip. Tropical spring landscapes are lush and beautiful.` },
+      { icon:"🏊", title:"Pools & Beach", outfit:`The transition between dry and wet season — seas can be rougher but pools remain ideal. Resort wear and swimwear at hotels and pools; a cover-up that handles unexpected tropical showers.` },
+    ],
+    fall: [
+      { icon:"🗺", title:"Sightseeing in Wet Season", outfit:`Practical tropical monsoon dressing — quick-dry fabrics throughout, a compact waterproof jacket, waterproof sandals or shoes, and a daypack that can handle sudden downpours (a dry bag inside is useful).` },
+      { icon:"🍽", title:"Indoor & Covered Venues", outfit:`Wet season shifts socialising towards covered terraces and indoor venues. Comfortable smart casual clothing that's appropriate for air-conditioned restaurants — add a cardigan for the aggressive indoor cooling.` },
+      { icon:"🛍", title:"Malls & Indoor Activities", outfit:`A great season for exploring the impressive indoor attractions tropical cities offer. Standard summer-weight clothing with an extra layer for air conditioning. The outdoor heat is reduced by rain, making transitions more comfortable.` },
+      { icon:"🏊", title:"Hotel Pools & Resorts", outfit:`Resort areas maintain their appeal through wet season — hotel pools are perfect, rain comes and goes quickly. Resort wear with a quick-dry cover-up handles the tropical autumn perfectly.` },
+    ],
+  },
+  subtropical: {
+    summer: [
+      { icon:"🗺", title:"Sightseeing & Outdoor Exploring", outfit:`Lightweight, structured fabrics for a polished look in the subtropical summer heat. A quality linen outfit or moisture-wicking smart casual clothing. Always carry a light layer — the contrast between outdoor heat and indoor air conditioning is extreme.` },
+      { icon:"🍽", title:"Restaurant & Rooftop Dining", outfit:`Style-conscious subtropical summer cities reward a polished approach. A structured lightweight dress or smart casual separates — quality linen or a silk blouse — look intentional rather than heat-defeated. A blazer or cardigan for the always-cold restaurants.` },
+      { icon:"🌊", title:"Harbourfront & Outdoor Spaces", outfit:`The subtropical waterfront is most comfortable in the morning and evening. Light, casual clothing — a maxi dress, linen shorts and shirt, or casual separates — with comfortable walking shoes or sandals.` },
+      { icon:"💼", title:"Business & Professional Meetings", outfit:`The ultimate subtropical summer challenge. Lightweight, breathable suit fabrics — tropical wool, linen-blend, or high-performance synthetics — are worth investing in. Always have a jacket ready for the meeting room's air conditioning.` },
+    ],
+    winter: [
+      { icon:"🗺", title:"Sightseeing & Day Activities", outfit:`The most comfortable sightseeing season in subtropical cities. Smart casual layers — a light jacket over a quality blouse or shirt, comfortable trousers, and smart shoes or ankle boots. The mild temperatures make extended outdoor exploration very pleasant.` },
+      { icon:"🍽", title:"Restaurant & Evening Dining", outfit:`Subtropical winter is the peak dining season in most cities. Smart casual to smart dressing is appropriate — a blazer or quality coat over a nice outfit, with smart shoes. This is the season to dress your best.` },
+      { icon:"🎭", title:"Cultural Events & Entertainment", outfit:`Smart dressing for subtropical winter events — a well-cut coat over a semi-formal outfit, with quality shoes. The mild temperatures mean you don't need heavy winter outerwear, but a light to mid-weight coat elevates any event outfit.` },
+      { icon:"💼", title:"Business & Professional", outfit:`The most comfortable season for business dressing in subtropical climates. A well-fitted suit or professional outfit is entirely comfortable at 14–18°C (57–64°F). Quality leather shoes, a structured bag, and polished accessories complete the professional look.` },
+    ],
+    spring: [
+      { icon:"🗺", title:"Sightseeing & Cultural Visits", outfit:`The transition from comfortable winter to increasingly warm spring — a light blazer or jacket for the mornings that becomes unnecessary by afternoon. Smart casual separates that work across the spring temperature range.` },
+      { icon:"🍽", title:"Terrace & Outdoor Dining", outfit:`Spring terrace season begins in subtropical cities as temperatures rise. A light dress or smart casual separates work for the pleasant spring temperatures. Have a light layer for early-season evenings.` },
+      { icon:"🌸", title:"Parks & Outdoor Activities", outfit:`Comfortable, stylish spring clothing — colourful, light separates that can layer for the cooler mornings. Flat shoes or trainers for outdoor parks and activities. A waterproof layer for the occasional spring shower.` },
+      { icon:"🛍", title:"Shopping & Indoor Activities", outfit:`Transitional dressing for subtropical spring shopping — a light layer for air-conditioned spaces over your spring outfit. By late spring, the summer wardrobe (with A/C layer) becomes the standard approach.` },
+    ],
+    fall: [
+      { icon:"🗺", title:"Sightseeing & Outdoor Exploring", outfit:`The improving subtropical autumn conditions make sightseeing increasingly comfortable. Early autumn still requires summer clothing; by October and November, light layers add a welcome versatility to your outfit choices.` },
+      { icon:"🍽", title:"Restaurant Dining & Night Out", outfit:`Autumn is when subtropical restaurant culture kicks into high gear. Smart casual for most venues — a light jacket or blazer over a nice outfit, with smart shoes. The improving temperatures make dressing elegantly much easier.` },
+      { icon:"🎭", title:"Cultural Events & Festivals", outfit:`Autumn marks the return of outdoor cultural events and festivals in subtropical cities. Smart casual to smart dressing is appropriate — a quality coat for evenings, a layered outfit that adapts from afternoon to night.` },
+      { icon:"💼", title:"Business & Professional", outfit:`As temperatures ease through autumn, business dressing becomes increasingly comfortable. A quality suit or tailored outfit in a medium-weight fabric is appropriate from October onwards. The improving weather makes the full professional wardrobe manageable again.` },
+    ],
+  },
+};
+
+const geoOccasionCards = isGeo
+  ? (GEO_OCCASION_OUTFITS[geoCity.climate]?.[geoSeason] ?? [])
   : [];
 
 // ── Article-only logic ────────────────────────────────────────────────────────
@@ -485,31 +689,99 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
           </div>
 
           <div class="body">
-            <h2>What to Wear — {geoSeasonLabel} Outfit Tips</h2>
+            <h2>What to Wear in {geoCity.name} in {geoSeasonLabel} — Key Tips</h2>
             <ul>
               {geoContent?.tips.map((tip: string) => <li>{tip}</li>)}
             </ul>
 
+            {geoOccasionCards.length > 0 && (
+              <>
+                <h2>What to Wear by Occasion</h2>
+                <p>Here's how to dress for the most common activities and settings you'll encounter in {geoCity.name} during {geoSeasonLabel}:</p>
+                <div class="occasion-grid">
+                  {geoOccasionCards.map((c: any) => (
+                    <div class="occasion-card">
+                      <div class="occasion-icon">{c.icon}</div>
+                      <div class="occasion-body">
+                        <h3 class="occasion-title">{c.title}</h3>
+                        <p class="occasion-text">{c.outfit}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+
             <h2>{geoSeasonLabel} Packing List for {geoCity.name}</h2>
+            <p>These are the key pieces to include when packing for {geoCity.name} in {geoSeasonLabel}:</p>
             <ul class="packing-list">
               {geoContent?.packing.map((item: string) => <li>✓ {item}</li>)}
             </ul>
 
+            <div class="shop-look">
+              <h3 class="shop-heading">Shop the Look</h3>
+              <p class="shop-sub">Find these key pieces on Amazon — affiliate links help keep this site free.</p>
+              <div class="shop-grid">
+                {geoContent?.packing.slice(0,6).map((item: string) => (
+                  <a href={`https://www.amazon.com/s?k=${encodeURIComponent(item)}&tag=askoutfit-20`}
+                     target="_blank" rel="noopener nofollow sponsored" class="shop-card">
+                    <span class="shop-icon">🛍</span>
+                    <span class="shop-label">{item}</span>
+                    <span class="shop-arrow">→</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+
             {geoCity.culturalNote && (
               <div class="cultural-note">
-                <h3>🧭 Local Dress Culture</h3>
+                <h3>🧭 Local Dress Culture & What to Know</h3>
                 <p>{geoCity.culturalNote}</p>
               </div>
             )}
 
             {geoRelated.length > 0 && (
               <section class="geo-related">
-                <h2>Related Outfit Guides</h2>
-                <p class="geo-related-sub">In-depth guides for occasions you'll encounter in {geoCity.name}:</p>
+                <h2>In-Depth Outfit Guides for {geoCity.name}</h2>
+                <p class="geo-related-sub">Detailed style guides for every occasion you'll encounter on your trip:</p>
                 <div class="related-grid">
                   {geoRelated.map((r: any) => (
                     <a href={`/${r.slug}/`} class="related-card">
                       <span class="related-title">{r.h1}</span>
+                      <span class="related-arrow">→</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {geoOtherSeasons.length > 0 && (
+              <section class="geo-seasons">
+                <h2>Planning a Different Season in {geoCity.name}?</h2>
+                <p class="geo-related-sub">Explore our outfit guides for other times of year:</p>
+                <div class="season-links">
+                  {geoOtherSeasons.map((s: string) => (
+                    <a href={`/what-to-wear-in-${geoCity.id}-${s}/`} class="season-link">
+                      <span class="season-link-icon">
+                        {s === "summer" ? "☀️" : s === "winter" ? "❄️" : s === "spring" ? "🌸" : "🍂"}
+                      </span>
+                      <span>What to Wear in {geoCity.name} in {SEASON_LABELS[s]}</span>
+                      <span class="related-arrow">→</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {geoSimilarCities.length > 0 && (
+              <section class="geo-similar">
+                <h2>Similar Climate Destinations</h2>
+                <p class="geo-related-sub">These destinations share a similar climate to {geoCity.name} — your outfit strategy will transfer:</p>
+                <div class="season-links">
+                  {geoSimilarCities.map((c: any) => (
+                    <a href={`/what-to-wear-in-${c.id}-${geoSeason}/`} class="season-link">
+                      <span class="season-link-icon">📍</span>
+                      <span>What to Wear in {c.name} in {geoSeasonLabel}</span>
                       <span class="related-arrow">→</span>
                     </a>
                   ))}
@@ -936,4 +1208,22 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
   .faq-item summary { cursor: pointer; font-weight: 600; list-style: none; font-size: 16px; }
   .faq-item summary::-webkit-details-marker { display: none; }
   .faq-item p { color: var(--muted); margin-top: 10px; line-height: 1.7; }
+
+  /* ── Occasion grid ───────────────────────────────────────────────────────────── */
+  .occasion-grid { display: grid; gap: 16px; margin: 20px 0 36px; }
+  @media (min-width: 640px) { .occasion-grid { grid-template-columns: 1fr 1fr; } }
+  .occasion-card { display: flex; gap: 14px; border: 1px solid var(--line); background: var(--surface); border-radius: 14px; padding: 18px; }
+  .occasion-icon { font-size: 22px; flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: color-mix(in srgb, var(--gold) 12%, transparent); border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent); border-radius: 10px; }
+  .occasion-body { flex: 1; min-width: 0; }
+  .occasion-title { margin: 0 0 6px; font-size: 14px; font-weight: 700; color: var(--gold); }
+  .occasion-text { margin: 0; font-size: 13px; line-height: 1.65; color: var(--muted); }
+
+  /* ── Season + Similar city links ─────────────────────────────────────────────── */
+  .geo-seasons, .geo-similar { margin-top: 40px; }
+  .geo-seasons h2, .geo-similar h2 { font-family: "Playfair Display", serif; font-size: 22px; margin-bottom: 8px; color: var(--ink); }
+  .season-links { display: grid; gap: 10px; margin-top: 14px; }
+  .season-link { display: flex; align-items: center; gap: 12px; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 14px 18px; text-decoration: none; color: var(--ink); font-size: 14px; transition: .2s; }
+  .season-link:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
+  .season-link-icon { font-size: 18px; flex-shrink: 0; }
+  .season-link span:nth-child(2) { flex: 1; }
 </style>
