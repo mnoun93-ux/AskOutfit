@@ -5,7 +5,7 @@ const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const all = Object.values(modules).map((m: any) => m.default ?? m);
 const articles = all
   .filter((a: any) => a.lang === "ar")
-  .map((a: any) => ({ slug: a.slug, h1: a.h1, title: a.title }));
+  .map((a: any) => ({ slug: a.slug, altSlug: a.altSlug || "", h1: a.h1, title: a.title }));
 
 const SITE = "https://askoutfit.com";
 
@@ -97,12 +97,20 @@ const articlesJson = JSON.stringify(articles);
     let searchQ = "";
 
     const OCCS = Object.keys(OCCASION_LABELS);
-    function occOf(slug)    { return OCCS.find(o => slug.includes(o)) || ""; }
-    function genderOf(slug) {
-      return slug.includes("-men") || slug.includes("for-men") ? "men"
-           : slug.includes("-women") || slug.includes("for-women") ? "women"
+    // Arabic slugs are transliterated — use altSlug (English) for occasion/gender lookup
+    function occOf(a)    { const s = a.altSlug || a.slug; return OCCS.find(o => s.includes(o)) || ""; }
+    function genderOf(a) {
+      const s = a.altSlug || a.slug;
+      return s.includes("-men") || s.includes("for-men") ? "men"
+           : s.includes("-women") || s.includes("for-women") ? "women"
            : "";
     }
+    const OCCASION_EMOJIS = {
+      "wedding-guest":"💍","beach-party":"🏖","birthday-party":"🎂","brunch":"☕",
+      "business-meeting":"💼","casual-outing":"🛍","concert":"🎵","dinner-party":"🍽",
+      "eid-celebration":"🌙","engagement-party":"💫","first-date":"✨",
+      "graduation":"🎓","job-interview":"🎯","office":"🏢","travel-day":"✈️",
+    };
 
     const grid  = document.getElementById("grid");
     const empty = document.getElementById("empty");
@@ -111,19 +119,28 @@ const articlesJson = JSON.stringify(articles);
     function render() {
       const q = searchQ.trim().toLowerCase();
       const filtered = DATA.filter(a => {
-        if (activeOcc && occOf(a.slug) !== activeOcc) return false;
-        if (activeGender && genderOf(a.slug) !== activeGender) return false;
+        if (activeOcc && occOf(a) !== activeOcc) return false;
+        if (activeGender && genderOf(a) !== activeGender) return false;
         if (q && !a.h1.toLowerCase().includes(q) && !a.slug.includes(q)) return false;
         return true;
       });
 
       count.textContent = filtered.length;
-      grid.innerHTML = filtered.map(a =>
-        `<a href="/${a.slug}/" class="art-card">
-           <span class="art-arrow">←</span>
-           <span class="art-title">${a.h1}</span>
-         </a>`
-      ).join("");
+      grid.innerHTML = filtered.map(a => {
+        const occ = occOf(a);
+        const emoji = OCCASION_EMOJIS[occ] || "👗";
+        const occLabel = OCCASION_LABELS[occ] || "";
+        const gen = genderOf(a);
+        const genLabel = gen === "men" ? "رجال" : gen === "women" ? "نساء" : "";
+        return `<a href="/${a.slug}/" class="art-card">
+          <span class="art-card-emoji">${emoji}</span>
+          <div class="art-card-body">
+            ${occLabel ? `<span class="art-card-occ">${occLabel}${genLabel ? " · " + genLabel : ""}</span>` : ""}
+            <p class="art-card-title">${a.h1}</p>
+          </div>
+          <span class="art-arrow">←</span>
+        </a>`;
+      }).join("");
 
       empty.style.display = filtered.length === 0 ? "block" : "none";
     }
@@ -219,11 +236,15 @@ const articlesJson = JSON.stringify(articles);
   .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
   @media (min-width: 640px)  { .art-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 1024px) { .art-grid { grid-template-columns: repeat(3, 1fr); } }
-  .art-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 12px; text-decoration: none; transition: .2s; direction: rtl; }
-  .art-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
-  .art-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--gold); font-family: "Tajawal", sans-serif; }
-  .art-card:hover .art-title { color: #d8b67e; }
-  .art-arrow { color: var(--gold); flex-shrink: 0; }
+  .art-card { display: flex; align-items: center; gap: 14px; border: 1px solid var(--line); background: var(--surface); padding: 16px 18px; border-radius: 14px; text-decoration: none; transition: .2s; direction: rtl; }
+  .art-card:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,.2); }
+  .art-card-emoji { font-size: 24px; flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: rgba(202,164,106,.1); border-radius: 10px; }
+  .art-card-body { flex: 1; min-width: 0; }
+  .art-card-occ { display: block; font-size: 11px; color: var(--faint); letter-spacing: .04em; margin-bottom: 4px; font-family: "Tajawal", sans-serif; }
+  .art-card-title { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.4; color: var(--gold); font-family: "Tajawal", sans-serif; }
+  .art-card:hover .art-card-title { color: #d8b67e; }
+  .art-arrow { color: var(--faint); flex-shrink: 0; font-size: 16px; transition: .2s; }
+  .art-card:hover .art-arrow { color: var(--gold); }
 
   /* ── empty state ────────────────────────────────────────────────────────── */
   .empty-msg { color: var(--muted); font-size: 15px; padding: 40px 0; text-align: center; font-family: "Tajawal", sans-serif; }
