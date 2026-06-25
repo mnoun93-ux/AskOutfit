@@ -20,6 +20,19 @@ const REGION_LABELS: Record<string, string> = {
   latin_america: "Latin America",
 };
 
+const REGION_LABELS_AR: Record<string, string> = {
+  middle_east:   "الشرق الأوسط وشمال أفريقيا",
+  europe:        "أوروبا",
+  north_america: "أمريكا الشمالية",
+  asia_pacific:  "آسيا والمحيط الهادئ",
+  africa:        "أفريقيا",
+  latin_america: "أمريكا اللاتينية",
+};
+
+const SEASONS_AR: Record<string, string> = {
+  summer: "صيف", winter: "شتاء", spring: "ربيع", fall: "خريف",
+};
+
 const REGION_ORDER = ["middle_east","europe","north_america","asia_pacific","africa","latin_america"];
 
 const cities: any[] = geoCitiesData as any[];
@@ -41,22 +54,23 @@ const totalPages = cities.length * SEASONS.length;
     <div class="site-header-inner">
       <a href="/" class="site-logo">Askoutfit</a>
       <nav class="site-nav">
-        <a href="/articles/" class="site-nav-link">Outfit Guides</a>
-        <a href="/travel-guides/" class="site-nav-link active">Travel</a>
+        <a href="/articles/" class="site-nav-link" data-en="Outfit Guides" data-ar="المقالات">Outfit Guides</a>
+        <a href="/travel-guides/" class="site-nav-link active" data-en="Travel" data-ar="أدلة السفر">Travel</a>
+        <button id="lang-toggle" class="site-lang" data-en="العربية" data-ar="English">العربية</button>
       </nav>
     </div>
   </header>
 
   <main class="wrap">
     <div class="hero">
-      <p class="hero-tag">✈️ Travel Style</p>
-      <h1>What to Wear Around the World</h1>
-      <p class="hero-sub">
+      <p class="hero-tag" data-en="✈️ Travel Style" data-ar="✈️ أدلة أزياء السفر">✈️ Travel Style</p>
+      <h1 data-en="What to Wear Around the World" data-ar="ماذا تلبس حول العالم">What to Wear Around the World</h1>
+      <p class="hero-sub" data-en={`Climate-specific outfit guides for ${cities.length} cities — covering every season. ${totalPages} guides total.`} data-ar={`أدلة أزياء حسب المناخ لـ ${cities.length} مدينة — لكل فصل من فصول السنة. ${totalPages} دليل.`}>
         Climate-specific outfit guides for {cities.length} cities — covering every season.
         {totalPages} guides total.
       </p>
       <div class="search-box">
-        <input id="city-search" type="search" placeholder="Search a city… e.g. Tokyo, Dubai, Paris" autocomplete="off" />
+        <input id="city-search" type="search" placeholder="Search a city… e.g. Tokyo, Dubai, Paris" data-en-placeholder="Search a city… e.g. Tokyo, Dubai, Paris" data-ar-placeholder="ابحث عن مدينة... مثل: دبي، لندن، باريس" autocomplete="off" />
       </div>
     </div>
 
@@ -64,7 +78,7 @@ const totalPages = cities.length * SEASONS.length;
 
     {REGION_ORDER.filter(r => byRegion[r]?.length > 0).map(regionId => (
       <section class="region-section">
-        <h2 class="region-title">{REGION_LABELS[regionId]}</h2>
+        <h2 class="region-title" data-en={REGION_LABELS[regionId]} data-ar={REGION_LABELS_AR[regionId]}>{REGION_LABELS[regionId]}</h2>
         <div class="city-grid">
           {byRegion[regionId].map((city: any) => (
             <div class="city-card" data-city={`${city.name} ${city.country}`.toLowerCase()}>
@@ -76,9 +90,9 @@ const totalPages = cities.length * SEASONS.length;
               </div>
               <div class="season-row">
                 {SEASONS.map(s => (
-                  <a href={`/what-to-wear-in-${city.id}-${s.id}/`} class="season-btn">
+                  <a href={`/what-to-wear-in-${city.id}-${s.id}/`} class="season-btn" data-en={s.label} data-ar={SEASONS_AR[s.id]}>
                     <span>{s.icon}</span>
-                    <span>{s.label}</span>
+                    <span class="season-label">{s.label}</span>
                   </a>
                 ))}
               </div>
@@ -89,9 +103,9 @@ const totalPages = cities.length * SEASONS.length;
     ))}
 
     <div class="tool-cta">
-      <h3>Not sure what to wear on your trip?</h3>
-      <p>Describe your destination, occasion, and plans — our AI stylist will suggest a complete outfit in seconds.</p>
-      <a class="btn" href="/?ref=travel-guides">Get My Outfit →</a>
+      <h3 data-en="Not sure what to wear on your trip?" data-ar="لا تعرف ماذا تلبس في رحلتك؟">Not sure what to wear on your trip?</h3>
+      <p data-en="Describe your destination, occasion, and plans — our AI stylist will suggest a complete outfit in seconds." data-ar="صف وجهتك ومناسبتك وخططك — سيقترح مصممنا الذكي إطلالة كاملة في ثوانٍ.">Describe your destination, occasion, and plans — our AI stylist will suggest a complete outfit in seconds.</p>
+      <a class="btn" href="/?ref=travel-guides" data-en="Get My Outfit →" data-ar="احصل على إطلالتي ←">Get My Outfit →</a>
     </div>
   </main>
 
@@ -104,7 +118,53 @@ const totalPages = cities.length * SEASONS.length;
   <script is:inline>
     document.getElementById("y").textContent = new Date().getFullYear();
 
-    // City search
+    // ── Bilingual toggle ──────────────────────────────────────────────────────
+    const isAr = new URLSearchParams(window.location.search).get("lang") === "ar";
+
+    function applyLang(ar) {
+      document.documentElement.lang = ar ? "ar" : "en";
+      document.documentElement.dir  = ar ? "rtl" : "ltr";
+
+      // Swap all [data-en]/[data-ar] text content
+      document.querySelectorAll("[data-en]").forEach(el => {
+        const key = ar ? el.dataset.ar : el.dataset.en;
+        if (!key) return;
+        // For anchor/button text nodes
+        if (el.tagName === "A" || el.tagName === "BUTTON" || el.tagName === "P" || el.tagName === "H1" || el.tagName === "H2" || el.tagName === "H3") {
+          el.textContent = key;
+        }
+      });
+
+      // Swap season labels inside buttons (span.season-label)
+      document.querySelectorAll(".season-btn").forEach(btn => {
+        const lbl = btn.querySelector(".season-label");
+        if (lbl) lbl.textContent = ar ? btn.dataset.ar : btn.dataset.en;
+      });
+
+      // Swap search placeholder
+      const inp = document.getElementById("city-search");
+      if (inp) inp.placeholder = ar ? inp.dataset.arPlaceholder : inp.dataset.enPlaceholder;
+
+      // Update lang toggle button
+      const btn = document.getElementById("lang-toggle");
+      if (btn) btn.textContent = ar ? "English" : "العربية";
+
+      // Update nav links href for lang
+      document.querySelector('a[href="/articles/"]')?.setAttribute("href", ar ? "/articles-ar/" : "/articles/");
+    }
+
+    if (isAr) applyLang(true);
+
+    document.getElementById("lang-toggle")?.addEventListener("click", () => {
+      const nowAr = document.documentElement.lang !== "ar";
+      const url = new URL(window.location.href);
+      if (nowAr) url.searchParams.set("lang", "ar");
+      else url.searchParams.delete("lang");
+      window.history.replaceState({}, "", url);
+      applyLang(nowAr);
+    });
+
+    // ── City search ───────────────────────────────────────────────────────────
     const input = document.getElementById("city-search");
     const noResults = document.getElementById("no-results");
     const cards = document.querySelectorAll(".city-card");
@@ -118,7 +178,6 @@ const totalPages = cities.length * SEASONS.length;
         card.style.display = match ? "" : "none";
         if (match) visible++;
       });
-      // Hide empty region sections
       sections.forEach(sec => {
         const anyVisible = [...sec.querySelectorAll(".city-card")].some(c => c.style.display !== "none");
         sec.style.display = anyVisible ? "" : "none";
@@ -136,6 +195,8 @@ const totalPages = cities.length * SEASONS.length;
   .site-nav { display: flex; align-items: center; gap: 20px; }
   .site-nav-link { font-size: 14px; color: var(--muted); text-decoration: none; transition: color .15s; }
   .site-nav-link:hover, .site-nav-link.active { color: var(--gold); }
+  #lang-toggle { background: none; border: 1px solid var(--line); color: var(--muted); font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; transition: .15s; }
+  #lang-toggle:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--gold); }
 
   /* ── Layout ───────────────────────────────────────────────────────────────── */
   .wrap { max-width: 1100px; margin: 0 auto; padding: 40px 20px 80px; }

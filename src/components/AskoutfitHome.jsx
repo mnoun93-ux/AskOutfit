@@ -208,7 +208,7 @@ export default function AskoutfitHome() {
           <a href="/" className="ao-logo">Askoutfit</a>
           <div className="ao-nav-right">
             <a href={ar ? "/articles-ar/" : "/articles/"} className="ao-nav-link">{ar ? "المقالات" : "Guides"}</a>
-            <a href="/travel-guides/" className="ao-nav-link">{ar ? "أدلة السفر" : "Travel"}</a>
+            <a href={ar ? "/travel-guides/?lang=ar" : "/travel-guides/"} className="ao-nav-link">{ar ? "أدلة السفر" : "Travel"}</a>
             <button className="ao-lang-btn" onClick={() => { const n = ar ? "en" : "ar"; setLang(n); track("lang_toggle", { to: n }); }}>
               <Globe size={13} /> {ar ? "English" : "العربية"}
             </button>
