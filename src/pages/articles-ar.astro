@@ -236,14 +236,14 @@ const articlesJson = JSON.stringify(articles);
   .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
   @media (min-width: 640px)  { .art-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 1024px) { .art-grid { grid-template-columns: repeat(3, 1fr); } }
-  .art-card { display: flex; align-items: center; gap: 16px; border: 1px solid rgba(202,164,106,.18); background: #211a13; padding: 18px 20px; border-radius: 16px; text-decoration: none; transition: .2s; direction: rtl; }
-  .art-card:hover { border-color: rgba(202,164,106,.5); background: #2c2118; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,.35); }
-  .art-card-emoji { font-size: 24px; flex-shrink: 0; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; background: rgba(202,164,106,.15); border: 1px solid rgba(202,164,106,.2); border-radius: 12px; }
+  .art-card { display: flex; align-items: center; gap: 16px; border: 1px solid rgba(202,164,106,.38); background: #28200f; padding: 18px 20px; border-radius: 16px; text-decoration: none; transition: all .22s ease; direction: rtl; }
+  .art-card:hover { border-color: rgba(202,164,106,.72); background: #352919; transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.45); }
+  .art-card-emoji { font-size: 26px; flex-shrink: 0; width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; background: rgba(202,164,106,.2); border: 1px solid rgba(202,164,106,.38); border-radius: 12px; }
   .art-card-body { flex: 1; min-width: 0; }
-  .art-card-occ { display: block; font-size: 11px; color: var(--gold); letter-spacing: .04em; margin-bottom: 5px; font-family: "Tajawal", sans-serif; font-weight: 700; opacity: .8; }
-  .art-card-title { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.45; color: var(--ink); font-family: "Tajawal", sans-serif; }
-  .art-card:hover .art-card-title { color: var(--gold); }
-  .art-arrow { color: rgba(202,164,106,.4); flex-shrink: 0; font-size: 16px; transition: .2s; }
+  .art-card-occ { display: block; font-size: 11px; color: var(--gold); letter-spacing: .04em; margin-bottom: 5px; font-family: "Tajawal", sans-serif; font-weight: 700; }
+  .art-card-title { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.45; color: #e8d5b5; font-family: "Tajawal", sans-serif; }
+  .art-card:hover .art-card-title { color: #f0e0c0; }
+  .art-arrow { color: rgba(202,164,106,.5); flex-shrink: 0; font-size: 16px; transition: .2s; }
   .art-card:hover .art-arrow { color: var(--gold); }
 
   /* ── empty state ────────────────────────────────────────────────────────── */
