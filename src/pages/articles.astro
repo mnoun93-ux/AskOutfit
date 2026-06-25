@@ -251,8 +251,8 @@ const articlesJson = JSON.stringify(articles);
   .art-grid { display: grid; gap: 12px; grid-template-columns: 1fr; }
   @media (min-width: 640px)  { .art-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 1024px) { .art-grid { grid-template-columns: repeat(3, 1fr); } }
-  .art-card { display: flex; align-items: center; gap: 16px; border: 2px solid rgba(202,164,106,.4); background: #30240f; padding: 18px 20px; border-radius: 14px; text-decoration: none; transition: all .22s ease; box-shadow: 0 4px 16px rgba(0,0,0,.6); }
-  .art-card:hover { border-color: #caa46a; background: #3d2f15; transform: translateY(-3px); box-shadow: 0 10px 32px rgba(0,0,0,.65); }
+  .art-card { display: flex; align-items: center; gap: 16px; border: 1px solid #3a2e1e; border-left: 3px solid #caa46a; background: #232016; padding: 18px 20px; border-radius: 0 14px 14px 0; text-decoration: none; transition: all .22s ease; }
+  .art-card:hover { border-left-color: #e0b87a; border-color: #4a3c24; background: #2e2a18; transform: translateX(3px); box-shadow: 0 6px 24px rgba(0,0,0,.5); }
   .art-card-emoji { font-size: 24px; flex-shrink: 0; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; background: rgba(202,164,106,.15); border: 1px solid rgba(202,164,106,.4); border-radius: 10px; flex-shrink: 0; }
   .art-card-body { flex: 1; min-width: 0; }
   .art-card-occ { display: block; font-size: 11px; color: var(--gold); letter-spacing: .07em; text-transform: uppercase; margin-bottom: 4px; font-weight: 700; }
