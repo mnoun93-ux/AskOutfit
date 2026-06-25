@@ -303,9 +303,6 @@ const IMAGE_MAP: Record<string, { men: string; women: string }> = {
   "office":           { men: "1488426862026-3ee34a7d66df", women: "1551836022-d5d88e9218df" },
   "travel-day":       { men: "1469521667743-d33b8934e04a", women: "1469854523086-cc02fe5d8800" },
 };
-const heroPhotoId: string = !isHub && !isAr && occasion && (gender === "men" || gender === "women")
-  ? (IMAGE_MAP[occasion]?.[gender as "men" | "women"] ?? "")
-  : "";
 
 // ── Hub page article lists ────────────────────────────────────────────────────
 const hubFiltered   = isHub ? allArticles.filter((x: any) => x.lang === "en" && x.slug.includes(cat!.occasion)).sort((x: any, y: any) => x.h1.localeCompare(y.h1)) : [];
@@ -318,6 +315,9 @@ const canonical = `${SITE}/${isHub ? cat!.slug : a.slug}/`;
 const isAr      = !isHub && a.lang === "ar";
 const altUrl    = !isHub && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
 const ogImage   = isHub ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
+const heroPhotoId: string = !isHub && !isAr && occasion && (gender === "men" || gender === "women")
+  ? (IMAGE_MAP[occasion]?.[gender as "men" | "women"] ?? "")
+  : "";
 
 // ── Hub Map for article → hub linking ────────────────────────────────────────
 const HUB_MAP: Record<string, string> = {
