@@ -15,6 +15,8 @@ const API_ENDPOINT =
     ? "https://api.anthropic.com/v1/messages"
     : "https://askoutfit-proxy.askoutfit.workers.dev";
 
+const WEATHER_ENDPOINT = "https://askoutfit-proxy.askoutfit.workers.dev/weather";
+
 const AMAZON_ASSOC_TAG = "askoutfit-20"; // تاج الأفلييت
 const AMAZON_DOMAIN = "www.amazon.com";  // عالمي
 function buildAffiliateLink(searchTerm) {
@@ -92,6 +94,11 @@ export default function AskoutfitHome() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
+  // Weather states
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState(null);       // { city, temp, feels_like, description, icon, humidity, wind_kph }
+  const [weatherLoading, setWeatherLoading] = useState(false);
+  const [weatherError, setWeatherError] = useState("");
   const inputRef = useRef(null);
   const toolRef = useRef(null);
   const ar = lang === "ar";
@@ -105,6 +112,36 @@ export default function AskoutfitHome() {
     }
   }, []);
 
+  // Debounced weather fetch — fires 600 ms after the user stops typing a city
+  useEffect(() => {
+    if (!city.trim() || city.trim().length < 2) {
+      setWeather(null);
+      setWeatherError("");
+      return;
+    }
+    const t = setTimeout(async () => {
+      setWeatherLoading(true);
+      setWeatherError("");
+      try {
+        const res = await fetch(`${WEATHER_ENDPOINT}?city=${encodeURIComponent(city.trim())}&units=metric`);
+        const data = await res.json();
+        if (!res.ok) {
+          setWeatherError(ar ? "لم يُعثر على المدينة" : "City not found");
+          setWeather(null);
+        } else {
+          setWeather(data);
+          setWeatherError("");
+        }
+      } catch {
+        setWeatherError(ar ? "تعذّر تحميل الطقس" : "Could not load weather");
+        setWeather(null);
+      } finally {
+        setWeatherLoading(false);
+      }
+    }, 600);
+    return () => clearTimeout(t);
+  }, [city, ar]);
+
   async function generate(q) {
     const text = (q ?? query).trim();
     if (!text) return;
@@ -116,9 +153,13 @@ export default function AskoutfitHome() {
     track("outfit_request", { query: text, lang: arabic ? "ar" : "en", gender: gender || "unspecified" });
 
     const genderLine = gender ? `The outfit is for ${gender}. ` : "";
+    const weatherLine = weather
+      ? `Current weather in ${weather.city}${weather.country ? ", " + weather.country : ""}: ${weather.temp}°C (feels like ${weather.feels_like}°C), ${weather.description}, humidity ${weather.humidity}%, wind ${weather.wind_kph} km/h. Choose fabrics, layers, and colours appropriate for these conditions. `
+      : "";
     const system =
       "You are a professional fashion stylist. Given a situation, return ONE complete, tasteful outfit. " +
       genderLine +
+      weatherLine +
       "Respond ONLY with valid JSON, no markdown, no backticks, no preamble. " +
       'Schema: {"intro": string, "items": [{"slot": one of [top,bottom,outerwear,shoes,accessory], "name": string, "search": string, "why": string}], "note": string}. ' +
       "The 'search' is a concrete shoppable English phrase (e.g. 'navy linen blazer men slim fit'). " +
@@ -188,6 +229,33 @@ export default function AskoutfitHome() {
                   {ar ? g.ar : g.en}
                 </button>
               ))}
+            </div>
+
+            {/* City / Weather row */}
+            <div className="ao-city-row">
+              <span className="ao-city-icon">🌍</span>
+              <input
+                type="text"
+                className="ao-city-input"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder={ar ? "مدينتك (اختياري)..." : "Your city (optional)..."}
+                aria-label={ar ? "مدينتك" : "Your city"}
+              />
+              {weatherLoading && <Loader2 size={14} className="ao-spin ao-city-spin" />}
+              {weather && !weatherLoading && (
+                <span className="ao-weather-badge">
+                  <img
+                    src={`https://openweathermap.org/img/wn/${weather.icon}.png`}
+                    width="24" height="24" alt=""
+                    style={{ display: "inline", verticalAlign: "middle" }}
+                  />
+                  {weather.temp}°C · {weather.description}
+                </span>
+              )}
+              {weatherError && !weatherLoading && (
+                <span className="ao-weather-err">{weatherError}</span>
+              )}
             </div>
             <textarea ref={inputRef} value={query} onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) generate(); }}
@@ -433,6 +501,16 @@ const CSS = `
   color:var(--gold);font-size:14px;cursor:pointer;font-family:inherit;}
 .ao-again:hover{text-decoration:underline;}
 .ao-disclaimer{margin-top:20px;text-align:center;font-size:10px;color:var(--faint);}
+
+/* City / Weather */
+.ao-city-row{display:flex;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px;flex-wrap:wrap;}
+.ao-city-icon{font-size:15px;flex-shrink:0;}
+.ao-city-input{flex:1;min-width:120px;background:none;border:none;color:var(--muted);font-size:13px;font-family:inherit;outline:none;}
+.ao-city-input::placeholder{color:var(--faint);}
+.ao-city-input:focus{color:var(--ink);}
+.ao-city-spin{color:var(--faint);flex-shrink:0;}
+.ao-weather-badge{display:inline-flex;align-items:center;gap:2px;font-size:12px;color:var(--gold);font-weight:500;white-space:nowrap;}
+.ao-weather-err{font-size:12px;color:#f87171;}
 
 .ao-section{border-top:1px solid rgba(58,48,38,.6);}
 .ao-section-alt{background:#1d1610;}
