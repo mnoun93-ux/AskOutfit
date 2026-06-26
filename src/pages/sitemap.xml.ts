@@ -57,11 +57,24 @@ export async function GET() {
     // Travel guides index
     `  <url>\n    <loc>${SITE}/travel-guides/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.9</priority>\n  </url>`,
 
-    // Geo pSEO pages (196 pages)
+    // Geo pSEO pages English + Arabic (196 × 2 = 392 pages) with hreflang
     ...(geoCitiesData as any[]).flatMap((city: any) =>
-      GEO_SEASONS.map(season =>
-        `  <url>\n    <loc>${SITE}/what-to-wear-in-${city.id}-${season}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.7</priority>\n  </url>`
-      )
+      GEO_SEASONS.flatMap(season => {
+        const enLoc = `${SITE}/what-to-wear-in-${city.id}-${season}/`;
+        const arLoc = `${SITE}/ar/what-to-wear-in-${city.id}-${season}/`;
+        return [
+          `  <url>\n    <loc>${enLoc}</loc>\n` +
+          `    <xhtml:link rel="alternate" hreflang="en" href="${enLoc}"/>\n` +
+          `    <xhtml:link rel="alternate" hreflang="ar" href="${arLoc}"/>\n` +
+          `    <xhtml:link rel="alternate" hreflang="x-default" href="${enLoc}"/>\n` +
+          `    <lastmod>${today}</lastmod>\n    <priority>0.7</priority>\n  </url>`,
+          `  <url>\n    <loc>${arLoc}</loc>\n` +
+          `    <xhtml:link rel="alternate" hreflang="ar" href="${arLoc}"/>\n` +
+          `    <xhtml:link rel="alternate" hreflang="en" href="${enLoc}"/>\n` +
+          `    <xhtml:link rel="alternate" hreflang="x-default" href="${enLoc}"/>\n` +
+          `    <lastmod>${today}</lastmod>\n    <priority>0.7</priority>\n  </url>`,
+        ];
+      })
     ),
 
     ...articles.map((a: any) => {

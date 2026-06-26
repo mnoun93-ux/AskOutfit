@@ -90,7 +90,7 @@ const totalPages = cities.length * SEASONS.length;
               </div>
               <div class="season-row">
                 {SEASONS.map(s => (
-                  <a href={`/what-to-wear-in-${city.id}-${s.id}/`} class="season-btn" data-en={s.label} data-ar={SEASONS_AR[s.id]}>
+                  <a href={`/what-to-wear-in-${city.id}-${s.id}/`} class="season-btn" data-en={s.label} data-ar={SEASONS_AR[s.id]} data-en-href={`/what-to-wear-in-${city.id}-${s.id}/`} data-ar-href={`/ar/what-to-wear-in-${city.id}-${s.id}/`}>
                     <span>{s.icon}</span>
                     <span class="season-label">{s.label}</span>
                   </a>
@@ -125,20 +125,19 @@ const totalPages = cities.length * SEASONS.length;
       document.documentElement.lang = ar ? "ar" : "en";
       document.documentElement.dir  = ar ? "rtl" : "ltr";
 
-      // Swap all [data-en]/[data-ar] text content
-      document.querySelectorAll("[data-en]").forEach(el => {
+      // Swap text for simple elements (no child elements) — exclude .season-btn (has inner spans)
+      document.querySelectorAll("[data-en]:not(.season-btn)").forEach(el => {
         const key = ar ? el.dataset.ar : el.dataset.en;
         if (!key) return;
-        // For anchor/button text nodes
-        if (el.tagName === "A" || el.tagName === "BUTTON" || el.tagName === "P" || el.tagName === "H1" || el.tagName === "H2" || el.tagName === "H3") {
-          el.textContent = key;
-        }
+        el.textContent = key;
       });
 
-      // Swap season labels inside buttons (span.season-label)
+      // Swap season labels + hrefs — keep emoji span intact
       document.querySelectorAll(".season-btn").forEach(btn => {
         const lbl = btn.querySelector(".season-label");
-        if (lbl) lbl.textContent = ar ? btn.dataset.ar : btn.dataset.en;
+        if (lbl) lbl.textContent = ar ? (btn.dataset.ar || lbl.textContent) : (btn.dataset.en || lbl.textContent);
+        const href = ar ? btn.dataset.arHref : btn.dataset.enHref;
+        if (href) btn.setAttribute("href", href);
       });
 
       // Swap search placeholder

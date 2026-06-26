@@ -1,0 +1,360 @@
+---
+import Base from "../../layouts/Base.astro";
+import geoCitiesData from "../../content/geo-cities.json";
+import { GEO_SEASONS, GEO_CLIMATE_CONTENT } from "../../lib/geo-content";
+import { GEO_CLIMATE_CONTENT_AR, GEO_OCCASION_OUTFITS_AR, SEASON_LABELS_AR } from "../../lib/geo-content-ar";
+
+const SITE = "https://askoutfit.com";
+const AMAZON_TAG = "askoutfit-20";
+
+const cities: any[] = geoCitiesData as any[];
+
+// ── توليد المسارات الثابتة ────────────────────────────────────────────────────
+export async function getStaticPaths() {
+  const citiesData: any[] = geoCitiesData as any[];
+  const paths: any[] = [];
+  for (const city of citiesData) {
+    for (const season of GEO_SEASONS) {
+      paths.push({
+        params: { slug: `what-to-wear-in-${city.id}-${season}` },
+        props:  { cityId: city.id, season },
+      });
+    }
+  }
+  return paths;
+}
+
+const { slug } = Astro.params;
+const { cityId, season: geoSeason } = Astro.props as { cityId: string; season: string };
+
+const geoCity   = cities.find((c: any) => c.id === cityId)!;
+const geoContent    = GEO_CLIMATE_CONTENT_AR[geoCity.climate]?.[geoSeason];
+const geoContentEn  = GEO_CLIMATE_CONTENT[geoCity.climate]?.[geoSeason]; // للروابط الأمازون
+const geoSeasonAr   = SEASON_LABELS_AR[geoSeason] ?? geoSeason;
+
+// العنوان والوصف
+const geoH1    = `ماذا تلبس في ${geoCity.name} في ${geoSeasonAr}`;
+const geoTitle = `${geoH1} — دليل الأزياء الكامل`;
+const geoDesc  = `دليل أزياء شامل لـ${geoCity.name} في ${geoSeasonAr} — ما تلبسه، ما تحمله في حقيبتك، وأفضل الإطلالات لكل مناسبة، بحسب المناخ الفعلي للمدينة.`;
+
+// الرابط الأصلي والمقابل الإنجليزي
+const canonical    = `${SITE}/ar/what-to-wear-in-${geoCity.id}-${geoSeason}/`;
+const enCounterpart = `${SITE}/what-to-wear-in-${geoCity.id}-${geoSeason}/`;
+const geoSlug       = slug;
+
+// بطاقات المناسبات العربية
+const geoOccasionCards = GEO_OCCASION_OUTFITS_AR[geoCity.climate]?.[geoSeason] ?? [];
+
+// الفصول الأخرى لنفس المدينة
+const geoOtherSeasons = GEO_SEASONS.filter((s: string) => s !== geoSeason);
+
+// مدن مشابهة في المناخ (أول 3 من نفس المناخ)
+const geoSimilarCities = cities
+  .filter((c: any) => c.id !== geoCity.id && c.climate === geoCity.climate)
+  .slice(0, 3);
+
+// Schema
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
+    { "@type": "ListItem", position: 2, name: "أدلة السفر", item: `${SITE}/travel-guides/?lang=ar` },
+    { "@type": "ListItem", position: 3, name: geoH1, item: canonical },
+  ],
+};
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: (geoContent?.faq ?? []).map((f: any) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
+// أيقونات الفصول
+function seasonIcon(s: string) {
+  return s === "summer" ? "☀️" : s === "winter" ? "❄️" : s === "spring" ? "🌸" : "🍂";
+}
+---
+
+<Base
+  title={geoTitle}
+  description={geoDesc}
+  lang="ar"
+  dir="rtl"
+  canonical={canonical}
+  altLang="en"
+  altUrl={enCounterpart}
+  ogImage={`${SITE}/og-default.jpg`}
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
+    {geoContent?.faq?.length > 0 && (
+      <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
+    )}
+    <link rel="alternate" hreflang="ar" href={canonical} />
+    <link rel="alternate" hreflang="en" href={enCounterpart} />
+    <link rel="alternate" hreflang="x-default" href={enCounterpart} />
+  </Fragment>
+
+  <!-- ══ الرأس ══ -->
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="/" class="site-logo">Askoutfit</a>
+      <nav class="site-nav">
+        <a href="/articles-ar/" class="site-nav-link">أدلة الأزياء</a>
+        <a href="/travel-guides/?lang=ar" class="site-nav-link">أدلة السفر</a>
+        <a href={enCounterpart} class="site-lang-btn">English</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- مسار التنقل -->
+    <nav class="crumb" aria-label="مسار التنقل">
+      <a href="/">Askoutfit</a> &rsaquo; <a href="/travel-guides/?lang=ar">أدلة السفر</a> &rsaquo;
+      <span>{geoCity.name}</span> &rsaquo;
+      <span>{geoH1}</span>
+    </nav>
+
+    <article class="article">
+      <h1>{geoH1}</h1>
+
+      <!-- شارات المناخ والحرارة -->
+      <div class="geo-meta">
+        <span class="geo-badge">📍 {geoCity.name}، {geoCity.country}</span>
+        <span class="geo-badge">🌡 {geoCity.temps[geoSeason as keyof typeof geoCity.temps]}</span>
+      </div>
+
+      <!-- المقدمة -->
+      <div class="lead">
+        {geoContent?.intro.split("\n\n").map((para: string) => (
+          <p>{para}</p>
+        ))}
+      </div>
+
+      <!-- أداة الأزياء -->
+      <div class="tool-cta">
+        <h3>غير متأكد ماذا تلبس؟</h3>
+        <p>احصل على توصية إطلالة مخصصة لـ{geoCity.name} في {geoSeasonAr} — في ثوانٍ.</p>
+        <a class="btn" href={`/?ref=${geoSlug}`}>احصل على إطلالتي ←</a>
+      </div>
+
+      <div class="body">
+
+        <!-- النصائح الرئيسية -->
+        <h2>ماذا تلبس في {geoCity.name} في {geoSeasonAr} — النصائح الجوهرية</h2>
+        <ul>
+          {geoContent?.tips.map((tip: string) => <li>{tip}</li>)}
+        </ul>
+
+        <!-- بطاقات المناسبات -->
+        {geoOccasionCards.length > 0 && (
+          <>
+            <h2>الإطلالة المناسبة لكل مناسبة</h2>
+            <p>إليك كيفية الإطلالة للأنشطة والمناسبات الأكثر شيوعاً في {geoCity.name} خلال {geoSeasonAr}:</p>
+            <div class="occasion-grid">
+              {geoOccasionCards.map((c: any) => (
+                <div class="occasion-card">
+                  <div class="occasion-icon">{c.icon}</div>
+                  <div class="occasion-body">
+                    <h3 class="occasion-title">{c.title}</h3>
+                    <p class="occasion-text">{c.outfit}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        <!-- قائمة الحقيبة -->
+        <h2>قائمة الحقيبة لـ{geoSeasonAr} في {geoCity.name}</h2>
+        <p>هذه القطع الأساسية التي يجب أن تحملها معك في رحلتك إلى {geoCity.name} في {geoSeasonAr}:</p>
+        <ul class="packing-list">
+          {geoContent?.packing.map((item: string) => <li>✓ {item}</li>)}
+        </ul>
+
+        <!-- Shop the Look -->
+        <div class="shop-look">
+          <h3 class="shop-heading">تسوّق الإطلالة</h3>
+          <p class="shop-sub">ابحث عن هذه القطع على أمازون — روابط أفيليت تُساعد في إبقاء الموقع مجانياً.</p>
+          <div class="shop-grid">
+            {(geoContentEn?.packing ?? geoContent?.packing ?? []).slice(0, 6).map((item: string, idx: number) => {
+              const arLabel = geoContent?.packing[idx] ?? item;
+              return (
+                <a
+                  href={`https://www.amazon.com/s?k=${encodeURIComponent(item)}&tag=${AMAZON_TAG}`}
+                  target="_blank"
+                  rel="noopener nofollow sponsored"
+                  class="shop-card"
+                >
+                  <span class="shop-icon">🛍</span>
+                  <span class="shop-label">{arLabel}</span>
+                  <span class="shop-arrow">←</span>
+                </a>
+              );
+            })}
+          </div>
+        </div>
+
+        <!-- ملاحظة الثقافة المحلية -->
+        {geoCity.culturalNote && (
+          <div class="cultural-note">
+            <h3>🧭 ثقافة اللباس المحلية</h3>
+            <p>{geoCity.culturalNote}</p>
+          </div>
+        )}
+
+        <!-- فصول أخرى لنفس المدينة -->
+        {geoOtherSeasons.length > 0 && (
+          <section class="geo-seasons">
+            <h2>تخطط للزيارة في موسم مختلف؟</h2>
+            <p class="geo-related-sub">استكشف أدلة الأزياء لبقية مواسم {geoCity.name}:</p>
+            <div class="season-links">
+              {geoOtherSeasons.map((s: string) => (
+                <a href={`/ar/what-to-wear-in-${geoCity.id}-${s}/`} class="season-link">
+                  <span class="season-link-icon">{seasonIcon(s)}</span>
+                  <span>ماذا تلبس في {geoCity.name} في {SEASON_LABELS_AR[s]}</span>
+                  <span class="related-arrow">←</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <!-- وجهات مشابهة المناخ -->
+        {geoSimilarCities.length > 0 && (
+          <section class="geo-similar">
+            <h2>وجهات بمناخ مشابه</h2>
+            <p class="geo-related-sub">هذه الوجهات تشاركُ {geoCity.name} مناخها — استراتيجية الملبس ذاتها تنطبق عليها:</p>
+            <div class="season-links">
+              {geoSimilarCities.map((c: any) => (
+                <a href={`/ar/what-to-wear-in-${c.id}-${geoSeason}/`} class="season-link">
+                  <span class="season-link-icon">📍</span>
+                  <span>ماذا تلبس في {c.name} في {geoSeasonAr}</span>
+                  <span class="related-arrow">←</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <!-- الأسئلة الشائعة -->
+        {(geoContent?.faq ?? []).length > 0 && (
+          <section class="faq">
+            <h2>أسئلة شائعة</h2>
+            <div class="faq-list">
+              {geoContent?.faq.map((f: any) => (
+                <details class="faq-item">
+                  <summary class="faq-q">{f.q}</summary>
+                  <p class="faq-a">{f.a}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+        )}
+
+      </div>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p class="site-footer-logo">Askoutfit</p>
+    <p>قد نكسب عمولةً على المشتريات عبر الروابط. © <span id="y"></span></p>
+    <p class="aiom">مشروع بواسطة <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+  </footer>
+
+  <script is:inline>document.getElementById("y").textContent = new Date().getFullYear();</script>
+</Base>
+
+<style>
+  /* ── الرأس ────────────────────────────────────────────────────────────────── */
+  .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.6); background: rgba(26,20,16,.85); backdrop-filter: blur(12px); }
+  .site-header-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+  .site-logo { font-family: "Playfair Display", Georgia, serif; font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
+  .site-nav { display: flex; align-items: center; gap: 20px; }
+  .site-nav-link { font-size: 14px; color: var(--muted); text-decoration: none; transition: color .15s; }
+  .site-nav-link:hover { color: var(--gold); }
+  .site-lang-btn { background: none; border: 1px solid var(--line); color: var(--muted); font-size: 13px; padding: 5px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; text-decoration: none; transition: .15s; display: inline-block; }
+  .site-lang-btn:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); color: var(--gold); }
+
+  /* ── التخطيط ──────────────────────────────────────────────────────────────── */
+  .wrap { max-width: 780px; margin: 0 auto; padding: 40px 20px 80px; }
+  .crumb { font-size: 12px; color: var(--faint); margin-bottom: 32px; }
+  .crumb a { color: var(--faint); text-decoration: none; }
+  .crumb a:hover { color: var(--gold); }
+
+  /* ── المقال ───────────────────────────────────────────────────────────────── */
+  .article h1 { font-family: "Playfair Display", Georgia, serif; font-size: clamp(24px, 4vw, 36px); font-weight: 600; line-height: 1.3; color: var(--ink); margin: 0 0 16px; }
+  .geo-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .geo-badge { font-size: 13px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; color: var(--muted); }
+  .lead p { font-size: 17px; line-height: 1.75; color: var(--muted); margin-bottom: 1.2em; }
+
+  /* ── أداة الأزياء ─────────────────────────────────────────────────────────── */
+  .tool-cta { margin: 32px 0; padding: 24px 28px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--gold) 30%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 10%, var(--surface)), var(--surface)); text-align: center; }
+  .tool-cta h3 { font-family: "Playfair Display", serif; font-size: 18px; margin-bottom: 6px; color: var(--ink); }
+  .tool-cta p { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  .btn { display: inline-block; background: var(--gold); color: var(--bg); font-weight: 600; text-decoration: none; padding: 11px 24px; border-radius: 10px; transition: background .2s; font-size: 14px; }
+  .btn:hover { background: #d8b67e; }
+
+  /* ── جسم المقال ──────────────────────────────────────────────────────────── */
+  .body h2 { font-family: "Playfair Display", serif; font-size: 22px; font-weight: 600; color: var(--ink); margin: 40px 0 14px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .body ul { padding-right: 20px; padding-left: 0; margin: 0 0 24px; }
+  .body li { color: var(--muted); line-height: 1.75; margin-bottom: 10px; font-size: 15px; }
+
+  /* ── قائمة الحقيبة ───────────────────────────────────────────────────────── */
+  .packing-list { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .packing-list li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; font-size: 14px; color: var(--muted); }
+  @media (max-width: 480px) { .packing-list { grid-template-columns: 1fr; } }
+
+  /* ── شبكة المناسبات ──────────────────────────────────────────────────────── */
+  .occasion-grid { display: grid; gap: 14px; margin-bottom: 32px; }
+  @media (min-width: 640px) { .occasion-grid { grid-template-columns: 1fr 1fr; } }
+  .occasion-card { display: flex; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .occasion-icon { font-size: 24px; flex-shrink: 0; line-height: 1; }
+  .occasion-title { font-size: 14px; font-weight: 700; color: var(--ink); margin: 0 0 6px; }
+  .occasion-text { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.65; }
+
+  /* ── تسوّق الإطلالة ──────────────────────────────────────────────────────── */
+  .shop-look { margin: 32px 0; }
+  .shop-heading { font-family: "Playfair Display", serif; font-size: 20px; font-weight: 600; margin: 0 0 6px; }
+  .shop-sub { color: var(--faint); font-size: 12px; margin: 0 0 16px; }
+  .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (min-width: 560px) { .shop-grid { grid-template-columns: repeat(3, 1fr); } }
+  .shop-card { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; text-decoration: none; transition: border-color .2s; }
+  .shop-card:hover { border-color: var(--gold); }
+  .shop-icon { font-size: 15px; }
+  .shop-label { font-size: 12px; color: var(--muted); flex: 1; }
+  .shop-arrow { font-size: 12px; color: var(--faint); }
+
+  /* ── ملاحظة ثقافية ───────────────────────────────────────────────────────── */
+  .cultural-note { margin: 28px 0; padding: 18px 20px; background: color-mix(in srgb, var(--gold) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent); border-radius: 12px; }
+  .cultural-note h3 { font-size: 15px; font-weight: 700; color: var(--ink); margin: 0 0 8px; }
+  .cultural-note p { font-size: 14px; color: var(--muted); margin: 0; line-height: 1.7; }
+
+  /* ── الفصول الأخرى والوجهات المشابهة ────────────────────────────────────── */
+  .geo-seasons, .geo-similar { margin-top: 36px; }
+  .geo-related-sub { color: var(--muted); font-size: 14px; margin: 0 0 14px; }
+  .season-links { display: flex; flex-direction: column; gap: 8px; }
+  .season-link { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; text-decoration: none; color: var(--muted); font-size: 14px; transition: all .15s; }
+  .season-link:hover { border-color: var(--gold); color: var(--gold); }
+  .season-link-icon { font-size: 16px; }
+  .related-arrow { margin-right: auto; margin-left: 0; color: var(--faint); font-size: 13px; }
+
+  /* ── الأسئلة الشائعة ─────────────────────────────────────────────────────── */
+  .faq { margin-top: 36px; }
+  .faq-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .faq-item { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .faq-q { font-size: 14px; font-weight: 600; color: var(--ink); padding: 14px 16px; cursor: pointer; list-style: none; }
+  .faq-q::-webkit-details-marker { display: none; }
+  .faq-a { font-size: 14px; color: var(--muted); padding: 0 16px 14px; margin: 0; line-height: 1.75; }
+
+  /* ── الذيل ───────────────────────────────────────────────────────────────── */
+  .site-footer { border-top: 1px solid rgba(58,48,38,.6); background: #1d1610; text-align: center; padding: 40px 20px; font-size: 12px; color: var(--faint); }
+  .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
+  .aiom { margin-top: 8px; }
+  .aiom a { color: var(--gold); font-weight: 500; }
+</style>
