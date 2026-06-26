@@ -3,6 +3,7 @@ import Base from "../../layouts/Base.astro";
 import geoCitiesData from "../../content/geo-cities.json";
 import { GEO_SEASONS, GEO_CLIMATE_CONTENT } from "../../lib/geo-content";
 import { GEO_CLIMATE_CONTENT_AR, GEO_OCCASION_OUTFITS_AR, SEASON_LABELS_AR } from "../../lib/geo-content-ar";
+import { GEO_CITIES_AR } from "../../lib/geo-cities-ar";
 
 const SITE = "https://askoutfit.com";
 const AMAZON_TAG = "askoutfit-20";
@@ -27,15 +28,20 @@ export async function getStaticPaths() {
 const { slug } = Astro.params;
 const { cityId, season: geoSeason } = Astro.props as { cityId: string; season: string };
 
-const geoCity   = cities.find((c: any) => c.id === cityId)!;
+const geoCity    = cities.find((c: any) => c.id === cityId)!;
+const geoCityAr  = GEO_CITIES_AR[geoCity.id];
+const cityNameAr = geoCityAr?.nameAr ?? geoCity.name;
+const countryAr  = geoCityAr?.countryAr ?? geoCity.country;
+const culturalNoteAr = geoCityAr?.culturalNoteAr ?? null;
+
 const geoContent    = GEO_CLIMATE_CONTENT_AR[geoCity.climate]?.[geoSeason];
 const geoContentEn  = GEO_CLIMATE_CONTENT[geoCity.climate]?.[geoSeason]; // للروابط الأمازون
 const geoSeasonAr   = SEASON_LABELS_AR[geoSeason] ?? geoSeason;
 
 // العنوان والوصف
-const geoH1    = `ماذا تلبس في ${geoCity.name} في ${geoSeasonAr}`;
+const geoH1    = `ماذا تلبس في ${cityNameAr} في ${geoSeasonAr}`;
 const geoTitle = `${geoH1} — دليل الأزياء الكامل`;
-const geoDesc  = `دليل أزياء شامل لـ${geoCity.name} في ${geoSeasonAr} — ما تلبسه، ما تحمله في حقيبتك، وأفضل الإطلالات لكل مناسبة، بحسب المناخ الفعلي للمدينة.`;
+const geoDesc  = `دليل أزياء شامل لـ${cityNameAr} في ${geoSeasonAr} — ما تلبسه، ما تحمله في حقيبتك، وأفضل الإطلالات لكل مناسبة، بحسب المناخ الفعلي للمدينة.`;
 
 // الرابط الأصلي والمقابل الإنجليزي
 const canonical    = `${SITE}/ar/what-to-wear-in-${geoCity.id}-${geoSeason}/`;
@@ -116,7 +122,7 @@ function seasonIcon(s: string) {
     <!-- مسار التنقل -->
     <nav class="crumb" aria-label="مسار التنقل">
       <a href="/">Askoutfit</a> &rsaquo; <a href="/travel-guides/?lang=ar">أدلة السفر</a> &rsaquo;
-      <span>{geoCity.name}</span> &rsaquo;
+      <span>{cityNameAr}</span> &rsaquo;
       <span>{geoH1}</span>
     </nav>
 
@@ -125,7 +131,7 @@ function seasonIcon(s: string) {
 
       <!-- شارات المناخ والحرارة -->
       <div class="geo-meta">
-        <span class="geo-badge">📍 {geoCity.name}، {geoCity.country}</span>
+        <span class="geo-badge">📍 {cityNameAr}، {countryAr}</span>
         <span class="geo-badge">🌡 {geoCity.temps[geoSeason as keyof typeof geoCity.temps]}</span>
       </div>
 
@@ -139,14 +145,14 @@ function seasonIcon(s: string) {
       <!-- أداة الأزياء -->
       <div class="tool-cta">
         <h3>غير متأكد ماذا تلبس؟</h3>
-        <p>احصل على توصية إطلالة مخصصة لـ{geoCity.name} في {geoSeasonAr} — في ثوانٍ.</p>
+        <p>احصل على توصية إطلالة مخصصة لـ{cityNameAr} في {geoSeasonAr} — في ثوانٍ.</p>
         <a class="btn" href={`/?ref=${geoSlug}`}>احصل على إطلالتي ←</a>
       </div>
 
       <div class="body">
 
         <!-- النصائح الرئيسية -->
-        <h2>ماذا تلبس في {geoCity.name} في {geoSeasonAr} — النصائح الجوهرية</h2>
+        <h2>ماذا تلبس في {cityNameAr} في {geoSeasonAr} — النصائح الجوهرية</h2>
         <ul>
           {geoContent?.tips.map((tip: string) => <li>{tip}</li>)}
         </ul>
@@ -155,7 +161,7 @@ function seasonIcon(s: string) {
         {geoOccasionCards.length > 0 && (
           <>
             <h2>الإطلالة المناسبة لكل مناسبة</h2>
-            <p>إليك كيفية الإطلالة للأنشطة والمناسبات الأكثر شيوعاً في {geoCity.name} خلال {geoSeasonAr}:</p>
+            <p>إليك كيفية الإطلالة للأنشطة والمناسبات الأكثر شيوعاً في {cityNameAr} خلال {geoSeasonAr}:</p>
             <div class="occasion-grid">
               {geoOccasionCards.map((c: any) => (
                 <div class="occasion-card">
@@ -171,8 +177,8 @@ function seasonIcon(s: string) {
         )}
 
         <!-- قائمة الحقيبة -->
-        <h2>قائمة الحقيبة لـ{geoSeasonAr} في {geoCity.name}</h2>
-        <p>هذه القطع الأساسية التي يجب أن تحملها معك في رحلتك إلى {geoCity.name} في {geoSeasonAr}:</p>
+        <h2>قائمة الحقيبة لـ{geoSeasonAr} في {cityNameAr}</h2>
+        <p>هذه القطع الأساسية التي يجب أن تحملها معك في رحلتك إلى {cityNameAr} في {geoSeasonAr}:</p>
         <ul class="packing-list">
           {geoContent?.packing.map((item: string) => <li>✓ {item}</li>)}
         </ul>
@@ -201,10 +207,10 @@ function seasonIcon(s: string) {
         </div>
 
         <!-- ملاحظة الثقافة المحلية -->
-        {geoCity.culturalNote && (
+        {culturalNoteAr && (
           <div class="cultural-note">
             <h3>🧭 ثقافة اللباس المحلية</h3>
-            <p>{geoCity.culturalNote}</p>
+            <p>{culturalNoteAr}</p>
           </div>
         )}
 
@@ -212,12 +218,12 @@ function seasonIcon(s: string) {
         {geoOtherSeasons.length > 0 && (
           <section class="geo-seasons">
             <h2>تخطط للزيارة في موسم مختلف؟</h2>
-            <p class="geo-related-sub">استكشف أدلة الأزياء لبقية مواسم {geoCity.name}:</p>
+            <p class="geo-related-sub">استكشف أدلة الأزياء لبقية مواسم {cityNameAr}:</p>
             <div class="season-links">
               {geoOtherSeasons.map((s: string) => (
                 <a href={`/ar/what-to-wear-in-${geoCity.id}-${s}/`} class="season-link">
                   <span class="season-link-icon">{seasonIcon(s)}</span>
-                  <span>ماذا تلبس في {geoCity.name} في {SEASON_LABELS_AR[s]}</span>
+                  <span>ماذا تلبس في {cityNameAr} في {SEASON_LABELS_AR[s]}</span>
                   <span class="related-arrow">←</span>
                 </a>
               ))}
@@ -229,12 +235,12 @@ function seasonIcon(s: string) {
         {geoSimilarCities.length > 0 && (
           <section class="geo-similar">
             <h2>وجهات بمناخ مشابه</h2>
-            <p class="geo-related-sub">هذه الوجهات تشاركُ {geoCity.name} مناخها — استراتيجية الملبس ذاتها تنطبق عليها:</p>
+            <p class="geo-related-sub">هذه الوجهات تشاركُ {cityNameAr} مناخها — استراتيجية الملبس ذاتها تنطبق عليها:</p>
             <div class="season-links">
               {geoSimilarCities.map((c: any) => (
                 <a href={`/ar/what-to-wear-in-${c.id}-${geoSeason}/`} class="season-link">
                   <span class="season-link-icon">📍</span>
-                  <span>ماذا تلبس في {c.name} في {geoSeasonAr}</span>
+                  <span>ماذا تلبس في {GEO_CITIES_AR[c.id]?.nameAr ?? c.name} في {geoSeasonAr}</span>
                   <span class="related-arrow">←</span>
                 </a>
               ))}
