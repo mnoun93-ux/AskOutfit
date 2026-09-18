@@ -244,7 +244,7 @@ const geoH1    = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel}` 
 // climate-template text (28 templates reused across 49 cities). Only a
 // subset of high-demand combos have one so far — undefined for the rest,
 // which just skips the block below. Extend geo-unique.json over time.
-const geoUniqueText = isGeo ? (geoUniqueData as Record<string, string>)[geoSlug] : null;
+const geoUniqueText = isGeo ? (geoUniqueData as Record<string, string>)[`${geoCity.id}-${geoSeason}`] : null;
 
 // Related articles — deterministic sort (by slug), show up to 8
 const geoRelated = isGeo
