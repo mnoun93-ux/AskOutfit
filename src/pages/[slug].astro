@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import geoCitiesData from "../content/geo-cities.json";
+import geoUniqueData from "../content/geo-unique.json";
 import { GEO_SEASONS, SEASON_LABELS, GEO_CLIMATE_CONTENT } from "../lib/geo-content";
 
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
@@ -239,6 +240,11 @@ const geoSlug = isGeo ? `what-to-wear-in-${geoCity.id}-${geoSeason}` : "";
 const geoTitle = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel} — Packing & Outfit Guide` : "";
 const geoDesc  = isGeo ? `What to wear in ${geoCity.name} in ${geoSeasonLabel}: climate-specific outfit tips, a full packing list, local dress culture, and occasion-by-occasion advice for ${geoCity.country}.` : "";
 const geoH1    = isGeo ? `What to Wear in ${geoCity.name} in ${geoSeasonLabel}` : "";
+// A hand-written, city+season-specific paragraph that breaks the shared
+// climate-template text (28 templates reused across 49 cities). Only a
+// subset of high-demand combos have one so far — undefined for the rest,
+// which just skips the block below. Extend geo-unique.json over time.
+const geoUniqueText = isGeo ? (geoUniqueData as Record<string, string>)[geoSlug] : null;
 
 // Related articles — deterministic sort (by slug), show up to 8
 const geoRelated = isGeo
@@ -657,13 +663,20 @@ const relatedHeading = isAr ? "مقالات ذات صلة" : "Related articles";
 
 const pageTitle = isGeo ? geoTitle : isHub ? cat!.title : a.title;
 const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
+
+// Geo pages: a real Arabic sibling exists at /ar/{slug}/ — declare it.
+// Regular articles: altSlug points to a page that isn't built (no AR
+// content pipeline for these yet) — omit hreflang until it's real,
+// rather than pointing crawlers at dead URLs.
+const pageAltLang = isGeo ? "ar" : undefined;
+const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
 ---
 
 <Base title={pageTitle} description={pageDesc}
   lang={isAr ? "ar" : "en"} dir={isAr ? "rtl" : "ltr"}
   canonical={canonical}
-  altLang={!isHub ? a.altLang : undefined}
-  altUrl={!isHub ? altUrl : undefined}
+  altLang={pageAltLang}
+  altUrl={pageAltUrl}
   ogImage={ogImage}>
   <Fragment slot="head">
     {articleSchema && (<script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />)}
@@ -703,6 +716,13 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
           <div class="lead">
             <p>{geoContent?.intro}</p>
           </div>
+
+          {geoUniqueText && (
+            <div class="cultural-note">
+              <h3>🗓 What Actually Changes in {geoCity.name} This Season</h3>
+              <p>{geoUniqueText}</p>
+            </div>
+          )}
 
           <div class="tool-cta">
             <h3>Not sure what to wear?</h3>

@@ -57,7 +57,7 @@ export async function GET() {
     // Travel guides index
     `  <url>\n    <loc>${SITE}/travel-guides/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>0.9</priority>\n  </url>`,
 
-    // Geo pSEO pages English + Arabic (196 × 2 = 392 pages) with hreflang
+    // Geo pSEO pages English + Arabic (currently {cities}×4 seasons×2 langs — count reflects geo-cities.json) with hreflang
     ...(geoCitiesData as any[]).flatMap((city: any) =>
       GEO_SEASONS.flatMap(season => {
         const enLoc = `${SITE}/what-to-wear-in-${city.id}-${season}/`;
@@ -77,15 +77,17 @@ export async function GET() {
       })
     ),
 
+    // NOTE: articles only have an `altSlug` in their metadata for a future
+    // Arabic version — no such page is built yet, so we do NOT declare an
+    // hreflang alternate here. Pointing crawlers at a URL that 404s wastes
+    // crawl budget and can undermine trust in the rest of the site's
+    // hreflang signals. Re-add the xhtml:link alternate once AR articles
+    // are actually generated and built by getStaticPaths.
     ...articles.map((a: any) => {
       const loc = `${SITE}/${a.slug}/`;
-      const alt = a.altSlug ? `${SITE}/${a.altSlug}/` : loc;
       return (
         `  <url>\n    <loc>${loc}</loc>\n` +
         `    <xhtml:link rel="alternate" hreflang="${a.lang}" href="${loc}"/>\n` +
-        (a.altLang
-          ? `    <xhtml:link rel="alternate" hreflang="${a.altLang}" href="${alt}"/>\n`
-          : "") +
         `    <lastmod>${a.datePublished || today}</lastmod>\n  </url>`
       );
     }),
