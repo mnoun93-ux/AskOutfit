@@ -21,7 +21,7 @@ interface ClimateSeasonContent {
 export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonContent>> = {
   hot_dry: {
     summer: {
-      intro: "Summer in a hot, dry desert climate means extreme heat — temperatures regularly exceed 40°C (104°F). Your outfit choices need to prioritise sun protection and breathability above everything else. The good news: the heat is dry, so the right fabrics actually keep you comfortable.",
+      intro: "Summer in a hot, dry desert climate means extreme heat — temperatures regularly exceed 40°C (104°F). Breathable, sun-protective fabrics are essential.",
       tips: [
         "Choose ultra-lightweight fabrics: linen, cotton voile, and moisture-wicking blends in light colours that reflect rather than absorb heat. Dark colours will make the heat feel significantly worse.",
         "Cover up strategically — loose, flowing layers actually feel cooler than bare skin in direct sun, protecting you from sunburn and intense UV radiation.",
@@ -36,7 +36,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     winter: {
-      intro: "Winter in a hot desert climate is surprisingly pleasant — warm, sunny days with mild temperatures between 18–25°C (64–77°F), and cooler evenings that may require a light layer. This is peak tourist season in many desert cities, and the weather is genuinely ideal for exploring.",
+      intro: "Winter in a hot desert climate is mild and sunny — 18–25°C (64–77°F) by day, cooler after sunset, so a light layer earns its keep in the evening.",
       tips: [
         "Pack a versatile light jacket or blazer for evenings — temperatures can drop noticeably after sunset in desert climates, even when daytime feels warm.",
         "Daytime calls for the same lightweight layers as the rest of the world's spring: light trousers, casual shirts, and breathable fabrics.",
@@ -51,7 +51,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     spring: {
-      intro: "Spring in a hot desert climate transitions quickly from mild to very warm — temperatures climb from around 25°C to over 35°C (77–95°F) by late spring. Dressing in adaptable, lightweight layers is the smart approach for this transitional season.",
+      intro: "Spring in a hot desert climate warms quickly — from around 25°C to over 35°C (77–95°F) by late spring. Lightweight, adaptable layers work best.",
       tips: [
         "Opt for transitional fabrics that work across a range of temperatures — linen and cotton blends are your best friends for spring desert dressing.",
         "Early spring mornings can be fresh, so a light layer you can easily remove is practical for sightseeing and outdoor activities.",
@@ -66,7 +66,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     fall: {
-      intro: "Autumn in a hot desert climate remains very warm — temperatures hover between 28–38°C (82–100°F), only beginning to ease late in the season. October and November are increasingly popular travel months as the worst of the summer heat gradually retreats.",
+      intro: "Autumn in a hot desert climate stays warm — temperatures hover between 28–38°C (82–100°F), only easing late in the season.",
       tips: [
         "Autumn is one of the most popular times to visit hot desert cities — the worst summer heat has passed, but you'll still need full summer-weight clothing through October.",
         "Light, breathable layers work for the cooler evenings that start to appear towards November and December.",
@@ -83,7 +83,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
   },
   hot_humid: {
     summer: {
-      intro: "Summer in a hot, humid coastal climate is intensely demanding — temperatures reach 38–43°C (100–109°F) with high humidity making it feel even hotter. Moisture-wicking fabrics and loose, breathable silhouettes are non-negotiable for summer comfort.",
+      intro: "Summer in a hot, humid coastal climate is intense — temperatures reach 38–43°C (100–109°F) with high humidity. Moisture-wicking, loose fabrics are non-negotiable.",
       tips: [
         "Choose moisture-wicking, quick-dry fabrics over cotton — cotton absorbs sweat and becomes heavy and uncomfortable quickly in high humidity.",
         "Light, loose silhouettes in breathable linen blends or performance fabrics keep you cooler by allowing air circulation.",
@@ -98,7 +98,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     winter: {
-      intro: "Winter in a hot, humid coastal city brings welcome relief — pleasant temperatures of 20–28°C (68–82°F) with lower humidity make it the most comfortable and popular time to visit.",
+      intro: "Winter in a hot, humid coastal city brings welcome relief — 20–28°C (68–82°F) with lower humidity, the most comfortable time to visit.",
       tips: [
         "A light jacket or cardigan for evenings is all you need — temperatures rarely feel genuinely cold, but sea breezes can be cooling.",
         "Smart casual clothing works perfectly for exploring the city, dining, and attending events during the comfortable winter months.",
@@ -113,7 +113,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     spring: {
-      intro: "Spring in a hot, humid coastal city sees temperatures rising rapidly and humidity building — a transitional period that quickly tips into full summer conditions as the weeks progress.",
+      intro: "Spring in a hot, humid coastal city warms and grows more humid quickly, tipping into full summer conditions within weeks.",
       tips: [
         "Lightweight, breathable fabrics are already important — the combination of rising heat and humidity makes heavy fabrics uncomfortable quickly.",
         "Layers become less useful as the season progresses; focus on single-piece outfits in breathable materials.",
@@ -128,7 +128,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     fall: {
-      intro: "Autumn in a hot, humid climate gradually eases from peak summer heat but remains warm and humid through most of the season. October and November start to feel noticeably more comfortable.",
+      intro: "Autumn in a hot, humid climate eases gradually from peak summer heat, staying warm and humid until October and November.",
       tips: [
         "Early autumn is essentially still summer — keep the same lightweight, moisture-wicking wardrobe you'd use in peak summer.",
         "Later autumn brings cooler, more manageable temperatures — perfect for exploring with slightly more layering flexibility.",
@@ -145,7 +145,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
   },
   mediterranean: {
     summer: {
-      intro: "Mediterranean summers are warm to hot and gloriously sunny — temperatures typically range from 25–34°C (77–93°F) with low humidity, making this an ideal climate for summer dressing. This is the season that makes the Mediterranean so magnetic as a destination.",
+      intro: "Mediterranean summers are warm to hot and sunny — temperatures typically range from 25–34°C (77–93°F) with low humidity, ideal for summer dressing.",
       tips: [
         "Light, breathable fabrics like linen, cotton, and viscose work beautifully in the dry Mediterranean heat — you'll look put-together and feel comfortable throughout the day.",
         "Cover up lightly for visiting churches, mosques, and historic sites — a light scarf or wrap is useful and respectful, and barely adds any heat.",
@@ -160,7 +160,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     winter: {
-      intro: "Mediterranean winters are mild compared to northern Europe — cool rather than cold, with temperatures between 7–14°C (45–57°F) in most cities. Rain is more common than snow, and the combination of mild temperatures and winter atmosphere makes for romantic, uncrowded visits.",
+      intro: "Mediterranean winters are mild compared to northern Europe — cool rather than cold, 7–14°C (45–57°F) in most cities, with rain more common than snow.",
       tips: [
         "A mid-weight coat or jacket is essential — Mediterranean winters are wetter than summers, and you'll need protection from rain and cool wind.",
         "Layer smartly: a base layer, a light knitwear piece, and a coat gives you flexibility for the mild but variable conditions.",
@@ -175,7 +175,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     spring: {
-      intro: "Mediterranean spring is one of the most beautiful seasons to visit — warm, bright, and comfortable with temperatures between 13–24°C (55–75°F). The classic 'light layers' season, when the landscape is at its greenest and most vibrant.",
+      intro: "Mediterranean spring is warm, bright, and comfortable — 13–24°C (55–75°F), the classic light-layers season.",
       tips: [
         "Light layers are your essential tool — a cardigan or light jacket for the morning, removed by midday as it warms up, is the classic Mediterranean spring formula.",
         "This is prime season for effortlessly stylish outfits — linen trousers, light dresses, and smart casual tops all work perfectly in the pleasant spring temperatures.",
@@ -190,7 +190,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     fall: {
-      intro: "Mediterranean autumn is a continuation of the pleasant summer conditions, gradually cooling through October and November. Temperatures of 14–23°C (57–73°F) make for ideal dressing conditions — warm enough for light clothing, cool enough to bring back some layering.",
+      intro: "Mediterranean autumn cools gradually through October and November — 14–23°C (57–73°F), warm enough for light clothing, cool enough for some layering.",
       tips: [
         "Light layers come back in handy — the mornings and evenings start to feel distinctly cooler as the season progresses through October into November.",
         "Pack versatile pieces that work across a range of temperatures — mid-weight fabrics like light wool blends or heavier cotton handle the autumn range well.",
@@ -207,7 +207,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
   },
   temperate: {
     summer: {
-      intro: "Temperate climate summers are mild and variable — temperatures typically reach 18–25°C (64–77°F), but unpredictable weather means layers are always useful even in July and August. The British saying about always packing a jacket applies year-round in temperate climates.",
+      intro: "Temperate climate summers are mild and variable — temperatures typically reach 18–25°C (64–77°F), but the weather shifts fast enough that layers always help.",
       tips: [
         "Always pack a light jacket — even in summer, temperate climates can be cool, cloudy, and wet without warning. Being caught without one is genuinely uncomfortable.",
         "Lightweight layers give you the flexibility to adapt to both sunny afternoons and cool, breezy evenings in the same day.",
@@ -222,7 +222,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     winter: {
-      intro: "Temperate winters are cold and damp — temperatures drop to 2–9°C (36–48°F) and wind, rain, or occasional snow require proper cold-weather clothing. The challenge in temperate winter isn't just cold but persistent wet and grey conditions.",
+      intro: "Temperate winters are cold and damp — temperatures drop to 2–9°C (36–48°F), with wind, rain, or occasional snow requiring proper cold-weather clothing.",
       tips: [
         "A quality wool or down coat is non-negotiable — protection from rain and cold wind is as important as warmth in a temperate winter.",
         "Layering is essential: a thermal base layer, mid-layer knitwear, and a waterproof outer layer covers all temperate winter weather scenarios.",
@@ -237,7 +237,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     spring: {
-      intro: "Temperate spring is famously unpredictable — temperatures range from 8–17°C (46–63°F) and you can experience four seasons in a single day. Layering is the only sensible strategy, and the occasional perfect spring day rewards those who dress for possibility.",
+      intro: "Temperate spring is famously unpredictable — temperatures range from 8–17°C (46–63°F) and can shift through several conditions in a single day.",
       tips: [
         "The classic 'onion layers' approach works best: a base layer, mid-layer (light jumper or cardigan), and a waterproof outer layer you can remove as the day warms.",
         "Opt for transitional fabrics like light cotton, jersey, and thin knitwear that work for both cool mornings and warmer afternoons.",
@@ -252,7 +252,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     fall: {
-      intro: "Autumn in a temperate climate is about layered, rich dressing — temperatures of 9–16°C (48–61°F) with increasing rain and wind make thoughtful layering essential. This is also when temperate fashion comes into its own, with knitwear, coats, and boots all becoming relevant.",
+      intro: "Autumn in a temperate climate calls for layered dressing — temperatures of 9–16°C (48–61°F) with increasing rain and wind.",
       tips: [
         "Autumn calls for the richest part of your wardrobe — knitwear, blazers, coats, and ankle boots all come into their own as temperatures drop.",
         "A classic trench coat is one of the most versatile investments for temperate autumn — elegant, waterproof, and works for any occasion from a morning café to an evening concert.",
@@ -269,7 +269,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
   },
   continental: {
     summer: {
-      intro: "Continental summers are warm to hot — temperatures reach 22–32°C (72–90°F) with typically sunny conditions. The key continental summer challenge is the dramatic difference between outdoor heat and aggressive air conditioning indoors — always carry a light layer.",
+      intro: "Continental summers are warm to hot — temperatures reach 22–32°C (72–90°F), typically sunny, with strong indoor air conditioning to plan around.",
       tips: [
         "Dress for warm outdoor temperatures but always carry a light layer for heavily air-conditioned restaurants, shops, and offices.",
         "This is classic summer dressing weather — light fabrics, relaxed silhouettes, and breathable materials work perfectly for the warm, often sunny conditions.",
@@ -284,7 +284,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     winter: {
-      intro: "Continental winters are genuinely cold — temperatures can drop below -5°C (23°F) in the coldest months, and cities like New York, Seoul, Chicago, and Berlin experience proper winter with potential for snow and ice. Proper cold-weather outerwear is essential.",
+      intro: "Continental winters are genuinely cold — temperatures can drop below -5°C (23°F) in the coldest months, with real potential for snow and ice.",
       tips: [
         "A heavy winter coat — wool, down, or padded — is non-negotiable for a continental winter. The combination of cold temperatures and biting wind makes inadequate outerwear a genuine hardship.",
         "Thermal layers underneath your regular clothing add significant warmth without bulk — a smart base layer investment that transforms any outfit into a winter one.",
@@ -299,7 +299,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     spring: {
-      intro: "Continental spring is one of the most exciting seasons to dress for — temperatures swing dramatically from near-freezing in March to pleasantly warm by May, with the energy of emerging from winter bringing a particular joy to spring dressing.",
+      intro: "Continental spring swings dramatically — from near-freezing in March to pleasantly warm by May.",
       tips: [
         "Spring in a continental climate requires a full range of clothes — you'll need a warm coat for March but might be in light dresses or shirt-sleeves by May.",
         "The classic transitional layering approach: base layers, knitwear, and a coat or jacket that you can open up as the sun warms the day.",
@@ -314,7 +314,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     fall: {
-      intro: "Continental autumn is the season that most rewards sophisticated dressing — temperatures from 8–18°C (46–64°F) with golden light, crisp air, and the full aesthetic richness of the season make it one of the most celebrated times for fashion.",
+      intro: "Continental autumn brings crisp air and golden light — temperatures from 8–18°C (46–64°F), a favourite season for layered dressing.",
       tips: [
         "Autumn is the perfect time for quality outerwear investments — a well-cut wool coat or leather jacket worn over knitwear is the classic continental autumn formula.",
         "Earth tones, rich burgundies, and deep forest greens align beautifully with the season's aesthetic and the golden afternoon light of October.",
@@ -331,7 +331,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
   },
   tropical: {
     summer: {
-      intro: "Tropical climates are characterised by year-round warmth — 'summer' in a tropical destination means temperatures of 28–36°C (82–97°F) with high humidity and often a rainy season. Practical, quick-dry clothing in breathable fabrics is the foundation of tropical summer dressing.",
+      intro: "Tropical 'summer' means year-round warmth pushed further — temperatures of 28–36°C (82–97°F) with high humidity and often a rainy season.",
       tips: [
         "Moisture-wicking and quick-dry fabrics are the most important clothing technology for tropical summer — standard cotton absorbs sweat and stays damp uncomfortably in sustained high humidity.",
         "Light-coloured, loose-fitting clothing reflects heat and allows air circulation — avoid dark fabrics and tight silhouettes in intense tropical heat.",
@@ -346,7 +346,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     winter: {
-      intro: "In a tropical climate, 'winter' is really just the dry, slightly cooler season — temperatures remain warm at 22–30°C (72–86°F), making it the most pleasant and popular time to visit. You'll still be dressing for warm weather, just without the peak humidity of the wet season.",
+      intro: "In a tropical climate, 'winter' is really just the dry, slightly cooler season — 22–30°C (72–86°F), the most pleasant time to visit.",
       tips: [
         "The dry season is the ideal time to visit tropical destinations — clear skies, lower humidity, and comfortable warmth require minimal wardrobe planning.",
         "A light cardigan or wrap for evenings and air-conditioned venues is the only concession to the 'winter' in a tropical climate.",
@@ -361,7 +361,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     spring: {
-      intro: "Spring in a tropical climate often marks the transition into the hot and humid season — temperatures begin climbing and humidity increases, making lightweight, breathable clothing even more important as the weeks progress.",
+      intro: "Spring in a tropical climate often marks the shift toward the hot, humid season, with temperatures and humidity both climbing.",
       tips: [
         "As humidity increases, prioritise moisture-wicking fabrics over standard cotton — the difference in comfort is significant in sustained tropical humidity.",
         "Light, flowing silhouettes allow air to circulate and keep you cooler than fitted or structured clothing in humid tropical conditions.",
@@ -376,7 +376,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     fall: {
-      intro: "Autumn in a tropical climate can mean monsoon season in many destinations — heavy rain, high humidity, and warm temperatures of 26–33°C (79–91°F) require practical, quick-dry clothing alongside your usual warm-weather wardrobe.",
+      intro: "Autumn in a tropical climate can mean monsoon season — heavy rain, high humidity, and warm temperatures of 26–33°C (79–91°F).",
       tips: [
         "Quick-dry fabrics become even more important during the rainy autumn months — you may get caught in a downpour, and the ability to dry quickly is a major comfort advantage.",
         "A compact packable rain jacket is more practical than an umbrella in strong tropical rain — a waterproof layer that folds into a bag pocket is the ideal tropical autumn accessory.",
@@ -393,7 +393,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
   },
   subtropical: {
     summer: {
-      intro: "Subtropical summers are hot and humid — temperatures reach 28–36°C (82–97°F) with high humidity that makes the heat feel more intense. The key challenge is navigating between outdoor heat and aggressively air-conditioned indoor spaces.",
+      intro: "Subtropical summers are hot and humid — temperatures reach 28–36°C (82–97°F), with a sharp contrast between outdoor heat and air-conditioned interiors.",
       tips: [
         "Indoor air conditioning in subtropical summer cities is often set extremely cold — always carry a light layer for restaurants, offices, and shopping malls.",
         "Lightweight breathable fabrics like linen and moisture-wicking blends handle the outdoor heat, while a light cardigan handles the indoor temperature contrast.",
@@ -408,7 +408,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     winter: {
-      intro: "Subtropical winter brings the most comfortable temperatures — 12–19°C (54–66°F) with clear skies and low humidity. This is peak visiting season and the most flexible, comfortable time to dress for subtropical destinations.",
+      intro: "Subtropical winter brings the most comfortable temperatures — 12–19°C (54–66°F) with clear skies and low humidity.",
       tips: [
         "A mid-weight jacket or coat is sufficient for subtropical winter — you won't need the heavy coats of northern climates, but evenings can feel genuinely cool.",
         "Smart layering works perfectly: a light base, a knitwear piece, and a jacket gives you flexibility for comfortable days and cooler evenings.",
@@ -423,7 +423,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     spring: {
-      intro: "Subtropical spring transitions from the cool winter to increasingly warm and humid summer conditions — temperatures rise from 18–26°C (64–79°F) with building humidity as the season progresses. Early spring allows for more layering before the summer heat sets in.",
+      intro: "Subtropical spring warms from cool winter into increasingly humid summer conditions — temperatures rise from 18–26°C (64–79°F) as the season progresses.",
       tips: [
         "Early spring allows for more layering and richer fabrics — enjoy the variety before the summer heat establishes itself.",
         "By late spring, shift towards lighter fabrics and simpler silhouettes as temperatures and humidity rise noticeably.",
@@ -438,7 +438,7 @@ export const GEO_CLIMATE_CONTENT: Record<string, Record<string, ClimateSeasonCon
       ],
     },
     fall: {
-      intro: "Subtropical autumn is a gradual easing from the hot, humid summer — temperatures cool from summer levels to the pleasant winter range of 20–28°C (68–82°F), with decreasing humidity through October and November. A rewarding season to visit.",
+      intro: "Subtropical autumn eases gradually from hot summer toward the pleasant winter range — 20–28°C (68–82°F), with decreasing humidity through October and November.",
       tips: [
         "Early autumn is still very warm — keep summer wardrobe pieces in rotation until temperatures begin to ease noticeably.",
         "By October and November, you can start introducing layers and richer fabrics — this is an exciting fashion transition period in subtropical cities.",
