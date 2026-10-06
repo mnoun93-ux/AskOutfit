@@ -852,7 +852,7 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
         <footer>
           <p>&copy; {new Date().getFullYear()} Askoutfit. We may earn a commission on purchases through links.</p>
           <p><a href="/articles/">Outfit Guides</a> · <a href="/travel-guides/">Travel Guides</a></p>
-          <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+          <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a> · <a href="/about/">About</a></p>
         </footer>
       </main>
     </>
@@ -935,7 +935,7 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
 
       <footer class="site-footer-hub">
         <p>© {new Date().getFullYear()} Askoutfit — <a href="/articles/">All Guides</a></p>
-        <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+        <p class="aiom">A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a> · <a href="/about/">About</a></p>
       </footer>
     </>
   ) : (
@@ -1087,7 +1087,7 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
             {isAr ? " قد نربح عمولة على عمليات الشراء عبر الروابط." : " We may earn a commission on purchases through links."}
           </p>
           <p><a href={isAr ? "/articles-ar/" : "/articles/"}>{articlesLabel}</a> &middot; <a href={`/${a.altSlug || ""}/`}>{altLabel}</a></p>
-          <p class="aiom">{isAr ? "أحد مشاريع " : "A project by "}<a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a></p>
+          <p class="aiom">{isAr ? "أحد مشاريع " : "A project by "}<a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a> · <a href="/about/">{isAr ? "من نحن" : "About"}</a></p>
         </footer>
       </main>
 

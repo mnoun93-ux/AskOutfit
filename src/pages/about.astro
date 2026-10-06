@@ -1,0 +1,84 @@
+---
+import Base from "../layouts/Base.astro";
+const SITE = "https://askoutfit.com";
+const updated = "October 2026";
+
+const orgSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Askoutfit",
+  "url": SITE,
+  "description": "AI-powered outfit recommendations and occasion-based style guides in English and Arabic.",
+  "parentOrganization": {
+    "@type": "Organization",
+    "name": "AIOM Automation Solutions",
+    "url": "https://www.aiom.ai"
+  }
+};
+---
+<Base title="About Askoutfit" description="Who runs Askoutfit, how our outfit guides and AI stylist are made, how we earn money, and how to reach us." lang="en" dir="ltr" canonical={`${SITE}/about/`}>
+  <script type="application/ld+json" set:html={JSON.stringify(orgSchema)} />
+
+  <header class="site-header">
+    <div class="site-header-inner">
+      <a href="/" class="site-logo">Askoutfit</a>
+      <nav class="site-nav">
+        <a href="/articles/" class="site-nav-link">Articles</a>
+        <a href="/travel-guides/" class="site-nav-link">Travel</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h1>About Askoutfit</h1>
+    <p class="updated">Last updated: {updated}</p>
+
+    <p class="lead">Askoutfit answers one everyday question: <strong>what should I wear?</strong> Describe the occasion in a sentence and get a complete outfit, or browse our guides for specific events, seasons, and cities.</p>
+
+    <h2>Who we are</h2>
+    <p>Askoutfit is operated by <a href="https://www.aiom.ai" target="_blank" rel="noopener">AIOM Automation Solutions</a>, a small independent studio that builds AI-assisted web tools. We launched Askoutfit in 2026 to make practical style advice free and easy to find, in both English and Arabic.</p>
+
+    <h2>What you'll find here</h2>
+    <p><strong>The AI stylist:</strong> type an occasion — a job interview, a summer wedding, a first date — and get a complete, shoppable outfit suggestion in seconds.</p>
+    <p><strong>Occasion guides:</strong> hundreds of guides covering weddings, interviews, business meetings, graduations, Eid, travel days, and more, for men and women, across every season.</p>
+    <p><strong>City travel guides:</strong> what to wear in 49 cities across four seasons, from Dubai and Riyadh to London, Tokyo, and New York, with climate notes and local dress-code context.</p>
+
+    <h2>How our content is made</h2>
+    <p>We use AI tools to help research and draft our guides and to power the stylist. We pair that with clear editorial standards: advice should be practical, climate-appropriate, and respectful of local dress norms, and we avoid recommending anything we wouldn't consider sensible for the occasion.</p>
+    <p>Style advice is general guidance, not a rule. Dress codes vary by venue, workplace, and culture, so when in doubt, check with your host or employer.</p>
+
+    <h2>Corrections</h2>
+    <p>If you spot something inaccurate or outdated — a climate detail, a dress-code norm, a broken link — tell us and we'll review and update the page.</p>
+
+    <h2>How we make money</h2>
+    <p>Askoutfit is free to use. We participate in the Amazon Associates Program, so some product links earn us a small commission if you buy something, at no extra cost to you. Affiliate relationships don't decide what we recommend. See our <a href="/privacy/">privacy policy</a> for details.</p>
+
+    <h2>Contact</h2>
+    <p>For questions, corrections, partnerships, or press, reach us through <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">aiom.ai/contact</a>.</p>
+  </main>
+
+  <footer class="site-footer">
+    <p class="site-footer-logo">Askoutfit</p>
+    <p>A project by <a href="https://www.aiom.ai/contact" target="_blank" rel="noopener">AIOM Automation Solutions</a> · <a href="/privacy/">Privacy</a></p>
+  </footer>
+</Base>
+
+<style>
+  .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.6); background: rgba(26,20,16,.85); backdrop-filter: blur(12px); }
+  .site-header-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
+  .site-logo { font-family: "Playfair Display", Georgia, serif; font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
+  .site-nav { display: flex; align-items: center; gap: 16px; }
+  .site-nav-link { font-size: 14px; color: var(--muted); text-decoration: none; }
+  .site-nav-link:hover { color: var(--ink); }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 20px 80px; }
+  h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(30px, 5vw, 42px); margin: 0 0 6px; }
+  .updated { color: var(--faint); font-size: 13px; margin: 0 0 28px; }
+  .lead { font-size: 18px; }
+  h2 { font-family: "Playfair Display", serif; font-size: 22px; margin: 34px 0 10px; color: var(--gold); }
+  p { color: var(--muted); margin: 12px 0; line-height: 1.75; }
+  p strong { color: var(--ink); }
+  a { color: var(--gold); }
+  .site-footer { border-top: 1px solid rgba(58,48,38,.6); background: #1d1610; text-align: center; padding: 40px 20px; font-size: 12px; color: var(--faint); }
+  .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 8px; }
+  .site-footer a { color: var(--gold); font-weight: 500; }
+</style>
