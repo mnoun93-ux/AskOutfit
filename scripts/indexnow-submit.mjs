@@ -2,10 +2,10 @@
 // Usage: node scripts/indexnow-submit.mjs
 //
 // Requires the key file to already be live at:
-//   https://www.askoutfit.com/8dfbad6414d849f9b6ac81b2e358dbb6.txt
+//   https://askoutfit.com/8dfbad6414d849f9b6ac81b2e358dbb6.txt
 // (deployed via `public/8dfbad6414d849f9b6ac81b2e358dbb6.txt`)
 
-const HOST = "www.askoutfit.com";
+const HOST = "askoutfit.com";
 const KEY = "8dfbad6414d849f9b6ac81b2e358dbb6";
 const KEY_LOCATION = `https://${HOST}/${KEY}.txt`;
 const SITEMAP_URL = `https://${HOST}/sitemap.xml`;
