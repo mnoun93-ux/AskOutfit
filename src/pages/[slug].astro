@@ -597,13 +597,24 @@ const altUrl    = !isHub && !isGeo && a.altSlug ? `${SITE}/${a.altSlug}/` : cano
 const ogImage   = (isHub || isGeo) ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
 
 // Build hreflangPairs for EN↔AR article pairs + Geo pages
-// Load the precomputed article hreflang map (EN slug → AR slug)
-const articleHreflangMapEnToAr = (await import("../article_hreflang_map.json")).default;
+// Build EN↔AR mapping directly from article content (same logic as sitemap)
+function buildArticleHreflangMap(articles: any[]) {
+  const enToAr = new Map<string, string>();
+  const arToEn = new Map<string, string>();
+  
+  for (const a of articles) {
+    if (a.altSlug) {
+      if (a.lang === "en") {
+        enToAr.set(a.slug, a.altSlug);
+      } else if (a.lang === "ar") {
+        arToEn.set(a.slug, a.altSlug);
+      }
+    }
+  }
+  return { enToAr, arToEn };
+}
 
-// Also create reverse mapping (AR slug → EN slug)
-const articleHreflangMapArToEn = Object.fromEntries(
-  Object.entries(articleHreflangMapEnToAr).map(([en, ar]) => [ar, en])
-);
+const { enToAr, arToEn } = buildArticleHreflangMap(allArticles);
 
 let hreflangPairs = [];
 if (isGeo) {
@@ -616,7 +627,7 @@ if (isGeo) {
   // Regular articles: use verified EN↔AR mapping
   if (isAr) {
     // Current page is AR, pair with EN using reverse mapping
-    const enSlug = articleHreflangMapArToEn[a.slug];
+    const enSlug = arToEn.get(a.slug);
     if (enSlug) {
       hreflangPairs = [
         { lang: "ar", url: `${SITE}/${a.slug}/` },
@@ -625,7 +636,7 @@ if (isGeo) {
     }
   } else {
     // Current page is EN, pair with AR using forward mapping
-    const arSlug = articleHreflangMapEnToAr[a.slug];
+    const arSlug = enToAr.get(a.slug);
     if (arSlug) {
       hreflangPairs = [
         { lang: "en", url: `${SITE}/${a.slug}/` },

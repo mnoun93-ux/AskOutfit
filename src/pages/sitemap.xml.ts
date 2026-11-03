@@ -21,15 +21,32 @@ const CATEGORY_SLUGS = [
   "travel-day-outfits",
 ];
 
+// Build EN↔AR article mapping directly from article content
+function buildArticleHreflangMap(articles: any[]): Map<string, string> {
+  const enToAr = new Map<string, string>();
+  const arToEn = new Map<string, string>();
+  
+  for (const a of articles) {
+    if (a.altSlug) {
+      if (a.lang === "en") {
+        enToAr.set(a.slug, a.altSlug);
+      } else if (a.lang === "ar") {
+        arToEn.set(a.slug, a.altSlug);
+      }
+    }
+  }
+  return { enToAr, arToEn };
+}
+
 export async function GET() {
   const modules = import.meta.glob("../content/articles/*.json", { eager: true });
   const articles = Object.values(modules).map((m: any) => m.default ?? m);
   const today = new Date().toISOString().slice(0, 10);
 
-  // Load the article hreflang map
-const articleHreflangMap = (await import("../article_hreflang_map.json")).default;
+  // Build hreflang map from article content
+  const { enToAr, arToEn } = buildArticleHreflangMap(articles);
 
-const urls = [
+  const urls = [
     `  <url>\n    <loc>${SITE}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>1.0</priority>\n  </url>`,
 
     `  <url>\n    <loc>${SITE}/articles/</loc>\n` +
@@ -86,14 +103,22 @@ const urls = [
     // Articles: use verified EN↔AR mapping for proper hreflang
     ...articles.map((a: any) => {
       const loc = `${SITE}/${a.slug}/`;
-      const arSlug = articleHreflangMap[a.slug];
-      const hasAr = !!arSlug;
       let hreflangLinks = `    <xhtml:link rel="alternate" hreflang="${a.lang}" href="${loc}"/>\n`;
-      if (hasAr) {
-        const otherLoc = `${SITE}/${arSlug}/`;
-        const otherLang = a.lang === "en" ? "ar" : "en";
-        hreflangLinks += `    <xhtml:link rel="alternate" hreflang="${otherLang}" href="${otherLoc}"/>\n`;
+      
+      if (a.lang === "en") {
+        const arSlug = enToAr.get(a.slug);
+        if (arSlug) {
+          const otherLoc = `${SITE}/${arSlug}/`;
+          hreflangLinks += `    <xhtml:link rel="alternate" hreflang="ar" href="${otherLoc}"/>\n`;
+        }
+      } else if (a.lang === "ar") {
+        const enSlug = arToEn.get(a.slug);
+        if (enSlug) {
+          const otherLoc = `${SITE}/${enSlug}/`;
+          hreflangLinks += `    <xhtml:link rel="alternate" hreflang="en" href="${otherLoc}"/>\n`;
+        }
       }
+      
       hreflangLinks += `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc}"/>\n`;
       return (
         `  <url>\n    <loc>${loc}</loc>\n` +
