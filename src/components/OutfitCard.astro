@@ -1,0 +1,452 @@
+---
+/**
+ * OutfitCard.astro — بطاقة إطلالة مدمجة للعرض في الشبكات (Hubs, Travel Guides, Articles)
+ * 
+ * نسخة مبسطة من ShopTheLook للاستخدام في القوائم والشبكات الكثيفة.
+ * يستقبل:
+ *   - title: string                // عنوان الإطلالة
+ *   - description?: string         // وصف مختصر
+ *   - imageUrl?: string            // رابط صورة (اختياري - يستخدم placeholder إن لم يوجد)
+ *   - category: string             // فئة الإطلالة (dress, top, bottom, outerwear, shoes, accessory, bag, jewelry)
+ *   - occasion?: string            // نوع المناسبة
+ *   - season?: string              // الموسم
+ *   - affiliateUrl?: string        // رابط الأفلييت (أمازون)
+ *   - ctaText?: string             // نص الزر (افتراضي: "View on Amazon" / "عرض على أمازون")
+ *   - lang: 'en' | 'ar'            // اللغة الحالية
+ *   - dir: 'ltr' | 'rtl'           // اتجاه الصفحة
+ *   - variant?: 'default' | 'compact' | 'featured' // نمط العرض
+ */
+interface Props {
+  title: string;
+  description?: string;
+  imageUrl?: string;
+  category: string;
+  occasion?: string;
+  season?: string;
+  affiliateUrl?: string;
+  ctaText?: string;
+  lang: 'en' | 'ar';
+  dir: 'ltr' | 'rtl';
+  variant?: 'default' | 'compact' | 'featured';
+}
+
+const {
+  title,
+  description,
+  imageUrl,
+  category,
+  occasion,
+  season,
+  affiliateUrl,
+  ctaText,
+  lang = 'en',
+  dir = 'ltr',
+  variant = 'default',
+} = Astro.props;
+
+// نفس تكوين الفئات من ShopTheLook
+const CATEGORY_CONFIG: Record<string, { icon: string; gradient: string; label: { en: string; ar: string } }> = {
+  dress:       { icon: '👗', gradient: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', label: { en: 'Dresses', ar: 'فساتين' } },
+  top:         { icon: '👚', gradient: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', label: { en: 'Tops', ar: 'توبات' } },
+  bottom:      { icon: '👖', gradient: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', label: { en: 'Bottoms', ar: 'سفلية' } },
+  outerwear:   { icon: '🧥', gradient: 'linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)', label: { en: 'Outerwear', ar: 'طبقة خارجية' } },
+  shoes:       { icon: '👠', gradient: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', label: { en: 'Shoes', ar: 'أحذية' } },
+  accessory:   { icon: '💎', gradient: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)', label: { en: 'Accessories', ar: 'إكسسوارات' } },
+  bag:         { icon: '👜', gradient: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)', label: { en: 'Bags', ar: 'شنط' } },
+  jewelry:     { icon: '💍', gradient: 'linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%)', label: { en: 'Jewelry', ar: 'مجوهرات' } },
+  default:     { icon: '🛍️', gradient: 'linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%)', label: { en: 'Shop', ar: 'تسوق' } },
+};
+
+const config = CATEGORY_CONFIG[category] || CATEGORY_CONFIG.default;
+
+const OCCASION_LABELS: Record<string, { en: string; ar: string }> = {
+  'wedding-guest':      { en: 'Wedding Guest', ar: 'ضيوف زفاف' },
+  'brunch':             { en: 'Brunch', ar: 'برانش' },
+  'beach-party':        { en: 'Beach Party', ar: 'حفلة شاطئ' },
+  'business-meeting':   { en: 'Business', ar: 'اجتماع عمل' },
+  'casual-outing':      { en: 'Casual', ar: 'كاجوال' },
+  'concert':            { en: 'Concert', ar: 'حفلات' },
+  'dinner-party':       { en: 'Dinner', ar: 'عشاء' },
+  'eid-celebration':    { en: 'Eid', ar: 'عيد' },
+  'engagement-party':   { en: 'Engagement', ar: 'خطوبة' },
+  'first-date':         { en: 'First Date', ar: 'أول موعد' },
+  'graduation':         { en: 'Graduation', ar: 'تخرج' },
+  'job-interview':      { en: 'Interview', ar: 'مقابلة عمل' },
+  'office':             { en: 'Office', ar: 'مكتب' },
+  'travel-day':         { en: 'Travel', ar: 'سفر' },
+  'birthday-party':     { en: 'Birthday', ar: 'عيد ميلاد' },
+};
+
+const SEASON_LABELS: Record<string, { en: string; ar: string }> = {
+  summer: { en: 'Summer', ar: 'صيف' },
+  winter: { en: 'Winter', ar: 'شتاء' },
+  spring: { en: 'Spring', ar: 'ربيع' },
+  fall:   { en: 'Autumn', ar: 'خريف' },
+  autumn: { en: 'Autumn', ar: 'خريف' },
+};
+
+const occasionLabel = occasion ? OCCASION_LABELS[occasion]?.[lang] ?? occasion : '';
+const seasonLabel = season ? SEASON_LABELS[season]?.[lang] ?? season : '';
+
+const defaultCtaText = lang === 'en' ? 'View on Amazon' : 'عرض على أمازون';
+const buttonText = ctaText || defaultCtaText;
+
+const hasAffiliate = !!affiliateUrl;
+const linkAttrs = hasAffiliate
+  ? { href: affiliateUrl, target: '_blank', rel: 'noopener nofollow sponsored' }
+  : { href: '#', 'aria-disabled': 'true' };
+
+// CSS class modifiers
+const variantClass = variant !== 'default' ? `oc-${variant}` : '';
+const rtlClass = dir === 'rtl' ? 'oc-rtl' : '';
+---
+<article class={`outfit-card ${variantClass} ${rtlClass}`} data-category={category} data-occasion={occasion || ''} data-season={season || ''}>
+  {hasAffiliate && (
+    <>
+      <a class="oc-media" {...linkAttrs} aria-label={lang === 'en' ? `View ${title}` : `عرض ${title}`}>
+        {imageUrl ? (
+          <img src={imageUrl} alt={title} loading="lazy" class="oc-image" />
+        ) : (
+          <div class="oc-placeholder" style={`background: ${config.gradient};`} aria-hidden="true">
+            <span class="oc-placeholder-icon" style="font-size: 2.5rem;">{config.icon}</span>
+          </div>
+        )}
+        <span class="oc-category-tag" style={`background: ${config.gradient};`}>
+          {config.label[lang]}
+        </span>
+        {(occasionLabel || seasonLabel) && (
+          <div class="oc-badges">
+            {occasionLabel && <span class="oc-badge oc-badge--occasion">{occasionLabel}</span>}
+            {seasonLabel && <span class="oc-badge oc-badge--season">{seasonLabel}</span>}
+          </div>
+        )}
+      </a>
+    </>
+  )}
+
+  <div class="oc-content">
+    <h3 class="oc-title">
+      {hasAffiliate ? (
+        <a {...linkAttrs} class="oc-title-link">{title}</a>
+      ) : (
+        title
+      )}
+    </h3>
+    
+    {description && <p class="oc-description">{description}</p>}
+    
+    {hasAffiliate && (
+      <a {...linkAttrs} class="oc-cta" aria-label={lang === 'en' ? `View ${title} on Amazon` : `عرض ${title} على أمازون`}>
+        <span class="oc-cta-text">{buttonText}</span>
+        <svg class="oc-cta-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M5 12h14M12 5l7 7-7 7" />
+        </svg>
+      </a>
+    )}
+  </div>
+</article>
+<style>
+  /* متغيرات CSS */
+  .outfit-card {
+    --oc-gold: #caa46a;
+    --oc-gold-light: #d8b67e;
+    --oc-gold-faint: rgba(202, 164, 106, 0.12);
+    --oc-surface: #221b14;
+    --oc-bg: #1a1410;
+    --oc-line: #3a3026;
+    --oc-ink: #f3ece2;
+    --oc-muted: #b9ad9b;
+    --oc-faint: #6b6052;
+    --oc-radius: 14px;
+    --oc-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    background: var(--oc-surface);
+    border: 1px solid var(--oc-line);
+    border-radius: var(--oc-radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: var(--oc-transition);
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .outfit-card:hover {
+    border-color: var(--oc-gold);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+    transform: translateY(-4px);
+  }
+
+  /* ====== Media / Image Area ====== */
+  .oc-media {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    display: block;
+    text-decoration: none;
+  }
+
+  .oc-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: var(--oc-transition);
+  }
+
+  .outfit-card:hover .oc-image {
+    transform: scale(1.05);
+  }
+
+  /* Placeholder بصري أنيق */
+  .oc-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--oc-transition);
+  }
+
+  .outfit-card:hover .oc-placeholder {
+    transform: scale(1.03);
+  }
+
+  .oc-placeholder-icon {
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+    transition: var(--oc-transition);
+  }
+
+  .outfit-card:hover .oc-placeholder-icon {
+    transform: scale(1.1);
+  }
+
+  /* وسم الفئة */
+  .oc-category-tag {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: auto;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #1a1410;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.95;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .oc-rtl .oc-category-tag {
+    left: auto;
+    right: 10px;
+  }
+
+  /* شارات المناسبة والموسم */
+  .oc-badges {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .oc-rtl .oc-badges {
+    left: auto;
+    right: 10px;
+  }
+
+  .oc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    transition: var(--oc-transition);
+  }
+
+  .oc-badge--occasion {
+    background: var(--oc-gold-faint);
+    color: var(--oc-gold);
+    border: 1px solid rgba(202, 164, 106, 0.3);
+  }
+
+  .oc-badge--season {
+    background: rgba(58, 48, 38, 0.8);
+    color: var(--oc-muted);
+    border: 1px solid var(--oc-line);
+    backdrop-filter: blur(4px);
+  }
+
+  /* ====== Content ====== */
+  .oc-content {
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .oc-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--oc-ink);
+    margin: 0;
+    transition: var(--oc-transition);
+  }
+
+  .oc-rtl .oc-title {
+    font-family: 'Tajawal', 'Playfair Display', sans-serif;
+    font-weight: 700;
+  }
+
+  .oc-title-link {
+    text-decoration: none;
+    color: inherit;
+    transition: var(--oc-transition);
+  }
+
+  .oc-title-link:hover {
+    color: var(--oc-gold);
+  }
+
+  .outfit-card:hover .oc-title,
+  .outfit-card:hover .oc-title-link {
+    color: var(--oc-gold);
+  }
+
+  .oc-description {
+    font-size: 0.8rem;
+    color: var(--oc-muted);
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* زر CTA */
+  .oc-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--oc-gold);
+    color: var(--oc-bg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: var(--oc-transition);
+    border: none;
+    cursor: pointer;
+    margin-top: auto;
+  }
+
+  .oc-cta:hover {
+    background: var(--oc-gold-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(202, 164, 106, 0.35);
+  }
+
+  .oc-cta:active {
+    transform: translateY(0);
+  }
+
+  .oc-cta-arrow {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: var(--oc-transition);
+  }
+
+  .oc-cta:hover .oc-cta-arrow {
+    transform: translateX(2px);
+  }
+
+  .oc-rtl .oc-cta:hover .oc-cta-arrow {
+    transform: translateX(-2px);
+  }
+
+  /* ====== Variants ====== */
+  .oc-compact .oc-media {
+    aspect-ratio: 4 / 3;
+  }
+  
+  .oc-compact .oc-title {
+    font-size: 0.9rem;
+  }
+  
+  .oc-compact .oc-description {
+    display: none;
+  }
+  
+  .oc-compact .oc-cta {
+    padding: 6px 12px;
+    font-size: 0.7rem;
+  }
+
+  .oc-featured {
+    --oc-radius: 18px;
+  }
+  
+  .oc-featured .oc-media {
+    aspect-ratio: 1 / 1;
+  }
+  
+  .oc-featured .oc-title {
+    font-size: 1.15rem;
+  }
+  
+  .oc-featured .oc-description {
+    -webkit-line-clamp: 3;
+    font-size: 0.85rem;
+  }
+  
+  .oc-featured .oc-cta {
+    padding: 10px 18px;
+    font-size: 0.8rem;
+  }
+
+  /* احترام تقليل الحركة */
+  @media (prefers-reduced-motion: reduce) {
+    .outfit-card,
+    .oc-image,
+    .oc-placeholder,
+    .oc-placeholder-icon,
+    .oc-title,
+    .oc-cta,
+    .oc-cta-arrow,
+    .oc-badge {
+      transition: none !important;
+      animation: none !important;
+    }
+    
+    .outfit-card:hover,
+    .oc-cta:hover,
+    .outfit-card:hover .oc-image,
+    .outfit-card:hover .oc-placeholder,
+    .outfit-card:hover .oc-placeholder-icon {
+      transform: none !important;
+    }
+  }
+
+  /* RTL adjustments */
+  .oc-rtl .oc-title {
+    text-align: right;
+  }
+  
+  .oc-rtl .oc-description {
+    text-align: right;
+  }
+</style>

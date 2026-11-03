@@ -1,0 +1,235 @@
+---
+/**
+ * ShopTheLook.astro — مكون تسوق الإطلالة الذكي
+ */
+interface Props {
+  shopItems: string[];
+  shopLabels: string[];
+  amz: (term: string) => string;
+  occasion?: string;
+  season?: string;
+  lang: 'en' | 'ar';
+  dir: 'ltr' | 'rtl';
+  schema?: boolean;
+}
+
+const {
+  shopItems,
+  shopLabels,
+  amz,
+  occasion = '',
+  season = '',
+  lang = 'en',
+  dir = 'ltr',
+  schema = true,
+} = Astro.props;
+
+const isAr = lang === 'ar';
+
+const sectionTitle = isAr ? 'تسوق الإطلالة' : 'Shop the Look';
+const sectionSubtitle = isAr
+  ? 'ابحث عن القطع الأساسية لهذه الإطلالة على أمازون — روابط الأفلييت تدعم الموقع مجاناً'
+  : 'Find the key pieces for this look on Amazon — affiliate links keep this site free';
+
+const ctaText = isAr ? 'عرض على أمازون' : 'View on Amazon';
+
+const productSchemas = shopItems.map((term, i) => ({
+  '@context': 'https://schema.org',
+  '@type': 'Product',
+  'name': shopLabels[i] || term,
+  'description': 'Recommended for ' + (occasion || 'this occasion') + (season ? ' in ' + season : ''),
+  'offers': {
+    '@type': 'Offer',
+    'url': amz(term),
+    'priceCurrency': 'USD',
+    'availability': 'https://schema.org/InStock',
+    'seller': { '@type': 'Organization', 'name': 'Amazon' }
+  }
+}));
+---
+
+{shopItems.length > 0 && (
+  <section class="shop-the-look" id="shop-the-look" data-lang={lang} data-dir={dir}>
+    <header class="stl-header">
+      <h2 class="stl-title">{sectionTitle}</h2>
+      <p class="stl-subtitle">{sectionSubtitle}</p>
+    </header>
+
+    <div class="stl-grid" role="list" aria-label={sectionTitle}>
+      {shopItems.map((term, i) => (
+        <article class="stl-card" role="listitem">
+          <div class="stl-media">
+            <span class="stl-icon">{i < shopLabels.length ? shopLabels[i].charAt(0) : '🛍'}</span>
+          </div>
+          <div class="stl-content">
+            <h3 class="stl-name">{shopLabels[i] || term}</h3>
+            <a href={amz(term)} target="_blank" rel="noopener nofollow sponsored" class="stl-cta" data-cta="shop-the-look" data-item={term}>
+              <span>{ctaText}</span>
+              <svg class="stl-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    {schema && (<>{productSchemas.map((s, i) => (<script type="application/ld+json" is:inline set:html={JSON.stringify(s)} />))}</>)}
+  </section>
+)}
+
+<style>
+  .shop-the-look {
+    --stl-gold: #caa46a;
+    --stl-gold-light: #d8b67e;
+    --stl-surface: #221b14;
+    --stl-bg: #1a1410;
+    --stl-line: #3a3026;
+    --stl-ink: #f3ece2;
+    --stl-muted: #b9ad9b;
+    --stl-faint: #6b6052;
+    --stl-radius: 14px;
+    --stl-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--stl-line);
+  }
+
+  .stl-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .stl-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: 600;
+    color: var(--stl-ink);
+    margin: 0 0 6px;
+  }
+
+  [dir="rtl"] .stl-title {
+    font-family: 'Tajawal', 'Playfair Display', sans-serif;
+    font-weight: 700;
+  }
+
+  .stl-subtitle {
+    color: var(--stl-muted);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .stl-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 480px) {
+    .stl-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 768px) {
+    .stl-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (min-width: 1024px) {
+    .stl-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .stl-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--stl-surface);
+    border: 1px solid var(--stl-line);
+    border-radius: var(--stl-radius);
+    overflow: hidden;
+    transition: var(--stl-transition);
+  }
+
+  .stl-card:hover {
+    border-color: var(--stl-gold);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .stl-media {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(202,164,106,0.1) 0%, rgba(202,164,106,0.05) 100%);
+  }
+
+  .stl-icon {
+    font-size: 3rem;
+    line-height: 1;
+  }
+
+  .stl-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .stl-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--stl-ink);
+    margin: 0;
+    line-height: 1.3;
+  }
+
+  [dir="rtl"] .stl-name {
+    font-family: 'Tajawal', 'Playfair Display', sans-serif;
+    font-weight: 700;
+  }
+
+  .stl-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--stl-gold);
+    color: var(--stl-bg);
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: var(--stl-transition);
+    border: none;
+    cursor: pointer;
+    margin-top: auto;
+  }
+
+  .stl-cta:hover {
+    background: var(--stl-gold-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(202, 164, 106, 0.35);
+  }
+
+  .stl-cta:active {
+    transform: translateY(0);
+  }
+
+  .stl-arrow {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    transition: var(--stl-transition);
+  }
+
+  .stl-cta:hover .stl-arrow {
+    transform: translateX(2px);
+  }
+
+  [dir="rtl"] .stl-cta:hover .stl-arrow {
+    transform: translateX(-2px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .shop-the-look * { transition: none !important; animation: none !important; }
+  }
+</style>

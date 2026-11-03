@@ -3,6 +3,10 @@ import Base from "../layouts/Base.astro";
 import geoCitiesData from "../content/geo-cities.json";
 import geoUniqueData from "../content/geo-unique.json";
 import { GEO_SEASONS, SEASON_LABELS, GEO_CLIMATE_CONTENT } from "../lib/geo-content";
+import { getGeoShopItems, buildAmazonLink } from "../lib/geo-shop";
+import ShopTheLook from "../components/ShopTheLook.astro";
+import OutfitCard from "../components/OutfitCard.astro";
+import RelatedArticles from "../components/RelatedArticles.astro";
 
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const allArticles = Object.values(modules).map((m: any) => m.default ?? m);
@@ -539,10 +543,26 @@ const SHOP_MAP_AR: Record<string, { men: string[]; women: string[] }> = {
 const _lookupSlug = (!isHub && !isGeo) ? (a.lang === "ar" && a.altSlug ? a.altSlug : a.slug) : "";
 const occasion  = (isHub || isGeo) ? "" : getOccasion(_lookupSlug);
 const gender    = (isHub || isGeo) ? "" : getGender(_lookupSlug);
-const shopItems: string[] = !isHub && !isGeo && occasion && (gender === "men" || gender === "women")
-  ? (SHOP_MAP[occasion]?.[gender] ?? []) : [];
+
+// Geo page shop items (climate/season aware)
+let geoShopItems: string[] = [];
+let geoShopLabels: string[] = [];
+if (isGeo) {
+  const geoGender = (a as any).lang === "ar" ? "women" : "men";
+  const { terms, labels } = getGeoShopItems({
+    climate: geoCity.climate,
+    season: geoSeason,
+    gender: geoGender,
+    lang: (a as any).lang === "ar" ? "ar" : "en"
+  });
+  geoShopItems = terms;
+  geoShopLabels = labels;
+}
+
+const shopItems: string[] = (!isHub && !isGeo && occasion && (gender === "men" || gender === "women"))
+  ? (SHOP_MAP[occasion]?.[gender] ?? []) : (isGeo ? geoShopItems : []);
 const shopLabelsAr: string[] = (!isHub && !isGeo && (a as any).lang === "ar") && occasion && (gender === "men" || gender === "women")
-  ? (SHOP_MAP_AR[occasion]?.[gender] ?? []) : [];
+  ? (SHOP_MAP_AR[occasion]?.[gender] ?? []) : (isGeo ? geoShopLabels : []);
 
 // ── Hero images — Pexels photo IDs (allows hotlinking) ───────────────────────
 // URL: images.pexels.com/photos/{id}/pexels-photo-{id}.jpeg?auto=compress&cs=tinysrgb&w=760&h=400&fit=crop
@@ -575,6 +595,12 @@ const canonical = isGeo ? `${SITE}/${geoSlug}/` : `${SITE}/${isHub ? cat!.slug :
 const isAr      = !isHub && !isGeo && a.lang === "ar";
 const altUrl    = !isHub && !isGeo && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
 const ogImage   = (isHub || isGeo) ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
+
+// بناء hreflangPairs للصفحات المترابطة (EN <-> AR)
+const hreflangPairs = !isHub && !isGeo && a.altSlug && a.altLang ? [
+  { lang: a.lang, url: `${SITE}/${a.slug}/` },
+  { lang: a.altLang, url: `${SITE}/${a.altSlug}/` }
+] : [];
 const _heroId = !isHub && occasion && (gender === "men" || gender === "women")
   ? (IMAGE_QUERIES[occasion]?.[gender as "men" | "women"] ?? "")
   : "";
@@ -609,15 +635,6 @@ const faqHtml = isHub ? "" : (a.faq || [])
   .map((f: any) => `<details><summary>${f.q}</summary><p>${f.a}</p></details>`)
   .join("\n");
 
-const articleSchema = isHub ? null : {
-  "@context": "https://schema.org", "@type": "Article",
-  headline: a.title, description: a.metaDesc, image: ogImage,
-  datePublished: a.datePublished, dateModified: a.datePublished, inLanguage: a.lang,
-  author: { "@type": "Organization", name: "Askoutfit" },
-  publisher: { "@type": "Organization", name: "Askoutfit", logo: { "@type": "ImageObject", url: `${SITE}/logo.png` } },
-  mainEntityOfPage: { "@type": "WebPage", "@id": canonical },
-};
-
 const breadcrumbItems: any[] = isGeo
   ? [
       { "@type": "ListItem", position: 1, name: "Askoutfit", item: `${SITE}/` },
@@ -647,6 +664,21 @@ const faqSchema = isGeo
   ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: cat!.faq.map(f => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) }
   : (a.faq?.length > 0 ? { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: (a.faq || []).map((f: any) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) } : null);
 
+// JSON-LD: Article schema للصفحات العادية (غير Hub/Geo)
+const articleSchema = !isHub && !isGeo ? {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": a.h1,
+  "description": a.metaDesc,
+  "image": ogImage,
+  "datePublished": a.datePublished,
+  "dateModified": a.datePublished,
+  "inLanguage": a.lang,
+  "author": { "@type": "Organization", "name": "Askoutfit" },
+  "publisher": { "@type": "Organization", "name": "Askoutfit", "logo": { "@type": "ImageObject", "url": `${SITE}/logo.png` } },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+} : null;
+
 const shopSchema = shopItems.length > 0 ? {
   "@context": "https://schema.org", "@type": "ItemList",
   name: `Shop the Look — ${a.h1}`,
@@ -670,14 +702,34 @@ const pageDesc  = isGeo ? geoDesc  : isHub ? cat!.metaDesc : a.metaDesc;
 // rather than pointing crawlers at dead URLs.
 const pageAltLang = isGeo ? "ar" : undefined;
 const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
+// JSON-LD: Article schema للصفحات الجغرافية (EN)
+const geoArticleSchema = isGeo ? {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": geoH1,
+  "description": geoDesc,
+  "image": `${SITE}/og-default.jpg`,
+  "datePublished": new Date().toISOString().slice(0, 10),
+  "dateModified": new Date().toISOString().slice(0, 10),
+  "inLanguage": "en",
+  "author": { "@type": "Organization", "name": "Askoutfit" },
+  "publisher": { "@type": "Organization", "name": "Askoutfit", "logo": { "@type": "ImageObject", "url": `${SITE}/logo.png` } },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+} : null;
+---
 ---
 
-<Base title={pageTitle} description={pageDesc}
-  lang={isAr ? "ar" : "en"} dir={isAr ? "rtl" : "ltr"}
+<Base
+  title={pageTitle}
+  description={pageDesc}
+  lang={isAr ? "ar" : "en"}
+  dir={isAr ? "rtl" : "ltr"}
   canonical={canonical}
   altLang={pageAltLang}
   altUrl={pageAltUrl}
-  ogImage={ogImage}>
+  ogImage={ogImage}
+  hreflangPairs={hreflangPairs}
+  disableArticleJsonLd={true}>
   <Fragment slot="head">
     {articleSchema && (<script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />)}
     <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
@@ -715,6 +767,13 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
 
           <div class="lead">
             <p>{geoContent?.intro}</p>
+          </div>
+
+          <!-- Quick Shop Mobile Bar -->
+          <div class="quick-shop-bar" id="quick-shop-bar" data-target="shop-the-look">
+            <span class="quick-shop-icon">🛍</span>
+            <span class="quick-shop-text">Quick Shop</span>
+            <span class="quick-shop-arrow">↓</span>
           </div>
 
           {geoUniqueText && (
@@ -774,6 +833,29 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
                 ))}
               </div>
             </div>
+
+            {shopItems.length > 0 && (
+              <ShopTheLook
+                shopItems={shopItems}
+                shopLabels={(a as any).lang === "ar" ? shopLabelsAr : shopItems.map(i => i.replace(/\b\w/g, (c: string) => c.toUpperCase()))}
+                amz={amz}
+                occasion=""
+                season={geoSeason}
+                lang={(a as any).lang === "ar" ? "ar" : "en"}
+                dir={(a as any).lang === "ar" ? "rtl" : "ltr"}
+                schema={true}
+              />
+            )}
+
+            <RelatedArticles
+              currentSlug={geoSlug}
+              occasion=""
+              audience="men"
+              season={geoSeason}
+              lang={(a as any).lang === "ar" ? "ar" : "en"}
+              dir={(a as any).lang === "ar" ? "rtl" : "ltr"}
+              limit={4}
+            />
 
             {geoCity.culturalNote && (
               <div class="cultural-note">
@@ -980,6 +1062,13 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
 
           <div class="lead" set:html={a.introHtml} />
 
+          <!-- Quick Shop Mobile Bar -->
+          <div class="quick-shop-bar" id="quick-shop-bar" data-target="shop-the-look">
+            <span class="quick-shop-icon">🛍</span>
+            <span class="quick-shop-text">Quick Shop</span>
+            <span class="quick-shop-arrow">↓</span>
+          </div>
+
           <div class="tool-cta">
             <h3>{a.ctaTitle}</h3>
             <p>{a.ctaSub}</p>
@@ -989,21 +1078,27 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
           <div class="body" set:html={a.bodyHtml} />
 
           {shopItems.length > 0 && (
-            <section class="shop-look">
-              <h2 class="shop-heading">{isAr ? "تسوق الإطلالة" : "Shop the Look"}</h2>
-              <p class="shop-sub">{isAr ? "اضغط على أي قطعة لإيجادها على أمازون — روابط الأفيليت تساعد في إبقاء الموقع مجانياً." : "Tap any item to find it on Amazon — affiliate links help keep this site free."}</p>
-              <div class="shop-grid">
-                {shopItems.map((item: string, idx: number) => (
-                  <a href={amz(item)} target="_blank" rel="noopener nofollow sponsored" class="shop-card"
-                     onclick={`if(typeof gtag==='function')gtag('event','shop_click',{item:'${item}',slug:'${a.slug}'})`}>
-                    <span class="shop-icon">🛍</span>
-                    <span class="shop-label">{isAr && shopLabelsAr[idx] ? shopLabelsAr[idx] : item.replace(/\b\w/g, (c: string) => c.toUpperCase())}</span>
-                    <span class="shop-arrow">{isAr ? "←" : "→"}</span>
-                  </a>
-                ))}
-              </div>
-            </section>
+            <ShopTheLook
+              shopItems={shopItems}
+              shopLabels={isAr ? shopLabelsAr : shopItems.map(i => i.replace(/\b\w/g, (c: string) => c.toUpperCase()))}
+              amz={amz}
+              occasion={occasion}
+              season={""}
+              lang={isAr ? "ar" : "en"}
+              dir={isAr ? "rtl" : "ltr"}
+              schema={true}
+            />
           )}
+
+          <RelatedArticles
+            currentSlug={a.slug}
+            occasion={occasion}
+            audience={a.keyword?.includes('men') ? 'men' : a.keyword?.includes('women') ? 'women' : undefined}
+            season={""}
+            lang={isAr ? "ar" : "en"}
+            dir={isAr ? "rtl" : "ltr"}
+            limit={4}
+          />
 
           <div class="tool-cta">
             <h3>{a.ctaTitle}</h3>
@@ -1285,4 +1380,73 @@ const pageAltUrl  = isGeo ? `${SITE}/ar/${geoSlug}/` : undefined;
   .season-link:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
   .season-link-icon { font-size: 18px; flex-shrink: 0; }
   .season-link span:nth-child(2) { flex: 1; }
+
+  /* ── Quick Shop Mobile Bar ─────────────────────────────────────────────────── */
+  .quick-shop-bar {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: var(--surface);
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    padding: 12px 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 14px;
+    animation: quickShopSlideUp 0.3s ease-out;
+  }
+
+  @media (max-width: 640px) {
+    .quick-shop-bar {
+      display: flex;
+    }
+  }
+
+  @keyframes quickShopSlideUp {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  .quick-shop-icon {
+    font-size: 18px;
+  }
+
+  .quick-shop-text {
+    font-family: "Playfair Display", Georgia, serif;
+    font-weight: 600;
+  }
+
+  [dir="rtl"] .quick-shop-text {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-weight: 700;
+  }
+
+  .quick-shop-arrow {
+    font-size: 16px;
+    color: var(--gold);
+    animation: bounce 1.5s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+
+  .quick-shop-bar:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
 </style>

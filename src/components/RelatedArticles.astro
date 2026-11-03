@@ -1,0 +1,207 @@
+---
+/**
+ * RelatedArticles.astro — مقالات وأدلة ذات صلة لتقوية الـ Internal Linking
+ * 
+ * يستقبل:
+ *   - currentSlug: string          // slug المقالة الحالية (للاستبعاد)
+ *   - occasion?: string            // نوع المناسبة (wedding-guest, job-interview, etc.)
+ *   - audience?: 'men' | 'women'   // الجمهور المستهدف
+ *   - season?: string              // الموسم (summer, winter, spring, fall)
+ *   - lang: 'en' | 'ar'            // اللغة الحالية
+ *   - dir: 'ltr' | 'rtl'           // اتجاه الصفحة
+ *   - limit?: number               // عدد النتائج (افتراضي: 4)
+ */
+interface Props {
+  currentSlug: string;
+  occasion?: string;
+  audience?: 'men' | 'women';
+  season?: string;
+  lang: 'en' | 'ar';
+  dir: 'ltr' | 'rtl';
+  limit?: number;
+}
+
+import OutfitCard from './OutfitCard.astro';
+
+const {
+  currentSlug,
+  occasion,
+  audience,
+  season,
+  lang = 'en',
+  dir = 'ltr',
+  limit = 4,
+} = Astro.props;
+
+const isAr = lang === 'ar';
+
+// Load all articles
+const modules = import.meta.glob('../content/articles/*.json', { eager: true });
+const allArticles = Object.values(modules).map((m: any) => m.default ?? m);
+
+// Filter articles by language (exclude current)
+const articles = allArticles.filter((a: any) => 
+  a.lang === lang && a.slug !== currentSlug
+);
+
+// Score articles by relevance
+function scoreArticle(a: any): number {
+  let score = 0;
+  if (occasion && a.keyword?.includes(occasion)) score += 10;
+  if (audience && a.keyword?.includes(audience)) score += 5;
+  if (season && a.keyword?.includes(season)) score += 5;
+  // Same category (hub) bonus
+  if (occasion && a.occasion === occasion) score += 3;
+  return score;
+}
+
+const scored = articles
+  .map(a => ({ article: a, score: scoreArticle(a) }))
+  .filter(x => x.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, limit)
+  .map(x => x.article);
+
+// If not enough scored articles, fill with same-language articles
+if (scored.length < limit) {
+  const remaining = articles
+    .filter(a => !scored.find(s => s.slug === a.slug))
+    .slice(0, limit - scored.length);
+  scored.push(...remaining);
+}
+
+// Helper: get category from keyword
+function getCategory(keyword: string): string {
+  const k = keyword.toLowerCase();
+  if (k.includes('dress') || k.includes('gown') || k.includes('فستان')) return 'dress';
+  if (k.includes('suit') || k.includes('blazer') || k.includes('بليزر') || k.includes('بدلة')) return 'outerwear';
+  if (k.includes('shoe') || k.includes('heel') || k.includes('boot') || k.includes('حذاء') || k.includes('بوت')) return 'shoes';
+  if (k.includes('accessory') || k.includes('jewel') || k.includes('bag') || k.includes('إكسسوار') || k.includes('حقيبة') || k.includes('مجوهر')) return 'accessory';
+  return 'default';
+}
+
+// Helper: get display title
+function getDisplayTitle(article: any): string {
+  return article.h1 || article.title || article.keyword;
+}
+
+// Helper: get description from intro
+function getDescription(article: any): string {
+  if (article.introHtml) {
+    return article.introHtml.replace(/<[^>]+>/g, '').slice(0, 120) + '…';
+  }
+  return '';
+}
+
+// Build affiliate URL
+const AMAZON_TAG = 'askoutfit-20';
+const AMAZON_DOMAIN = 'www.amazon.com';
+function amz(term: string) {
+  return `https://${AMAZON_DOMAIN}/s?k=${encodeURIComponent(term)}&tag=${AMAZON_TAG}`;
+}
+
+// CTA text
+const ctaText = isAr ? 'عرض على أمازون' : 'View on Amazon';
+
+const sectionTitle = isAr ? 'مقالات ذات صلة' : 'Related Guides';
+const sectionSubtitle = isAr 
+  ? 'اكتشف المزيد من أدلة الأزياء المشابهة'
+  : 'Discover more similar style guides';
+---
+{scored.length > 0 && (
+  <section class="related-articles" data-lang={lang} data-dir={dir}>
+    <header class="ra-header">
+      <h2 class="ra-title">{sectionTitle}</h2>
+      <p class="ra-subtitle">{sectionSubtitle}</p>
+    </header>
+    
+    <div class="ra-grid" role="list" aria-label={sectionTitle}>
+      {scored.map((article) => {
+        const category = getCategory(article.keyword);
+        const title = getDisplayTitle(article);
+        const description = getDescription(article);
+        const affiliateUrl = amz(article.keyword);
+        
+        return (
+          <OutfitCard
+            title={title}
+            description={description}
+            category={category}
+            occasion={occasion}
+            season={season}
+            affiliateUrl={affiliateUrl}
+            ctaText={ctaText}
+            lang={lang}
+            dir={dir}
+            variant="compact"
+          />
+        );
+      })}
+    </div>
+  </section>
+)}
+
+<style>
+  .related-articles {
+    --ra-gold: #caa46a;
+    --ra-gold-light: #d8b67e;
+    --ra-surface: #221b14;
+    --ra-bg: #1a1410;
+    --ra-line: #3a3026;
+    --ra-ink: #f3ece2;
+    --ra-muted: #b9ad9b;
+    --ra-faint: #6b6052;
+    --ra-radius: 14px;
+    --ra-transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--ra-line);
+  }
+
+  .ra-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+
+  .ra-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: 600;
+    color: var(--ra-ink);
+    margin: 0 0 6px;
+  }
+
+  [dir="rtl"] .ra-title {
+    font-family: 'Tajawal', 'Playfair Display', sans-serif;
+    font-weight: 700;
+  }
+
+  .ra-subtitle {
+    color: var(--ra-muted);
+    font-size: 0.9rem;
+    margin: 0;
+  }
+
+  .ra-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 480px) {
+    .ra-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 768px) {
+    .ra-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  @media (min-width: 1024px) {
+    .ra-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .related-articles * { transition: none !important; animation: none !important; }
+  }
+</style>

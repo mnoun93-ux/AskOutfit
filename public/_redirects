@@ -1,0 +1,2 @@
+# Redirect www to non-www (301)
+https://www.askoutfit.com/* https://askoutfit.com/:splat 301!

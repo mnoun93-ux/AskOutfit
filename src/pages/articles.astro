@@ -57,6 +57,54 @@ const articlesJson = JSON.stringify(articles);
     <h1 class="page-title">All Outfit Guides</h1>
     <p class="page-sub">Pick an occasion — we'll show you exactly what to wear.</p>
 
+    <!-- Trending Style Guides -->
+    <section class="trending-guides" aria-label="Trending Style Guides">
+      <h2 class="trending-title">Trending Style Guides</h2>
+      <p class="trending-sub">Our most searched outfit guides — updated weekly based on search trends.</p>
+      <div class="trending-grid">
+        <a href="/what-to-wear-to-a-business-meeting-women/" class="trending-card">
+          <span class="trending-icon">👔</span>
+          <span class="trending-label">Business Meeting Women</span>
+        </a>
+        <a href="/what-to-wear-to-a-concert-men/" class="trending-card">
+          <span class="trending-icon">🎸</span>
+          <span class="trending-label">Concert Men</span>
+        </a>
+        <a href="/what-to-wear-to-a-business-meeting-men/" class="trending-card">
+          <span class="trending-icon">💼</span>
+          <span class="trending-label">Business Meeting Men</span>
+        </a>
+        <a href="/business-meeting-outfit-men-formal/" class="trending-card">
+          <span class="trending-icon">🤵</span>
+          <span class="trending-label">Formal Business Men</span>
+        </a>
+        <a href="/summer-job-interview-outfit-for-men/" class="trending-card">
+          <span class="trending-icon">☀️</span>
+          <span class="trending-label">Summer Interview Men</span>
+        </a>
+        <a href="/summer-graduation-outfit-for-men/" class="trending-card">
+          <span class="trending-icon">🎓</span>
+          <span class="trending-label">Summer Graduation Men</span>
+        </a>
+        <a href="/wedding-guest-outfit-men-smart-casual/" class="trending-card">
+          <span class="trending-icon">💍</span>
+          <span class="trending-label">Wedding Smart Casual Men</span>
+        </a>
+        <a href="/what-to-wear-in-toronto-winter/" class="trending-card">
+          <span class="trending-icon">❄️</span>
+          <span class="trending-label">Toronto Winter</span>
+        </a>
+        <a href="/what-to-wear-in-hong-kong-winter/" class="trending-card">
+          <span class="trending-icon">🌆</span>
+          <span class="trending-label">Hong Kong Winter</span>
+        </a>
+        <a href="/what-to-wear-in-istanbul-fall/" class="trending-card">
+          <span class="trending-icon">🍂</span>
+          <span class="trending-label">Istanbul Fall</span>
+        </a>
+      </div>
+    </section>
+
     <!-- Search -->
     <div class="search-wrap">
       <input id="search" type="search" placeholder="Search guides…" autocomplete="off" />
@@ -212,6 +260,72 @@ const articlesJson = JSON.stringify(articles);
   .wrap { max-width: 960px; margin: 0 auto; padding: 40px 20px 80px; }
   .page-title { font-family: "Playfair Display", Georgia, serif; font-weight: 600; font-size: clamp(30px, 5vw, 44px); margin: 0; color: var(--ink); }
   .page-sub { color: var(--muted); font-size: 17px; margin: 12px 0 28px; }
+
+  /* ── trending guides ──────────────────────────────────────────────────────── */
+  .trending-guides {
+    margin: 24px 0 32px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .trending-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 6px;
+  }
+  .trending-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 16px;
+  }
+  .trending-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 480px) {
+    .trending-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .trending-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .trending-grid { grid-template-columns: repeat(5, 1fr); }
+  }
+  .trending-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 10px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    text-decoration: none;
+    text-align: center;
+    transition: all .2s;
+  }
+  .trending-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .trending-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+  .trending-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 500;
+    line-height: 1.2;
+  }
+  .trending-card:hover .trending-label {
+    color: var(--gold);
+  }
 
   /* ── search ─────────────────────────────────────────────────────────────── */
   .search-wrap { margin-bottom: 20px; }

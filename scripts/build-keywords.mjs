@@ -28,7 +28,7 @@ const OCCASIONS = [
   { en: "business meeting", ar: "اجتماع عمل" },
   { en: "dinner party", ar: "حفل عشاء" },
   { en: "birthday party", ar: "حفلة عيد ميلاد" },
-  { en: "brunch", ar: "بطون نهاري" },
+  { en: "brunch", ar: "برانش (فطور متأخر)" },
   { en: "concert", ar: "حفلة موسيقية" },
   { en: "travel day", ar: "يوم سفر" },
   { en: "office", ar: "المكتب" },

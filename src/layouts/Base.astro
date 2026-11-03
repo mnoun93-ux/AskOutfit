@@ -11,6 +11,10 @@ export interface Props {
   ogImage?: string;
   altLang?: string;
   altUrl?: string;
+  // hreflang 쌍 (اختياري - للصفحات العربية/الإنجليزية المترابطة)
+  hreflangPairs?: Array<{ lang: string; url: string }>;
+  // Disable fallback Article JSON-LD (for pages that provide their own)
+  disableArticleJsonLd?: boolean;
 }
 const {
   title,
@@ -21,9 +25,57 @@ const {
   ogImage = "https://askoutfit.com/og-default.jpg",
   altLang,
   altUrl,
+  hreflangPairs = [],
+  disableArticleJsonLd = false,
 } = Astro.props;
 
-const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
+// تأكد من تراكب Slash في canonical
+function ensureTrailingSlash(url: string): string {
+  return url.endsWith("/") ? url : url + "/";
+}
+
+const canonicalUrl = ensureTrailingSlash(canonical ?? new URL(Astro.url.pathname, Astro.site).href);
+
+// بناء أزواج hreflang من hreflangPairs + altLang/altUrl + self + x-default
+function buildHreflangLinks() {
+  const links: Array<{ lang: string; url: string }> = [
+    { lang, url: canonicalUrl },
+    { lang: "x-default", url: canonicalUrl },
+  ];
+  
+  if (altLang && altUrl) {
+    links.push({ lang: altLang, url: ensureTrailingSlash(altUrl) });
+  }
+  
+  hreflangPairs.forEach(p => {
+    if (!links.some(l => l.lang === p.lang)) {
+      links.push({ lang: p.lang, url: ensureTrailingSlash(p.url) });
+    }
+  });
+  
+  // إزالة التكرارات (نفس اللغة)
+  const seen = new Set<string>();
+  return links.filter(l => {
+    if (seen.has(l.lang)) return false;
+    seen.add(l.lang);
+    return true;
+  });
+}
+
+const hreflangLinks = buildHreflangLinks();
+
+// Compute SEO-optimized title (max 60 chars, no | Askoutfit)
+// Use 55 as safety margin for HTML entity expansion (& -> &, etc.)
+const seoTitle = title.length > 55 ? title.slice(0, 52) + "..." : title;
+
+// Compute SEO-optimized description (120-155 chars)
+let seoDesc = description ?? "AI stylist: describe the occasion, get a complete shoppable outfit in seconds.";
+if (seoDesc.length < 120) {
+  seoDesc += " Discover personalized outfit recommendations for any occasion instantly with Askoutfit AI stylist.";
+}
+if (seoDesc.length > 155) {
+  seoDesc = seoDesc.slice(0, 152) + "...";
+}
 ---
 
 <!doctype html>
@@ -31,14 +83,14 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} | Askoutfit</title>
-    <meta name="description" content={description} />
+    <title>{seoTitle}</title>
+    <meta name="description" content={seoDesc} />
     <link rel="canonical" href={canonicalUrl} />
 
-    {/* hreflang — global bilingual pairing */}
-    <link rel="alternate" hreflang={lang} href={canonicalUrl} />
-    {altLang && altUrl && <link rel="alternate" hreflang={altLang} href={altUrl} />}
-    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+    {/* hreflang — من مصدر واحد فقط (Base.astro) */}
+    {hreflangLinks.map(l => (
+      <link rel="alternate" hreflang={l.lang} href={l.url} />
+    ))}
 
     {/* Open Graph / Twitter */}
     <meta property="og:type" content="website" />
@@ -75,6 +127,46 @@ const canonicalUrl = canonical ?? new URL(Astro.url.pathname, Astro.site).href;
     </script>
 
     <slot name="head" />
+  
+  {/* JSON-LD: Organization (دائماً) */}
+  <script type="application/ld+json" set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Askoutfit",
+    "url": "https://askoutfit.com/",
+    "logo": "https://askoutfit.com/logo.png",
+    "sameAs": [
+      "https://twitter.com/askoutfit",
+      "https://instagram.com/askoutfit"
+    ]
+  })} />
+  {/* JSON-LD: Article (Fallback - used when page does not provide its own) */}
+  {!disableArticleJsonLd && (
+    <script type="application/ld+json" set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": title,
+      "description": description,
+      "image": ogImage,
+      "datePublished": new Date().toISOString().split("T")[0],
+      "author": {
+        "@type": "Organization",
+        "name": "Askoutfit"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Askoutfit",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://askoutfit.com/logo.png"
+        }
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": canonicalUrl
+      }
+    })} />
+  )}
   </head>
   <body>
     <slot />

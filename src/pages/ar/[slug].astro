@@ -4,6 +4,11 @@ import geoCitiesData from "../../content/geo-cities.json";
 import { GEO_SEASONS, GEO_CLIMATE_CONTENT } from "../../lib/geo-content";
 import { GEO_CLIMATE_CONTENT_AR, GEO_OCCASION_OUTFITS_AR, SEASON_LABELS_AR } from "../../lib/geo-content-ar";
 import { GEO_CITIES_AR } from "../../lib/geo-cities-ar";
+import { getGeoShopItems, buildAmazonLink } from "../../lib/geo-shop";
+import ShopTheLook from "../../components/ShopTheLook.astro";
+import RelatedArticles from "../../components/RelatedArticles.astro";
+import ShopTheLook from "../../components/ShopTheLook.astro";
+import RelatedArticles from "../../components/RelatedArticles.astro";
 
 const SITE = "https://askoutfit.com";
 const AMAZON_TAG = "askoutfit-20";
@@ -48,6 +53,12 @@ const canonical    = `${SITE}/ar/what-to-wear-in-${geoCity.id}-${geoSeason}/`;
 const enCounterpart = `${SITE}/what-to-wear-in-${geoCity.id}-${geoSeason}/`;
 const geoSlug       = slug;
 
+// بناء hreflangPairs للصفحات العربية (AR <-> EN)
+const hreflangPairs = [
+  { lang: "ar", url: canonical },
+  { lang: "en", url: enCounterpart }
+];
+
 // بطاقات المناسبات العربية
 const geoOccasionCards = GEO_OCCASION_OUTFITS_AR[geoCity.climate]?.[geoSeason] ?? [];
 
@@ -58,6 +69,14 @@ const geoOtherSeasons = GEO_SEASONS.filter((s: string) => s !== geoSeason);
 const geoSimilarCities = cities
   .filter((c: any) => c.id !== geoCity.id && c.climate === geoCity.climate)
   .slice(0, 3);
+
+// منتجات الأفلييت الذكية للصفحة العربية
+const { terms: geoShopItems, labels: geoShopLabelsAr } = getGeoShopItems({
+  climate: geoCity.climate,
+  season: geoSeason,
+  gender: "women",
+  lang: "ar"
+});
 
 // Schema
 const breadcrumbSchema = {
@@ -80,6 +99,21 @@ const faqSchema = {
   })),
 };
 
+// JSON-LD: Article schema للصفحات الجغرافية العربية
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": geoH1,
+  "description": geoDesc,
+  "image": `${SITE}/og-default.jpg`,
+  "datePublished": new Date().toISOString().slice(0, 10),
+  "dateModified": new Date().toISOString().slice(0, 10),
+  "inLanguage": "ar",
+  "author": { "@type": "Organization", "name": "Askoutfit" },
+  "publisher": { "@type": "Organization", "name": "Askoutfit", "logo": { "@type": "ImageObject", "url": `${SITE}/logo.png` } },
+  "mainEntityOfPage": { "@type": "WebPage", "@id": canonical },
+};
+
 // أيقونات الفصول
 function seasonIcon(s: string) {
   return s === "summer" ? "☀️" : s === "winter" ? "❄️" : s === "spring" ? "🌸" : "🍂";
@@ -94,16 +128,15 @@ function seasonIcon(s: string) {
   canonical={canonical}
   altLang="en"
   altUrl={enCounterpart}
+  hreflangPairs={hreflangPairs}
   ogImage={`${SITE}/og-default.jpg`}
->
+  disableArticleJsonLd={true}>
   <Fragment slot="head">
     <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbSchema)} />
     {geoContent?.faq?.length > 0 && (
       <script type="application/ld+json" is:inline set:html={JSON.stringify(faqSchema)} />
     )}
-    <link rel="alternate" hreflang="ar" href={canonical} />
-    <link rel="alternate" hreflang="en" href={enCounterpart} />
-    <link rel="alternate" hreflang="x-default" href={enCounterpart} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(articleSchema)} />
   </Fragment>
 
   <!-- ══ الرأس ══ -->
@@ -140,6 +173,13 @@ function seasonIcon(s: string) {
         {geoContent?.intro.split("\n\n").map((para: string) => (
           <p>{para}</p>
         ))}
+      </div>
+
+      <!-- Quick Shop Mobile Bar -->
+      <div class="quick-shop-bar" id="quick-shop-bar" data-target="shop-the-look">
+        <span class="quick-shop-icon">🛍</span>
+        <span class="quick-shop-text">تسوق الإطلالة سريعاً</span>
+        <span class="quick-shop-arrow">↓</span>
       </div>
 
       <!-- أداة الأزياء -->
@@ -183,30 +223,28 @@ function seasonIcon(s: string) {
           {geoContent?.packing.map((item: string) => <li>✓ {item}</li>)}
         </ul>
 
-        <!-- Shop the Look -->
-        <div class="shop-look">
-          <h3 class="shop-heading">تسوّق الإطلالة</h3>
-          <p class="shop-sub">ابحث عن هذه القطع على أمازون — روابط أفيليت تُساعد في إبقاء الموقع مجانياً.</p>
-          <div class="shop-grid">
-            {(geoContentEn?.packing ?? geoContent?.packing ?? []).slice(0, 6).map((item: string, idx: number) => {
-              const arLabel = geoContent?.packing[idx] ?? item;
-              return (
-                <a
-                  href={`https://www.amazon.com/s?k=${encodeURIComponent(item)}&tag=${AMAZON_TAG}`}
-                  target="_blank"
-                  rel="noopener nofollow sponsored"
-                  class="shop-card"
-                >
-                  <span class="shop-icon">🛍</span>
-                  <span class="shop-label">{arLabel}</span>
-                  <span class="shop-arrow">←</span>
-                </a>
-              );
-            })}
-          </div>
-        </div>
+        {geoShopItems.length > 0 && (
+          <ShopTheLook
+            shopItems={geoShopItems}
+            shopLabels={geoShopLabelsAr}
+            amz={buildAmazonLink}
+            occasion=""
+            season={geoSeason}
+            lang="ar"
+            dir="rtl"
+            schema={true}
+          />
+        )}
 
-        <!-- ملاحظة الثقافة المحلية -->
+        <RelatedArticles
+          currentSlug={geoSlug}
+          occasion=""
+          audience="women"
+          season={geoSeason}
+          lang="ar"
+          dir="rtl"
+          limit={4}
+        />
         {culturalNoteAr && (
           <div class="cultural-note">
             <h3>🧭 ثقافة اللباس المحلية</h3>
@@ -363,4 +401,68 @@ function seasonIcon(s: string) {
   .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
   .aiom { margin-top: 8px; }
   .aiom a { color: var(--gold); font-weight: 500; }
+
+  /* ── Quick Shop Mobile Bar ─────────────────────────────────────────────────── */
+  .quick-shop-bar {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    background: var(--surface);
+    border: 2px solid var(--gold);
+    border-radius: 50px;
+    padding: 12px 24px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 14px;
+    animation: quickShopSlideUp 0.3s ease-out;
+  }
+
+  @media (max-width: 640px) {
+    .quick-shop-bar {
+      display: flex;
+    }
+  }
+
+  @keyframes quickShopSlideUp {
+    from {
+      opacity: 0;
+      transform: translateX(-50%) translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+
+  .quick-shop-icon {
+    font-size: 18px;
+  }
+
+  .quick-shop-text {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-weight: 700;
+  }
+
+  .quick-shop-arrow {
+    font-size: 16px;
+    color: var(--gold);
+    animation: bounce 1.5s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+
+  .quick-shop-bar:focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 3px;
+  }
 </style>
