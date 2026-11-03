@@ -42,6 +42,9 @@ const byRegion: Record<string, any[]> = {};
 REGION_ORDER.forEach(r => { byRegion[r] = []; });
 cities.forEach(c => { (byRegion[c.region] ??= []).push(c); });
 
+// Also create flat sorted list for "All Cities" directory
+const allCities = [...cities].sort((a, b) => a.name.localeCompare(b.name));
+
 const totalPages = cities.length * SEASONS.length;
 ---
 
@@ -101,6 +104,33 @@ const totalPages = cities.length * SEASONS.length;
         </div>
       </section>
     ))}
+
+    <!-- All Cities Directory (HTML Sitemap for Crawl Depth <= 2) -->
+    <section class="all-cities-directory" aria-label="All Cities Directory">
+      <h2 class="directory-title" data-en="All Cities Directory" data-ar="دليل جميع المدن">All Cities Directory</h2>
+      <p class="directory-sub" data-en={`Alphabetical list of all ${cities.length} cities with direct links to all 4 seasons (${totalPages} guides).`} data-ar={`قائمة أبجدية بجميع ${cities.length} مدينة مع روابط مباشرة للأفصول الأربعة (${totalPages} دليل).`}>
+        Alphabetical list of all {cities.length} cities with direct links to all 4 seasons ({totalPages} guides).
+      </p>
+      
+      <div class="all-cities-grid">
+        {allCities.map(city => (
+          <article class="all-city-card">
+            <div class="all-city-header">
+              <h3 class="all-city-name">{city.name}</h3>
+              <span class="all-city-country">{city.country}</span>
+            </div>
+            <div class="all-city-seasons">
+              {SEASONS.map(s => (
+                <a href={`/what-to-wear-in-${city.id}-${s.id}/`} class="all-season-btn" data-season={s.id}>
+                  <span>{s.icon}</span>
+                  <span data-en={s.label} data-ar={SEASONS_AR[s.id]}>{s.label}</span>
+                </a>
+              ))}
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
 
     <div class="tool-cta">
       <h3 data-en="Not sure what to wear on your trip?" data-ar="لا تعرف ماذا تلبس في رحلتك؟">Not sure what to wear on your trip?</h3>
@@ -245,4 +275,103 @@ const totalPages = cities.length * SEASONS.length;
   .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
   .aiom { margin-top: 8px; }
   .aiom a { color: var(--gold); font-weight: 500; }
+
+  /* ── All Cities Directory ───────────────────────────────────────────────────── */
+  .all-cities-directory {
+    margin: 48px 0 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .all-cities-directory .directory-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 6px;
+  }
+  [dir="rtl"] .all-cities-directory .directory-title {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-weight: 700;
+  }
+  .all-cities-directory .directory-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 20px;
+  }
+  .all-cities-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 480px) {
+    .all-cities-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .all-cities-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .all-cities-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .all-city-card {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all .2s;
+  }
+  .all-city-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .all-city-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .all-city-name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0;
+  }
+  [dir="rtl"] .all-city-name {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-weight: 700;
+  }
+  .all-city-country {
+    font-size: 12px;
+    color: var(--faint);
+    background: var(--surface);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .all-city-seasons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .all-season-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 10px;
+    text-decoration: none;
+    font-size: 11px;
+    color: var(--muted);
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .all-season-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: color-mix(in srgb, var(--gold) 8%, var(--surface));
+  }
 </style>

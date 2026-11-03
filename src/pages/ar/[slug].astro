@@ -182,6 +182,41 @@ function seasonIcon(s: string) {
         <span class="quick-shop-arrow">↓</span>
       </div>
 
+      <!-- City-Specific Insights (unique content per city/season) -->
+      <section class="city-insights" aria-label="رؤى خاصة بالمدينة">
+        <h2>{cityNameAr} في {geoSeasonAr}: ما يميزها</h2>
+        <div class="insights-grid">
+          <div class="insight-card">
+            <span class="insight-icon">🌡️</span>
+            <div>
+              <h3>نطاق درجات الحرارة</h3>
+              <p>{geoCity.temps?.[geoSeason] || "درجات حرارة خاصة بالمناخ"}</p>
+            </div>
+          </div>
+          <div class="insight-card">
+            <span class="insight-icon">🎭</span>
+            <div>
+              <h3>الثقافة المحلية</h3>
+              <p>{culturalNoteAr || "احترم قواعد اللباس المحلية"}</p>
+            </div>
+          </div>
+          <div class="insight-card">
+            <span class="insight-icon">🌍</span>
+            <div>
+              <h3>نوع المناخ</h3>
+              <p>{geoCity.climate.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</p>
+            </div>
+          </div>
+          <div class="insight-card">
+            <span class="insight-icon">🎒</span>
+            <div>
+              <h3>أولوية التعبئة</h3>
+              <p>{geoContent?.packing?.[0] || "راجع قائمة التعبئة أدناه"}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- أداة الأزياء -->
       <div class="tool-cta">
         <h3>غير متأكد ماذا تلبس؟</h3>
@@ -401,6 +436,64 @@ function seasonIcon(s: string) {
   .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
   .aiom { margin-top: 8px; }
   .aiom a { color: var(--gold); font-weight: 500; }
+
+  /* ── City Insights ────────────────────────────────────────────────────────── */
+  .city-insights {
+    margin: 32px 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .city-insights h2 {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 700;
+    color: var(--ink);
+    margin: 0 0 16px;
+  }
+  .insights-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 480px) {
+    .insights-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .insights-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .insight-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    transition: all .2s;
+  }
+  .insight-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .insight-icon {
+    font-size: 1.5rem;
+  }
+  .insight-card h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+  .insight-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
 
   /* ── Quick Shop Mobile Bar ─────────────────────────────────────────────────── */
   .quick-shop-bar {

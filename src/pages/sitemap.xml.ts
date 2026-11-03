@@ -26,7 +26,10 @@ export async function GET() {
   const articles = Object.values(modules).map((m: any) => m.default ?? m);
   const today = new Date().toISOString().slice(0, 10);
 
-  const urls = [
+  // Load the article hreflang map
+const articleHreflangMap = (await import("../article_hreflang_map.json")).default;
+
+const urls = [
     `  <url>\n    <loc>${SITE}/</loc>\n    <lastmod>${today}</lastmod>\n    <priority>1.0</priority>\n  </url>`,
 
     `  <url>\n    <loc>${SITE}/articles/</loc>\n` +
@@ -80,17 +83,21 @@ export async function GET() {
       })
     ),
 
-    // NOTE: articles only have an `altSlug` in their metadata for a future
-    // Arabic version — no such page is built yet, so we do NOT declare an
-    // hreflang alternate here. Pointing crawlers at a URL that 404s wastes
-    // crawl budget and can undermine trust in the rest of the site's
-    // hreflang signals. Re-add the xhtml:link alternate once AR articles
-    // are actually generated and built by getStaticPaths.
+    // Articles: use verified EN↔AR mapping for proper hreflang
     ...articles.map((a: any) => {
       const loc = `${SITE}/${a.slug}/`;
+      const arSlug = articleHreflangMap[a.slug];
+      const hasAr = !!arSlug;
+      let hreflangLinks = `    <xhtml:link rel="alternate" hreflang="${a.lang}" href="${loc}"/>\n`;
+      if (hasAr) {
+        const otherLoc = `${SITE}/${arSlug}/`;
+        const otherLang = a.lang === "en" ? "ar" : "en";
+        hreflangLinks += `    <xhtml:link rel="alternate" hreflang="${otherLang}" href="${otherLoc}"/>\n`;
+      }
+      hreflangLinks += `    <xhtml:link rel="alternate" hreflang="x-default" href="${loc}"/>\n`;
       return (
         `  <url>\n    <loc>${loc}</loc>\n` +
-        `    <xhtml:link rel="alternate" hreflang="${a.lang}" href="${loc}"/>\n` +
+        hreflangLinks +
         `    <lastmod>${a.datePublished || today}</lastmod>\n  </url>`
       );
     }),

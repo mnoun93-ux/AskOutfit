@@ -596,11 +596,44 @@ const isAr      = !isHub && !isGeo && a.lang === "ar";
 const altUrl    = !isHub && !isGeo && a.altSlug ? `${SITE}/${a.altSlug}/` : canonical;
 const ogImage   = (isHub || isGeo) ? `${SITE}/og-default.jpg` : `${SITE}/og/${a.slug}.svg`;
 
-// بناء hreflangPairs للصفحات المترابطة (EN <-> AR)
-const hreflangPairs = !isHub && !isGeo && a.altSlug && a.altLang ? [
-  { lang: a.lang, url: `${SITE}/${a.slug}/` },
-  { lang: a.altLang, url: `${SITE}/${a.altSlug}/` }
-] : [];
+// Build hreflangPairs for EN↔AR article pairs + Geo pages
+// Load the precomputed article hreflang map (EN slug → AR slug)
+const articleHreflangMapEnToAr = (await import("../article_hreflang_map.json")).default;
+
+// Also create reverse mapping (AR slug → EN slug)
+const articleHreflangMapArToEn = Object.fromEntries(
+  Object.entries(articleHreflangMapEnToAr).map(([en, ar]) => [ar, en])
+);
+
+let hreflangPairs = [];
+if (isGeo) {
+  // Geo pages: AR sibling at /ar/{slug}/
+  hreflangPairs = [
+    { lang: "en", url: `${SITE}/${geoSlug}/` },
+    { lang: "ar", url: `${SITE}/ar/${geoSlug}/` }
+  ];
+} else if (!isHub && a.altSlug) {
+  // Regular articles: use verified EN↔AR mapping
+  if (isAr) {
+    // Current page is AR, pair with EN using reverse mapping
+    const enSlug = articleHreflangMapArToEn[a.slug];
+    if (enSlug) {
+      hreflangPairs = [
+        { lang: "ar", url: `${SITE}/${a.slug}/` },
+        { lang: "en", url: `${SITE}/${enSlug}/` }
+      ];
+    }
+  } else {
+    // Current page is EN, pair with AR using forward mapping
+    const arSlug = articleHreflangMapEnToAr[a.slug];
+    if (arSlug) {
+      hreflangPairs = [
+        { lang: "en", url: `${SITE}/${a.slug}/` },
+        { lang: "ar", url: `${SITE}/${arSlug}/` }
+      ];
+    }
+  }
+}
 const _heroId = !isHub && occasion && (gender === "men" || gender === "women")
   ? (IMAGE_QUERIES[occasion]?.[gender as "men" | "women"] ?? "")
   : "";
@@ -782,6 +815,41 @@ const geoArticleSchema = isGeo ? {
               <p>{geoUniqueText}</p>
             </div>
           )}
+
+          <!-- City-Specific Insights (unique content per city/season) -->
+          <section class="city-insights" aria-label="City-specific insights">
+            <h2>{geoCity.name} in {geoSeasonLabel}: What Makes It Unique</h2>
+            <div class="insights-grid">
+              <div class="insight-card">
+                <span class="insight-icon">🌡️</span>
+                <div>
+                  <h3>Temperature Range</h3>
+                  <p>{geoCity.temps?.[geoSeason] || "Climate-specific temperatures"}</p>
+                </div>
+              </div>
+              <div class="insight-card">
+                <span class="insight-icon">🎭</span>
+                <div>
+                  <h3>Local Culture</h3>
+                  <p>{geoCity.culturalNote || "Respect local dress norms"}</p>
+                </div>
+              </div>
+              <div class="insight-card">
+                <span class="insight-icon">🌍</span>
+                <div>
+                  <h3>Climate Type</h3>
+                  <p>{geoCity.climate.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</p>
+                </div>
+              </div>
+              <div class="insight-card">
+                <span class="insight-icon">🎒</span>
+                <div>
+                  <h3>Packing Priority</h3>
+                  <p>{geoContent?.packing?.[0] || "Check the packing list below"}</p>
+                </div>
+              </div>
+            </div>
+          </section>
 
           <div class="tool-cta">
             <h3>Not sure what to wear?</h3>
@@ -1380,6 +1448,68 @@ const geoArticleSchema = isGeo ? {
   .season-link:hover { border-color: color-mix(in srgb, var(--gold) 50%, transparent); background: #271f17; }
   .season-link-icon { font-size: 18px; flex-shrink: 0; }
   .season-link span:nth-child(2) { flex: 1; }
+
+  /* ── City Insights ────────────────────────────────────────────────────────── */
+  .city-insights {
+    margin: 32px 0;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .city-insights h2 {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 16px;
+  }
+  [dir="rtl"] .city-insights h2 {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-weight: 700;
+  }
+  .insights-grid {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 480px) {
+    .insights-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .insights-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .insight-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    transition: all .2s;
+  }
+  .insight-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+  }
+  .insight-icon {
+    font-size: 1.5rem;
+  }
+  .insight-card h3 {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0;
+  }
+  .insight-card p {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin: 0;
+    line-height: 1.5;
+  }
 
   /* ── Quick Shop Mobile Bar ─────────────────────────────────────────────────── */
   .quick-shop-bar {

@@ -105,6 +105,21 @@ const articlesJson = JSON.stringify(articles);
       </div>
     </section>
 
+    <!-- Complete Article Directory (HTML Sitemap for Crawl Depth <= 2) -->
+    <section class="article-directory" aria-label="Complete Article Directory">
+      <h2 class="directory-title">Complete Article Directory</h2>
+      <p class="directory-sub">All 540 outfit guides (270 EN + 270 AR) organized by occasion.</p>
+      
+      <div class="directory-tabs" role="tablist" aria-label="Filter by language">
+        <button class="dir-tab active" data-lang="en" role="tab" aria-selected="true">English (270)</button>
+        <button class="dir-tab" data-lang="ar" role="tab" aria-selected="false">العربية (270)</button>
+      </div>
+
+      <div class="directory-content" id="dir-content">
+        <!-- Rendered by JS -->
+      </div>
+    </section>
+
     <!-- Search -->
     <div class="search-wrap">
       <input id="search" type="search" placeholder="Search guides…" autocomplete="off" />
@@ -242,6 +257,82 @@ const articlesJson = JSON.stringify(articles);
       document.querySelectorAll(".pill").forEach((b,i) => b.classList.toggle("active", i===0));
       render();
     });
+  </script>
+
+  <!-- Directory rendering script -->
+  <script is:inline define:vars={{ articlesJson }}>
+    (() => {
+      const ALL = JSON.parse(articlesJson);
+      const OCCS = Object.keys(OCCASION_LABELS);
+      function occOf(slug) { return OCCS.find(o => slug.includes(o)) || ""; }
+      function genderOf(slug) {
+        return slug.includes("-men") || slug.includes("for-men") ? "men"
+             : slug.includes("-women") || slug.includes("for-women") ? "women"
+             : "";
+      }
+      const OCCASION_EMOJIS = {
+        "wedding-guest":"💍","beach-party":"🏖","birthday-party":"🎂","brunch":"☕",
+        "business-meeting":"💼","casual-outing":"🛍","concert":"🎵","dinner-party":"🍽",
+        "eid-celebration":"🌙","engagement-party":"💫","first-date":"✨",
+        "graduation":"🎓","job-interview":"🎯","office":"🏢","travel-day":"✈️",
+      };
+      const OCCASION_LABELS_AR = {
+        "wedding-guest":"ضيوف زفاف","beach-party":"حفلة شاطئ","birthday-party":"حفلة عيد ميلاد","brunch":"برانش",
+        "business-meeting":"اجتماع عمل","casual-outing":"نزهة كاجوال","concert":"حفل","dinner-party":"عشاء",
+        "eid-celebration":"احتفال العيد","engagement-party":"حفلة خطوبة","first-date":"أول موعد",
+        "graduation":"تخرج","job-interview":"مقابلة عمل","office":"عمل","travel-day":"يوم سفر",
+      };
+
+      function renderDirectory(lang) {
+        const articles = ALL.filter(a => a.lang === lang);
+        const groups = {};
+        articles.forEach(a => {
+          const occ = occOf(a.slug);
+          const label = lang === "ar" ? (OCCASION_LABELS_AR[occ] || occ) : (OCCASION_LABELS[occ] || occ);
+          if (!groups[label]) groups[label] = [];
+          groups[label].push(a);
+        });
+        
+        const sortedOccasions = Object.keys(groups).sort();
+        let html = "";
+        sortedOccasions.forEach(occLabel => {
+          const items = groups[occLabel];
+          html += `<div class="dir-section">
+            <h3 class="dir-section-title">${occLabel} (${items.length})</h3>
+            <div class="dir-grid">`;
+          items.forEach(a => {
+            const emoji = OCCASION_EMOJIS[occOf(a.slug)] || "👗";
+            const gen = genderOf(a.slug);
+            const genLabel = gen === "men" ? (lang === "ar" ? "رجال" : "Men") : gen === "women" ? (lang === "ar" ? "نساء" : "Women") : "";
+            html += `<a href="/${a.slug}/" class="dir-card">
+              <span class="dir-emoji">${emoji}</span>
+              <div class="dir-info">
+                <span class="dir-title">${a.h1}</span>
+                ${genLabel ? `<span class="dir-gender">${genLabel}</span>` : ""}
+              </div>
+              <span class="dir-arrow">→</span>
+            </a>`;
+          });
+          html += `</div></div>`;
+        });
+        return html;
+      }
+
+      const dirContent = document.getElementById("dir-content");
+      const dirTabs = document.querySelectorAll(".dir-tab");
+      
+      // Initial render
+      dirContent.innerHTML = renderDirectory("en");
+      
+      dirTabs.forEach(btn => {
+        btn.addEventListener("click", () => {
+          dirTabs.forEach(b => { b.classList.remove("active"); b.setAttribute("aria-selected", "false"); });
+          btn.classList.add("active");
+          btn.setAttribute("aria-selected", "true");
+          dirContent.innerHTML = renderDirectory(btn.dataset.lang);
+        });
+      });
+    })();
   </script>
 </Base>
 
@@ -383,6 +474,135 @@ const articlesJson = JSON.stringify(articles);
   /* ── footer ─────────────────────────────────────────────────────────────── */
   .site-footer { border-top: 1px solid rgba(58,48,38,.6); background: #1d1610; text-align: center; padding: 40px 20px; font-size: 12px; color: var(--faint); }
   .site-footer-logo { font-family: "Playfair Display", serif; font-size: 16px; color: var(--muted); margin: 0 0 12px; }
-  .aiom { margin-top: 8px; }
   .aiom a { color: var(--gold); font-weight: 500; }
+
+  /* ── article directory (HTML sitemap) ─────────────────────────────────────── */
+  .article-directory {
+    margin: 32px 0 48px;
+    padding: 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .directory-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: clamp(1.25rem, 3vw, 1.75rem);
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 6px;
+  }
+  [dir="rtl"] .directory-title {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-weight: 700;
+  }
+  .directory-sub {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin: 0 0 20px;
+  }
+  .directory-tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .dir-tab {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .dir-tab:hover {
+    border-color: color-mix(in srgb, var(--gold) 50%, transparent);
+    color: var(--ink);
+  }
+  .dir-tab.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--bg);
+  }
+  .directory-content {
+    min-height: 200px;
+  }
+  .dir-section {
+    margin-bottom: 28px;
+  }
+  .dir-section-title {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--gold);
+    margin: 0 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  [dir="rtl"] .dir-section-title {
+    font-family: "Tajawal", "Playfair Display", sans-serif;
+    font-weight: 700;
+  }
+  .dir-grid {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 480px) {
+    .dir-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 768px) {
+    .dir-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .dir-grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .dir-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .dir-card:hover {
+    border-color: var(--gold);
+    transform: translateX(3px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  }
+  .dir-emoji {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .dir-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .dir-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+    margin-bottom: 2px;
+  }
+  .dir-gender {
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .dir-arrow {
+    color: var(--faint);
+    font-size: 14px;
+    transition: .2s;
+  }
+  .dir-card:hover .dir-arrow {
+    color: var(--gold);
+  }
 </style>
