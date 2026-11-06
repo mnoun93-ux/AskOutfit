@@ -129,8 +129,8 @@ const sectionSubtitle = isAr
         const category = getCategory(article.keyword);
         const title = getDisplayTitle(article);
         const description = getDescription(article);
-        // رابط داخلي للمقالة بدلاً من أمازون
-        const internalUrl = `/${isAr ? 'articles-ar' : 'articles'}/${article.slug}/`;
+        // رابط داخلي للمقالة بدلاً من أمازون (المقالات الفردية في المسار الجذر، ليس تحت /articles/)
+        const internalUrl = `/${article.slug}/`;
         
         return (
           <OutfitCard

@@ -134,6 +134,7 @@ const completeLookCta = isAr ? 'تسوق الطقم الكامل على أماز
               ) : (
                 <span class="stl-icon-fallback" aria-hidden="true">🛍️</span>
               )}
+              <div class="stl-media-glare" aria-hidden="true"></div>
             </div>
             <div class="stl-content">
               <h3 class="stl-name">{label}</h3>
@@ -251,22 +252,53 @@ const completeLookCta = isAr ? 'تسوق الطقم الكامل على أماز
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, rgba(202,164,106,0.15) 0%, rgba(202,164,106,0.08) 100%);
-    min-height: 120px;
+    background: linear-gradient(135deg, rgba(202,164,106,0.18) 0%, rgba(202,164,106,0.10) 100%);
+    border: 1px solid var(--stl-line);
+    position: relative;
+    overflow: hidden;
+    min-height: 140px;
+  }
+
+  .stl-media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 40%, rgba(255,255,255,0.03) 100%);
+    opacity: 0.5;
+  }
+
+  .stl-media-glare {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 30%, rgba(212,175,55,0.15) 0%, transparent 45%);
+    pointer-events: none;
+    opacity: 0.6;
   }
 
   .stl-icon {
-    font-size: 3rem;
+    font-size: 3.5rem;
     line-height: 1;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 2;
+    filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  }
+
+  .stl-icon svg {
+    filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.35));
   }
 
   .stl-icon-fallback {
-    font-size: 3rem;
+    font-size: 3.5rem;
     line-height: 1;
-    opacity: 0.6;
+    opacity: 0.5;
+    position: relative;
+    z-index: 2;
   }
 
   .stl-content {

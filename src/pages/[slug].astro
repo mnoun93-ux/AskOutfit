@@ -1199,24 +1199,6 @@ const geoArticleSchema = isGeo ? {
             </div>
           )}
 
-          <section class="newsletter">
-              <div class="nl-inner">
-                <p class="nl-emoji">✉️</p>
-                <h3 class="nl-title">{isAr ? "أفكار أزياء أسبوعية" : "Get weekly outfit ideas"}</h3>
-                <p class="nl-sub">{isAr ? "أحدث إطلالات لكل مناسبة، مباشرة إلى بريدك. بدون إزعاج — إلغاء الاشتراك في أي وقت." : "Fresh looks for every occasion, straight to your inbox. No spam — unsubscribe anytime."}</p>
-                <form class="nl-form" action="https://formsubmit.co/mn.oun93@gmail.com" method="POST">
-                  <input type="hidden" name="_subject" value="New Askoutfit subscriber" />
-                  <input type="hidden" name="_captcha" value="false" />
-                  <input type="hidden" name="_template" value="table" />
-                  <input type="hidden" name="_next" value="https://www.askoutfit.com/?subscribed=1" />
-                  <div class="nl-row">
-                    <input type="email" name="email" placeholder={isAr ? "بريدك@الإلكتروني.com" : "your@email.com"} required class="nl-email" />
-                    <button type="submit" class="nl-btn">{isAr ? "اشترك" : "Subscribe"}</button>
-                  </div>
-                </form>
-              </div>
-            </section>
-
           <div class="share-bar">
             <span class="share-label">{isAr ? "شارك:" : "Share:"}</span>
             <a id="pin-btn" class="share-btn share-pinterest" href="#" target="_blank" rel="noopener" aria-label="Save to Pinterest">
@@ -1297,7 +1279,7 @@ const geoArticleSchema = isGeo ? {
 
 <style>
   /* ── Shared header ───────────────────────────────────────────────────────── */
-  .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.6); background: rgba(26,20,16,.85); backdrop-filter: blur(12px); }
+  .site-header { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid rgba(58,48,38,.4); background: rgba(26,20,16,.9); backdrop-filter: blur(12px); box-shadow: none; outline: none; }
   .site-header-inner { max-width: 760px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; }
   .hub-header-inner { max-width: 960px; }
   .site-logo { font-family: "Playfair Display", Georgia, serif; font-size: 20px; font-weight: 600; text-decoration: none; color: var(--ink); }
