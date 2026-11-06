@@ -120,7 +120,8 @@ const sectionSubtitle = isAr
         const category = getCategory(article.keyword);
         const title = getDisplayTitle(article);
         const description = getDescription(article);
-        const affiliateUrl = amz(article.keyword);
+        // رابط داخلي للمقالة بدلاً من أمازون
+        const internalUrl = `/${isAr ? 'articles-ar' : 'articles'}/${article.slug}/`;
         
         return (
           <OutfitCard
@@ -129,11 +130,12 @@ const sectionSubtitle = isAr
             category={category}
             occasion={occasion}
             season={season}
-            affiliateUrl={affiliateUrl}
-            ctaText={ctaText}
+            affiliateUrl={internalUrl}
+            ctaText={isAr ? 'قراءة المقال' : 'Read Article'}
             lang={lang}
             dir={dir}
             variant="compact"
+            isInternal={true}
           />
         );
       })}

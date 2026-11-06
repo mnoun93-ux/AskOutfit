@@ -33,6 +33,7 @@ const sectionSubtitle = isAr
 
 const ctaText = isAr ? 'عرض على أمازون' : 'View on Amazon';
 
+// ENHANCED
 const productSchemas = shopItems.map((term, i) => ({
   '@context': 'https://schema.org',
   '@type': 'Product',
@@ -46,6 +47,67 @@ const productSchemas = shopItems.map((term, i) => ({
     'seller': { '@type': 'Organization', 'name': 'Amazon' }
   }
 }));
+
+// Determine badge for each item (first = Best Seller, second = Editor's Pick)
+function getBadge(index: number, label: string, isAr: boolean): string | null {
+  if (index === 0) return isAr ? 'الأكثر مبيعاً' : 'Best Seller';
+  if (index === 1) return isAr ? 'اختيار المحرر' : 'Editor\'s Pick';
+  return null;
+}
+
+// Smart SVG Icons for each fashion category (Luxury Gold #d4af37)
+function getCategoryIcon(label: string): string {
+  const text = label.toLowerCase();
+  
+  // Coat / Parka / Jacket / Blazer / معطف / جاكيت / بليزر
+  if (text.match(/\b(coat|parka|jacket|blazer|trench|peacoat|puffer|down|bomber|field\s+jacket|leather\s+jacket|denim\s+jacket|wool\s+coat|cashmere\s+coat|overcoat|topcoat|car\s+coat|معطف|جاكيت|بليزر|ترنش|باركا|بوفر)\b/)) {
+    return `<svg class="stl-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 3h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+      <path d="M6 9h16"/>
+      <path d="M10 13v6"/>
+      <path d="M14 13v6"/>
+      <circle cx="10" cy="17" r="1"/>
+      <circle cx="14" cy="17" r="1"/>
+      <path d="M8 9v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V9"/>
+    </svg>`;
+  }
+  
+  // Suit / Tuxedo / بدلة
+  if (text.match(/\b(suit|tuxedo|tux|formal\s+suit|business\s+suit|wedding\s+suit|بدلة|توكسيدو)\b/)) {
+    return `<svg class="stl-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M6 3h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
+      <path d="M6 9h16"/>
+      <path d="M10 13v6"/>
+      <path d="M14 13v6"/>
+      <path d="M8 5v4M16 5v4"/>
+      <path d="M12 3v3M12 21v-3"/>
+      <path d="M8 15h8"/>
+      <path d="M10 9v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V9"/>
+      <path d="M12 7v2" stroke-width="2"/>
+      <ellipse cx="12" cy="5" rx="1.5" ry="1" transform="rotate(-20 12 5)"/>
+    </svg>`;
+  }
+  
+  // Default: generic luxury item icon
+  return `<svg class="stl-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/>
+    <path d="M21 16V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/>
+    <path d="M4 8h16M4 16h16"/>
+    <path d="M10 8v8M14 8v8"/>
+    <circle cx="12" cy="12" r="2"/>
+  </svg>`;
+}
+
+// Build "Complete the Look" search URL with all items
+const completeLookTerms = shopItems.slice(0, 5).join('+');
+const completeLookUrl = `https://www.amazon.com/s?k=${encodeURIComponent(completeLookTerms)}&tag=askoutfit-20`;
+const completeLookText = isAr 
+  ? 'احصل على الإطلالة الكاملة' 
+  : 'Complete the Full Look';
+const completeLookDesc = isAr
+  ? 'تنسيق هذه القطع معاً يمنحك إطلالة متكاملة ومتناسقة — وفر وقت البحث واشتري الطقم كاملاً بنقرة واحدة.'
+  : 'Styling these pieces together gives you a complete, cohesive look — save search time and buy the full ensemble in one click.';
+const completeLookCta = isAr ? 'تسوق الطقم الكامل على أمازون' : 'Shop Complete Look on Amazon';
 ---
 
 {shopItems.length > 0 && (
@@ -56,20 +118,48 @@ const productSchemas = shopItems.map((term, i) => ({
     </header>
 
     <div class="stl-grid" role="list" aria-label={sectionTitle}>
-      {shopItems.map((term, i) => (
-        <article class="stl-card" role="listitem">
-          <div class="stl-media">
-            <span class="stl-icon">{i < shopLabels.length ? shopLabels[i].charAt(0) : '🛍'}</span>
-          </div>
-          <div class="stl-content">
-            <h3 class="stl-name">{shopLabels[i] || term}</h3>
-            <a href={amz(term)} target="_blank" rel="noopener nofollow sponsored" class="stl-cta" data-cta="shop-the-look" data-item={term}>
-              <span>{ctaText}</span>
-              <svg class="stl-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
-          </div>
-        </article>
-      ))}
+      {shopItems.map((term, i) => {
+        const label = shopLabels[i] || term;
+        const badge = getBadge(i, label, isAr);
+        const icon = getCategoryIcon(label);
+        
+        return (
+          <article class="stl-card" role="listitem" data-index={i}>
+            {badge && (
+              <span class="stl-badge">{badge}</span>
+            )}
+            <div class="stl-media">
+              <span class="stl-icon" set:html={icon} />
+            </div>
+            <div class="stl-content">
+              <h3 class="stl-name">{label}</h3>
+              <a href={amz(term)} target="_blank" rel="noopener nofollow sponsored" class="stl-cta" data-cta="shop-the-look" data-item={term}>
+                <span>{ctaText}</span>
+                <svg class="stl-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          </article>
+        )
+      })}
+    </div>
+
+    <!-- Complete the Full Look CTA Box -->
+    <div class="stl-complete-look" role="region" aria-label={completeLookText}>
+      <div class="stl-complete-content">
+        <div class="stl-complete-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div class="stl-complete-text">
+          <h3>{completeLookText}</h3>
+          <p>{completeLookDesc}</p>
+        </div>
+        <a href={completeLookUrl} target="_blank" rel="noopener nofollow sponsored" class="stl-complete-cta" data-cta="complete-the-look">
+          <span>{completeLookCta}</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
     </div>
 
     {schema && (<>{productSchemas.map((s, i) => (<script type="application/ld+json" is:inline set:html={JSON.stringify(s)} />))}</>)}
@@ -136,6 +226,7 @@ const productSchemas = shopItems.map((term, i) => ({
   }
 
   .stl-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     background: var(--stl-surface);
@@ -231,5 +322,46 @@ const productSchemas = shopItems.map((term, i) => ({
 
   @media (prefers-reduced-motion: reduce) {
     .shop-the-look * { transition: none !important; animation: none !important; }
+  }
+
+  /* Badge Styles */
+  .stl-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #d4af37 0%, #caa46a 100%);
+    color: var(--stl-bg);
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
+    font-family: 'Tajawal', 'Playfair Display', sans-serif;
+  }
+
+  [dir="rtl"] .stl-badge {
+    right: auto;
+    left: 10px;
+  }
+
+  .stl-media {
+    position: relative;
+  }
+
+  .stl-svg-icon {
+    width: 70%;
+    height: 70%;
+    max-width: 96px;
+    max-height: 96px;
+    filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.25));
+    transition: var(--stl-transition);
+  }
+
+  .stl-card:hover .stl-svg-icon {
+    transform: scale(1.05);
+    filter: drop-shadow(0 6px 16px rgba(212, 175, 55, 0.4));
   }
 </style>

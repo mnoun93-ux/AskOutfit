@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 160" width="560" height="160" role="img" aria-labelledby="ao-lockup-title">
+  <title id="ao-lockup-title">Askoutfit</title>
+  <defs>
+    <linearGradient id="aoGoldL" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#e8cf9c"/>
+      <stop offset=".45" stop-color="#caa46a"/>
+      <stop offset="1" stop-color="#a8823f"/>
+    </linearGradient>
+    <radialGradient id="aoPlateL" cx=".34" cy=".22" r=".9">
+      <stop offset="0" stop-color="#2b221a"/>
+      <stop offset="1" stop-color="#181210"/>
+    </radialGradient>
+  </defs>
+
+  <g transform="translate(24, 20) scale(1)">
+    <rect x="7" y="7" width="106" height="106" rx="30" fill="url(#aoPlateL)" stroke="#3a3026" stroke-width="1.6"/>
+    <path d="M60 34 C60 24 68 20 74 24 C81 28.6 78.5 38 69 40.5 L60 43"
+          fill="none" stroke="url(#aoGoldL)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="60" cy="52.5" r="3.5" fill="url(#aoGoldL)"/>
+    <path d="M60 59 L22 79" fill="none" stroke="url(#aoGoldL)" stroke-width="5.2" stroke-linecap="round"/>
+    <path d="M60 59 L98 79" fill="none" stroke="url(#aoGoldL)" stroke-width="5.2" stroke-linecap="round"/>
+    <path d="M27 84.5 C40 81.5 80 81.5 93 84.5" fill="none" stroke="url(#aoGoldL)" stroke-width="5.2" stroke-linecap="round"/>
+    <path d="M97 96 l2.1 4.9 4.9 2.1 -4.9 2.1 -2.1 4.9 -2.1 -4.9 -4.9 -2.1 4.9 -2.1 z" fill="#e8cf9c"/>
+  </g>
+
+  <text x="168" y="88" fill="#f3ece2"
+        style="font-family:'Playfair Display', Georgia, 'Times New Roman', serif; font-size:50px; font-weight:600; letter-spacing:-0.5px;">Askoutfit</text>
+  <text x="171" y="116" fill="#caa46a"
+        style="font-family:'Inter', system-ui, sans-serif; font-size:12px; font-weight:500; letter-spacing:4.2px;">YOUR AI STYLIST</text>
+</svg>

@@ -24,6 +24,7 @@ interface Props {
   occasion?: string;
   season?: string;
   affiliateUrl?: string;
+  isInternal?: boolean;
   ctaText?: string;
   lang: 'en' | 'ar';
   dir: 'ltr' | 'rtl';
@@ -38,6 +39,7 @@ const {
   occasion,
   season,
   affiliateUrl,
+  isInternal = false,
   ctaText,
   lang = 'en',
   dir = 'ltr',
@@ -93,7 +95,11 @@ const buttonText = ctaText || defaultCtaText;
 
 const hasAffiliate = !!affiliateUrl;
 const linkAttrs = hasAffiliate
-  ? { href: affiliateUrl, target: '_blank', rel: 'noopener nofollow sponsored' }
+  ? { 
+      href: affiliateUrl, 
+      target: isInternal ? '_self' : '_blank', 
+      rel: isInternal ? 'noopener' : 'noopener nofollow sponsored' 
+    }
   : { href: '#', 'aria-disabled': 'true' };
 
 // CSS class modifiers
