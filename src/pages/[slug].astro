@@ -7,6 +7,7 @@ import { getGeoShopItems, buildAmazonLink } from "../lib/geo-shop";
 import ShopTheLook from "../components/ShopTheLook.astro";
 import OutfitCard from "../components/OutfitCard.astro";
 import RelatedArticles from "../components/RelatedArticles.astro";
+import Newsletter from "../components/Newsletter.astro";
 
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const allArticles = Object.values(modules).map((m: any) => m.default ?? m);
@@ -1008,6 +1009,8 @@ const geoArticleSchema = isGeo ? {
               </details>
             ))}
           </section>
+
+          <Newsletter lang="en" />
         </article>
 
         <footer>
@@ -1092,6 +1095,8 @@ const geoArticleSchema = isGeo ? {
             </details>
           ))}
         </section>
+
+        <Newsletter lang="en" />
       </main>
 
       <footer class="site-footer-hub">
@@ -1236,6 +1241,8 @@ const geoArticleSchema = isGeo ? {
               </a>
             </div>
           )}
+
+          <Newsletter lang={isAr ? "ar" : "en"} />
         </article>
 
         <footer>

@@ -7,6 +7,7 @@ import { GEO_CITIES_AR } from "../../lib/geo-cities-ar";
 import { getGeoShopItems, buildAmazonLink } from "../../lib/geo-shop";
 import ShopTheLook from "../../components/ShopTheLook.astro";
 import RelatedArticles from "../../components/RelatedArticles.astro";
+import Newsletter from "../../components/Newsletter.astro";
 
 const SITE = "https://askoutfit.com";
 const AMAZON_TAG = "askoutfit-20";
@@ -335,6 +336,8 @@ function seasonIcon(s: string) {
         )}
 
       </div>
+
+      <Newsletter lang="ar" />
     </article>
   </main>
 

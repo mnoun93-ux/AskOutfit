@@ -61,7 +61,7 @@ function getCategoryIcon(label: string): string {
   
   // Coat / Parka / Jacket / Blazer / معطف / جاكيت / بليزر
   if (text.match(/\b(coat|parka|jacket|blazer|trench|peacoat|puffer|down|bomber|field\s+jacket|leather\s+jacket|denim\s+jacket|wool\s+coat|cashmere\s+coat|overcoat|topcoat|car\s+coat|معطف|جاكيت|بليزر|ترنش|باركا|بوفر)\b/)) {
-    return `<svg class="stl-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    return `<svg class="stl-svg-icon" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M6 3h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
       <path d="M6 9h16"/>
       <path d="M10 13v6"/>
@@ -74,7 +74,7 @@ function getCategoryIcon(label: string): string {
   
   // Suit / Tuxedo / بدلة
   if (text.match(/\b(suit|tuxedo|tux|formal\s+suit|business\s+suit|wedding\s+suit|بدلة|توكسيدو)\b/)) {
-    return `<svg class="stl-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    return `<svg class="stl-svg-icon" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M6 3h16a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/>
       <path d="M6 9h16"/>
       <path d="M10 13v6"/>
@@ -89,7 +89,7 @@ function getCategoryIcon(label: string): string {
   }
   
   // Default: generic luxury item icon
-  return `<svg class="stl-svg-icon" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  return `<svg class="stl-svg-icon" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"/>
     <path d="M21 16V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"/>
     <path d="M4 8h16M4 16h16"/>
@@ -279,9 +279,9 @@ const completeLookCta = isAr ? 'تسوق الطقم الكامل على أماز
   }
 
   .stl-icon {
-    font-size: 3.5rem;
-    line-height: 1;
-    display: inline-flex;
+    width: 96px;
+    height: 96px;
+    display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
@@ -289,7 +289,10 @@ const completeLookCta = isAr ? 'تسوق الطقم الكامل على أماز
     filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
   }
 
-  .stl-icon svg {
+  .stl-icon :global(svg) {
+    width: 96px;
+    height: 96px;
+    display: block;
     filter: drop-shadow(0 2px 8px rgba(212, 175, 55, 0.35));
   }
 
@@ -397,9 +400,9 @@ const completeLookCta = isAr ? 'تسوق الطقم الكامل على أماز
     position: relative;
   }
 
-  .stl-svg-icon {
-    width: 70%;
-    height: 70%;
+  :global(.stl-svg-icon) {
+    width: 96px;
+    height: 96px;
     max-width: 96px;
     max-height: 96px;
     filter: drop-shadow(0 4px 12px rgba(212, 175, 55, 0.25));
@@ -415,7 +418,7 @@ const completeLookCta = isAr ? 'تسوق الطقم الكامل على أماز
     justify-content: center;
   }
 
-  .stl-card:hover .stl-svg-icon {
+  .stl-card:hover :global(.stl-svg-icon) {
     transform: scale(1.05);
     filter: drop-shadow(0 6px 16px rgba(212, 175, 55, 0.4));
   }

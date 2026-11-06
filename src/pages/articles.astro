@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Newsletter from "../components/Newsletter.astro";
 
 const modules = import.meta.glob("../content/articles/*.json", { eager: true });
 const all = Object.values(modules).map((m: any) => m.default ?? m);
@@ -146,6 +147,7 @@ const articlesJson = JSON.stringify(articles);
     <!-- Grid — rendered by JS -->
     <div class="art-grid" id="grid"></div>
     <p class="empty-msg" id="empty" style="display:none">No guides found for this filter. <button class="reset-btn" id="reset">Clear filters</button></p>
+    <Newsletter lang="en" />
   </main>
 
   <footer class="site-footer">

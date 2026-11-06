@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import Newsletter from "../components/Newsletter.astro";
 import geoCitiesData from "../content/geo-cities.json";
 
 const SITE = "https://askoutfit.com";
@@ -137,6 +138,7 @@ const totalPages = cities.length * SEASONS.length;
       <p data-en="Describe your destination, occasion, and plans — our AI stylist will suggest a complete outfit in seconds." data-ar="صف وجهتك ومناسبتك وخططك — سيقترح مصممنا الذكي إطلالة كاملة في ثوانٍ.">Describe your destination, occasion, and plans — our AI stylist will suggest a complete outfit in seconds.</p>
       <a class="btn" href="/?ref=travel-guides" data-en="Get My Outfit →" data-ar="احصل على إطلالتي ←">Get My Outfit →</a>
     </div>
+    <Newsletter lang="en" />
   </main>
 
   <footer class="site-footer">
