@@ -74,9 +74,18 @@ if (scored.length < limit) {
 function getCategory(keyword: string): string {
   const k = keyword.toLowerCase();
   if (k.includes('dress') || k.includes('gown') || k.includes('فستان')) return 'dress';
-  if (k.includes('suit') || k.includes('blazer') || k.includes('بليزر') || k.includes('بدلة')) return 'outerwear';
-  if (k.includes('shoe') || k.includes('heel') || k.includes('boot') || k.includes('حذاء') || k.includes('بوت')) return 'shoes';
-  if (k.includes('accessory') || k.includes('jewel') || k.includes('bag') || k.includes('إكسسوار') || k.includes('حقيبة') || k.includes('مجوهر')) return 'accessory';
+  if (k.includes('suit') || k.includes('tuxedo') || k.includes('بليزر') || k.includes('بدلة') || k.includes('توكسيدو')) return 'suit';
+  if (k.includes('coat') || k.includes('trench') || k.includes('جاكيت') || k.includes('معطف') || k.includes('باركا') || k.includes('بومبر')) return 'coat';
+  if (k.includes('shoe') || k.includes('heel') || k.includes('حذاء') || k.includes('كعب')) return 'shoes';
+  if (k.includes('boot') || k.includes('بوت')) return 'boots';
+  if (k.includes('bag') || k.includes('حقيبة') || k.includes('شنطة') || k.includes('حقيبة يد')) return 'bag';
+  if (k.includes('watch') || k.includes('ساعة')) return 'watch';
+  if (k.includes('tie') || k.includes('ربطة عنق')) return 'tie';
+  if (k.includes('scarf') || k.includes('وشاح')) return 'scarf';
+  if (k.includes('jewel') || k.includes('مجوهر') || k.includes('إكسسوار')) return 'jewelry';
+  if (k.includes('accessory') || k.includes('إكسسوار')) return 'accessory';
+  if (k.includes('shirt') || k.includes('قميص') || k.includes('بلوفر') || k.includes('كنزة') || k.includes('sweater')) return 'top';
+  if (k.includes('jean') || k.includes('جينز') || k.includes('pant') || k.includes('بنطلون')) return 'bottom';
   return 'default';
 }
 

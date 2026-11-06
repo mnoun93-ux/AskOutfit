@@ -7,8 +7,6 @@ import { GEO_CITIES_AR } from "../../lib/geo-cities-ar";
 import { getGeoShopItems, buildAmazonLink } from "../../lib/geo-shop";
 import ShopTheLook from "../../components/ShopTheLook.astro";
 import RelatedArticles from "../../components/RelatedArticles.astro";
-import ShopTheLook from "../../components/ShopTheLook.astro";
-import RelatedArticles from "../../components/RelatedArticles.astro";
 
 const SITE = "https://askoutfit.com";
 const AMAZON_TAG = "askoutfit-20";
@@ -340,6 +338,25 @@ function seasonIcon(s: string) {
     </article>
   </main>
 
+  <!-- Newsletter Form (Arabic page) -->
+  <section class="newsletter" aria-label="Newsletter signup">
+    <div class="nl-inner">
+      <p class="nl-emoji">✉️</p>
+      <h3 class="nl-title">أفكار أزياء أسبوعية</h3>
+      <p class="nl-sub">أحدث إطلالات لكل مناسبة، مباشرة إلى بريدك. بدون إزعاج — إلغاء الاشتراك في أي وقت.</p>
+      <form class="nl-form" action="https://formsubmit.co/mn.oun93@gmail.com" method="POST">
+        <input type="hidden" name="_subject" value="New Askoutfit subscriber (AR)" />
+        <input type="hidden" name="_captcha" value="false" />
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_next" value="https://www.askoutfit.com/?subscribed=1" />
+        <div class="nl-row">
+          <input type="email" name="email" placeholder="بريدك@الإلكتروني.com" required class="nl-email" />
+          <button type="submit" class="nl-btn">اشترك</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
   <footer class="site-footer">
     <p class="site-footer-logo">Askoutfit</p>
     <p>قد نكسب عمولةً على المشتريات عبر الروابط. © <span id="y"></span></p>
@@ -558,4 +575,18 @@ function seasonIcon(s: string) {
     outline: 2px solid var(--gold);
     outline-offset: 3px;
   }
+
+  /* ── Newsletter (Arabic) ─────────────────────────────────────────────────── */
+  .newsletter { margin: 44px 0; }
+  .nl-inner { border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent); border-radius: 18px; padding: 32px 28px; background: linear-gradient(135deg, color-mix(in srgb, var(--gold) 8%, var(--surface)), var(--surface)); text-align: center; }
+  .nl-emoji { font-size: 28px; margin-bottom: 10px; }
+  .nl-title { font-family: "Tajawal", "Playfair Display", serif; font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--ink); }
+  .nl-sub { color: var(--muted); font-size: 15px; margin-bottom: 20px; }
+  .nl-row { display: flex; gap: 8px; max-width: 420px; margin: 0 auto; }
+  .nl-email { flex: 1; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; color: var(--ink); font-size: 15px; padding: 11px 14px; outline: none; transition: border-color .2s; direction: rtl; }
+  .nl-email:focus { border-color: color-mix(in srgb, var(--gold) 60%, transparent); }
+  .nl-email::placeholder { color: var(--faint); }
+  .nl-btn { background: var(--gold); color: var(--bg); font-weight: 700; font-size: 15px; padding: 11px 20px; border-radius: 10px; border: none; cursor: pointer; transition: background .2s; white-space: nowrap; font-family: inherit; }
+  .nl-btn:hover { background: #d8b67e; }
+  @media (max-width: 420px) { .nl-row { flex-direction: column; } }
 </style>
